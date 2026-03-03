@@ -143,53 +143,7 @@ namespace PoleBarnGenerator.Generators
             return count;
         }
 
-        private static int DrawDoorElevation(Transaction tr, BlockTableRecord btr,
-            DoorOpening door, Vector3d offset)
-        {
-            double left = door.CenterOffset - door.Width / 2.0;
-            var pts = new List<Point2d>
-            {
-                DrawingHelpers.Offset2d(left, 0, offset),
-                DrawingHelpers.Offset2d(left, door.Height, offset),
-                DrawingHelpers.Offset2d(left + door.Width, door.Height, offset),
-                DrawingHelpers.Offset2d(left + door.Width, 0, offset),
-            };
-            DrawingHelpers.AddPolyline(tr, btr, pts, LayerManager.Layers.Doors, closed: false);
 
-            // Door type label
-            string label = door.Type == DoorType.Overhead ? "OH" :
-                          door.Type == DoorType.Sliding ? "SL" : "WK";
-            DrawingHelpers.AddText(tr, btr,
-                DrawingHelpers.Offset(door.CenterOffset, door.Height / 2, offset),
-                $"{label}\n{door.Width}' x {door.Height}'",
-                0.5, LayerManager.Layers.Anno);
-
-            return 2;
-        }
-
-        private static int DrawWindowElevation(Transaction tr, BlockTableRecord btr,
-            WindowOpening win, Vector3d offset)
-        {
-            double left = win.CenterOffset - win.Width / 2.0;
-            DrawingHelpers.AddRectangle(tr, btr,
-                DrawingHelpers.Offset2d(left, win.SillHeight, offset),
-                win.Width, win.Height,
-                LayerManager.Layers.Windows);
-
-            // Window cross lines
-            double cx = win.CenterOffset;
-            double cy = win.SillHeight + win.Height / 2.0;
-            DrawingHelpers.AddLine(tr, btr,
-                DrawingHelpers.Offset(left, cy, offset),
-                DrawingHelpers.Offset(left + win.Width, cy, offset),
-                LayerManager.Layers.Windows);
-            DrawingHelpers.AddLine(tr, btr,
-                DrawingHelpers.Offset(cx, win.SillHeight, offset),
-                DrawingHelpers.Offset(cx, win.SillHeight + win.Height, offset),
-                LayerManager.Layers.Windows);
-
-            return 3;
-        }
 
         private static int AddFrontDimensions(Transaction tr, BlockTableRecord btr,
             BarnGeometry geo, Vector3d offset)
