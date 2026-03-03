@@ -1,0 +1,384 @@
+<UserControl x:Class="PoleBarnGenerator.UI.OpeningManagerControl"
+             xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+             xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+             xmlns:local="clr-namespace:PoleBarnGenerator.UI">
+
+    <UserControl.Resources>
+        <!-- Status icon converter -->
+        <local:ValidationStatusConverter x:Key="StatusConverter"/>
+        <local:DoorTypeIconConverter x:Key="DoorIconConverter"/>
+        <local:WindowTypeIconConverter x:Key="WindowIconConverter"/>
+
+        <!-- Row highlight style for doors -->
+        <Style x:Key="DoorRowStyle" TargetType="DataGridRow">
+            <Style.Triggers>
+                <DataTrigger Binding="{Binding ValidationStatus}" Value="Error">
+                    <Setter Property="Background" Value="#FFEBEE"/>
+                    <Setter Property="BorderBrush" Value="#EF5350"/>
+                    <Setter Property="BorderThickness" Value="0,0,0,1"/>
+                </DataTrigger>
+                <DataTrigger Binding="{Binding ValidationStatus}" Value="Warning">
+                    <Setter Property="Background" Value="#FFF8E1"/>
+                    <Setter Property="BorderBrush" Value="#FFC107"/>
+                    <Setter Property="BorderThickness" Value="0,0,0,1"/>
+                </DataTrigger>
+                <DataTrigger Binding="{Binding ValidationStatus}" Value="Valid">
+                    <Setter Property="Background" Value="#E8F5E9"/>
+                </DataTrigger>
+            </Style.Triggers>
+        </Style>
+
+        <!-- Row highlight style for windows -->
+        <Style x:Key="WindowRowStyle" TargetType="DataGridRow">
+            <Style.Triggers>
+                <DataTrigger Binding="{Binding ValidationStatus}" Value="Error">
+                    <Setter Property="Background" Value="#FFEBEE"/>
+                    <Setter Property="BorderBrush" Value="#EF5350"/>
+                    <Setter Property="BorderThickness" Value="0,0,0,1"/>
+                </DataTrigger>
+                <DataTrigger Binding="{Binding ValidationStatus}" Value="Warning">
+                    <Setter Property="Background" Value="#FFF8E1"/>
+                    <Setter Property="BorderBrush" Value="#FFC107"/>
+                    <Setter Property="BorderThickness" Value="0,0,0,1"/>
+                </DataTrigger>
+                <DataTrigger Binding="{Binding ValidationStatus}" Value="Valid">
+                    <Setter Property="Background" Value="#E8F5E9"/>
+                </DataTrigger>
+            </Style.Triggers>
+        </Style>
+    </UserControl.Resources>
+
+    <Grid Margin="4">
+        <Grid.RowDefinitions>
+            <RowDefinition Height="*"/>
+            <RowDefinition Height="Auto"/>
+        </Grid.RowDefinitions>
+        <Grid.ColumnDefinitions>
+            <ColumnDefinition Width="*" MinWidth="300"/>
+            <ColumnDefinition Width="5"/>
+            <ColumnDefinition Width="280"/>
+        </Grid.ColumnDefinitions>
+
+        <!-- LEFT PANEL: Opening Lists -->
+        <Grid Grid.Row="0" Grid.Column="0">
+            <Grid.RowDefinitions>
+                <RowDefinition Height="*"/>
+                <RowDefinition Height="5"/>
+                <RowDefinition Height="*"/>
+            </Grid.RowDefinitions>
+
+            <!-- Doors Section -->
+            <GroupBox Grid.Row="0" Header="🚪 Doors" Margin="0,0,0,2" FontWeight="SemiBold">
+                <DockPanel>
+                    <StackPanel DockPanel.Dock="Bottom" Orientation="Horizontal" Margin="0,4,0,0">
+                        <Button Content="➕ Add" Width="60" Margin="0,0,4,0" Click="OnAddDoor"
+                                ToolTip="Add new door (Ctrl+D)" FontSize="11"/>
+                        <Button Content="🗑 Delete" Width="70" Margin="0,0,4,0" Click="OnDeleteDoor"
+                                x:Name="btnDeleteDoor" IsEnabled="False" FontSize="11"/>
+                        <Button Content="📋 Duplicate" Width="80" Click="OnDuplicateDoor"
+                                x:Name="btnDupDoor" IsEnabled="False" FontSize="11"/>
+                    </StackPanel>
+                    <DataGrid x:Name="dgDoors" AutoGenerateColumns="False"
+                              SelectionMode="Single" CanUserAddRows="False" CanUserDeleteRows="False"
+                              RowStyle="{StaticResource DoorRowStyle}"
+                              SelectionChanged="OnDoorSelectionChanged"
+                              GridLinesVisibility="Horizontal" HeadersVisibility="Column"
+                              FontWeight="Normal" FontSize="12" IsReadOnly="True">
+                        <DataGrid.Columns>
+                            <DataGridTextColumn Header="" Binding="{Binding TypeIcon}" Width="30" IsReadOnly="True"/>
+                            <DataGridTextColumn Header="Type" Binding="{Binding TypeName}" Width="80"/>
+                            <DataGridTextColumn Header="Wall" Binding="{Binding WallName}" Width="55"/>
+                            <DataGridTextColumn Header="Size" Binding="{Binding SizeDisplay}" Width="75"/>
+                            <DataGridTextColumn Header="Position" Binding="{Binding PositionDisplay}" Width="65"/>
+                            <DataGridTextColumn Header="" Binding="{Binding StatusIcon}" Width="30" IsReadOnly="True"/>
+                        </DataGrid.Columns>
+                    </DataGrid>
+                </DockPanel>
+            </GroupBox>
+
+            <GridSplitter Grid.Row="1" Height="5" HorizontalAlignment="Stretch" Background="Transparent"/>
+
+            <!-- Windows Section -->
+            <GroupBox Grid.Row="2" Header="🪟 Windows" Margin="0,2,0,0" FontWeight="SemiBold">
+                <DockPanel>
+                    <StackPanel DockPanel.Dock="Bottom" Orientation="Horizontal" Margin="0,4,0,0">
+                        <Button Content="➕ Add" Width="60" Margin="0,0,4,0" Click="OnAddWindow"
+                                ToolTip="Add new window (Ctrl+W)" FontSize="11"/>
+                        <Button Content="🗑 Delete" Width="70" Margin="0,0,4,0" Click="OnDeleteWindow"
+                                x:Name="btnDeleteWindow" IsEnabled="False" FontSize="11"/>
+                        <Button Content="📋 Duplicate" Width="80" Click="OnDuplicateWindow"
+                                x:Name="btnDupWindow" IsEnabled="False" FontSize="11"/>
+                    </StackPanel>
+                    <DataGrid x:Name="dgWindows" AutoGenerateColumns="False"
+                              SelectionMode="Single" CanUserAddRows="False" CanUserDeleteRows="False"
+                              RowStyle="{StaticResource WindowRowStyle}"
+                              SelectionChanged="OnWindowSelectionChanged"
+                              GridLinesVisibility="Horizontal" HeadersVisibility="Column"
+                              FontWeight="Normal" FontSize="12" IsReadOnly="True">
+                        <DataGrid.Columns>
+                            <DataGridTextColumn Header="" Binding="{Binding TypeIcon}" Width="30" IsReadOnly="True"/>
+                            <DataGridTextColumn Header="Type" Binding="{Binding TypeName}" Width="80"/>
+                            <DataGridTextColumn Header="Wall" Binding="{Binding WallName}" Width="55"/>
+                            <DataGridTextColumn Header="Size" Binding="{Binding SizeDisplay}" Width="75"/>
+                            <DataGridTextColumn Header="Sill" Binding="{Binding SillDisplay}" Width="50"/>
+                            <DataGridTextColumn Header="" Binding="{Binding StatusIcon}" Width="30" IsReadOnly="True"/>
+                        </DataGrid.Columns>
+                    </DataGrid>
+                </DockPanel>
+            </GroupBox>
+        </Grid>
+
+        <GridSplitter Grid.Row="0" Grid.Column="1" Width="5" HorizontalAlignment="Stretch"
+                      Background="Transparent"/>
+
+        <!-- RIGHT PANEL: Detail Editor -->
+        <Border Grid.Row="0" Grid.Column="2" BorderBrush="#DDD" BorderThickness="1"
+                CornerRadius="3" Background="White" Padding="8">
+            <ScrollViewer VerticalScrollBarVisibility="Auto">
+                <StackPanel x:Name="pnlDetail">
+                    <TextBlock Text="Select an opening to edit" FontStyle="Italic"
+                               Foreground="#999" HorizontalAlignment="Center" Margin="0,40,0,0"
+                               x:Name="txtNoSelection"/>
+
+                    <!-- Door Detail Panel -->
+                    <StackPanel x:Name="pnlDoorDetail" Visibility="Collapsed">
+                        <TextBlock Text="Door Properties" FontWeight="Bold" FontSize="14" Margin="0,0,0,8"/>
+
+                        <TextBlock Text="Type:" FontWeight="SemiBold" Margin="0,4,0,2"/>
+                        <ComboBox x:Name="cmbDoorType" Width="160" HorizontalAlignment="Left"
+                                  SelectionChanged="OnDoorPropertyChanged">
+                            <ComboBoxItem Content="Overhead" Tag="Overhead"/>
+                            <ComboBoxItem Content="Sliding" Tag="Sliding"/>
+                            <ComboBoxItem Content="Walk" Tag="Walk"/>
+                            <ComboBoxItem Content="Dutch" Tag="Dutch"/>
+                            <ComboBoxItem Content="Double" Tag="Double"/>
+                        </ComboBox>
+
+                        <TextBlock Text="Wall:" FontWeight="SemiBold" Margin="0,8,0,2"/>
+                        <ComboBox x:Name="cmbDoorWall" Width="120" HorizontalAlignment="Left"
+                                  SelectionChanged="OnDoorPropertyChanged">
+                            <ComboBoxItem Content="Front" Tag="Front"/>
+                            <ComboBoxItem Content="Back" Tag="Back"/>
+                            <ComboBoxItem Content="Left" Tag="Left"/>
+                            <ComboBoxItem Content="Right" Tag="Right"/>
+                        </ComboBox>
+
+                        <Grid Margin="0,8,0,0">
+                            <Grid.ColumnDefinitions>
+                                <ColumnDefinition Width="Auto"/>
+                                <ColumnDefinition Width="70"/>
+                                <ColumnDefinition Width="10"/>
+                                <ColumnDefinition Width="Auto"/>
+                                <ColumnDefinition Width="70"/>
+                            </Grid.ColumnDefinitions>
+                            <Grid.RowDefinitions>
+                                <RowDefinition Height="Auto"/>
+                                <RowDefinition Height="Auto"/>
+                            </Grid.RowDefinitions>
+
+                            <TextBlock Grid.Row="0" Grid.Column="0" Text="Width:" VerticalAlignment="Center" Margin="0,0,6,4"/>
+                            <TextBox Grid.Row="0" Grid.Column="1" x:Name="txtDoorWidth" Margin="0,0,0,4"
+                                     TextChanged="OnDoorPropertyChanged"/>
+                            <TextBlock Grid.Row="0" Grid.Column="3" Text="Height:" VerticalAlignment="Center" Margin="0,0,6,4"/>
+                            <TextBox Grid.Row="0" Grid.Column="4" x:Name="txtDoorHeight" Margin="0,0,0,4"
+                                     TextChanged="OnDoorPropertyChanged"/>
+
+                            <TextBlock Grid.Row="1" Grid.Column="0" Text="Position:" VerticalAlignment="Center" Margin="0,0,6,4"/>
+                            <TextBox Grid.Row="1" Grid.Column="1" x:Name="txtDoorPosition" Margin="0,0,0,4"
+                                     TextChanged="OnDoorPropertyChanged"/>
+                            <TextBlock Grid.Row="1" Grid.Column="3" Text="ft" VerticalAlignment="Center" Foreground="#888"/>
+                        </Grid>
+
+                        <!-- Type-specific: Overhead -->
+                        <StackPanel x:Name="pnlOverheadOptions" Margin="0,8,0,0">
+                            <TextBlock Text="Track Type:" FontWeight="SemiBold" Margin="0,0,0,2"/>
+                            <ComboBox x:Name="cmbTrackType" Width="140" HorizontalAlignment="Left"
+                                      SelectionChanged="OnDoorPropertyChanged">
+                                <ComboBoxItem Content="Standard Lift" Tag="StandardLift"/>
+                                <ComboBoxItem Content="High Lift" Tag="HighLift"/>
+                                <ComboBoxItem Content="Vertical Lift" Tag="VerticalLift"/>
+                            </ComboBox>
+                        </StackPanel>
+
+                        <!-- Type-specific: Walk/Dutch/Double -->
+                        <StackPanel x:Name="pnlSwingOptions" Visibility="Collapsed" Margin="0,8,0,0">
+                            <TextBlock Text="Swing Direction:" FontWeight="SemiBold" Margin="0,0,0,2"/>
+                            <ComboBox x:Name="cmbSwingDir" Width="100" HorizontalAlignment="Left"
+                                      SelectionChanged="OnDoorPropertyChanged">
+                                <ComboBoxItem Content="Out" Tag="Out"/>
+                                <ComboBoxItem Content="In" Tag="In"/>
+                            </ComboBox>
+
+                            <TextBlock Text="Handing:" FontWeight="SemiBold" Margin="0,8,0,2"/>
+                            <ComboBox x:Name="cmbHanding" Width="100" HorizontalAlignment="Left"
+                                      SelectionChanged="OnDoorPropertyChanged">
+                                <ComboBoxItem Content="Left" Tag="Left"/>
+                                <ComboBoxItem Content="Right" Tag="Right"/>
+                            </ComboBox>
+                        </StackPanel>
+
+                        <!-- Type-specific: Dutch -->
+                        <StackPanel x:Name="pnlDutchOptions" Visibility="Collapsed" Margin="0,8,0,0">
+                            <TextBlock Text="Split Height:" FontWeight="SemiBold" Margin="0,0,0,2"/>
+                            <StackPanel Orientation="Horizontal">
+                                <TextBox x:Name="txtSplitHeight" Width="70" TextChanged="OnDoorPropertyChanged"/>
+                                <TextBlock Text=" ft" VerticalAlignment="Center" Foreground="#888"/>
+                            </StackPanel>
+                        </StackPanel>
+
+                        <CheckBox x:Name="chkHasLite" Content="Has Lite (window insert)"
+                                  Margin="0,10,0,0" Click="OnDoorPropertyChanged"/>
+
+                        <!-- Structural Info (read-only) -->
+                        <Border Margin="0,12,0,0" Padding="8" Background="#F5F5F5"
+                                BorderBrush="#DDD" BorderThickness="1" CornerRadius="2">
+                            <StackPanel>
+                                <TextBlock Text="Structural Info" FontWeight="SemiBold" FontSize="11" Foreground="#666"/>
+                                <TextBlock x:Name="txtDoorHeader" Text="Header: —" FontSize="11" Margin="0,4,0,0"/>
+                                <TextBlock x:Name="txtDoorRough" Text="Rough Opening: —" FontSize="11"/>
+                            </StackPanel>
+                        </Border>
+
+                        <!-- Validation Messages -->
+                        <Border x:Name="pnlDoorValidation" Margin="0,8,0,0" Padding="6"
+                                Background="#FFEBEE" BorderBrush="#EF5350" BorderThickness="1"
+                                CornerRadius="2" Visibility="Collapsed">
+                            <TextBlock x:Name="txtDoorErrors" Foreground="#C62828" TextWrapping="Wrap" FontSize="11"/>
+                        </Border>
+                    </StackPanel>
+
+                    <!-- Window Detail Panel -->
+                    <StackPanel x:Name="pnlWindowDetail" Visibility="Collapsed">
+                        <TextBlock Text="Window Properties" FontWeight="Bold" FontSize="14" Margin="0,0,0,8"/>
+
+                        <TextBlock Text="Type:" FontWeight="SemiBold" Margin="0,4,0,2"/>
+                        <ComboBox x:Name="cmbWindowType" Width="160" HorizontalAlignment="Left"
+                                  SelectionChanged="OnWindowPropertyChanged">
+                            <ComboBoxItem Content="Fixed" Tag="Fixed"/>
+                            <ComboBoxItem Content="Single Hung" Tag="SingleHung"/>
+                            <ComboBoxItem Content="Sliding" Tag="Sliding"/>
+                            <ComboBoxItem Content="Barn Sash" Tag="BarnSash"/>
+                            <ComboBoxItem Content="Awning" Tag="Awning"/>
+                            <ComboBoxItem Content="Casement" Tag="Casement"/>
+                        </ComboBox>
+
+                        <TextBlock Text="Wall:" FontWeight="SemiBold" Margin="0,8,0,2"/>
+                        <ComboBox x:Name="cmbWindowWall" Width="120" HorizontalAlignment="Left"
+                                  SelectionChanged="OnWindowPropertyChanged">
+                            <ComboBoxItem Content="Front" Tag="Front"/>
+                            <ComboBoxItem Content="Back" Tag="Back"/>
+                            <ComboBoxItem Content="Left" Tag="Left"/>
+                            <ComboBoxItem Content="Right" Tag="Right"/>
+                        </ComboBox>
+
+                        <Grid Margin="0,8,0,0">
+                            <Grid.ColumnDefinitions>
+                                <ColumnDefinition Width="Auto"/>
+                                <ColumnDefinition Width="70"/>
+                                <ColumnDefinition Width="10"/>
+                                <ColumnDefinition Width="Auto"/>
+                                <ColumnDefinition Width="70"/>
+                            </Grid.ColumnDefinitions>
+                            <Grid.RowDefinitions>
+                                <RowDefinition Height="Auto"/>
+                                <RowDefinition Height="Auto"/>
+                                <RowDefinition Height="Auto"/>
+                            </Grid.RowDefinitions>
+
+                            <TextBlock Grid.Row="0" Grid.Column="0" Text="Width:" VerticalAlignment="Center" Margin="0,0,6,4"/>
+                            <TextBox Grid.Row="0" Grid.Column="1" x:Name="txtWindowWidth" Margin="0,0,0,4"
+                                     TextChanged="OnWindowPropertyChanged"/>
+                            <TextBlock Grid.Row="0" Grid.Column="3" Text="Height:" VerticalAlignment="Center" Margin="0,0,6,4"/>
+                            <TextBox Grid.Row="0" Grid.Column="4" x:Name="txtWindowHeight" Margin="0,0,0,4"
+                                     TextChanged="OnWindowPropertyChanged"/>
+
+                            <TextBlock Grid.Row="1" Grid.Column="0" Text="Sill Ht:" VerticalAlignment="Center" Margin="0,0,6,4"/>
+                            <TextBox Grid.Row="1" Grid.Column="1" x:Name="txtWindowSill" Margin="0,0,0,4"
+                                     TextChanged="OnWindowPropertyChanged"/>
+                            <TextBlock Grid.Row="1" Grid.Column="3" Text="Position:" VerticalAlignment="Center" Margin="0,0,6,4"/>
+                            <TextBox Grid.Row="1" Grid.Column="4" x:Name="txtWindowPosition" Margin="0,0,0,4"
+                                     TextChanged="OnWindowPropertyChanged"/>
+                        </Grid>
+
+                        <!-- Grid options -->
+                        <CheckBox x:Name="chkWindowGrid" Content="Has Grid" Margin="0,10,0,4"
+                                  Click="OnWindowPropertyChanged"/>
+                        <StackPanel x:Name="pnlGridPattern" Visibility="Collapsed" Margin="16,0,0,0">
+                            <TextBlock Text="Grid Pattern:" FontWeight="SemiBold" Margin="0,0,0,2"/>
+                            <ComboBox x:Name="cmbGridPattern" Width="120" HorizontalAlignment="Left"
+                                      SelectionChanged="OnWindowPropertyChanged">
+                                <ComboBoxItem Content="Colonial" Tag="Colonial"/>
+                                <ComboBoxItem Content="Prairie" Tag="Prairie"/>
+                                <ComboBoxItem Content="Custom" Tag="Custom"/>
+                            </ComboBox>
+                        </StackPanel>
+
+                        <!-- Validation Messages -->
+                        <Border x:Name="pnlWindowValidation" Margin="0,12,0,0" Padding="6"
+                                Background="#FFEBEE" BorderBrush="#EF5350" BorderThickness="1"
+                                CornerRadius="2" Visibility="Collapsed">
+                            <TextBlock x:Name="txtWindowErrors" Foreground="#C62828" TextWrapping="Wrap" FontSize="11"/>
+                        </Border>
+                    </StackPanel>
+                </StackPanel>
+            </ScrollViewer>
+        </Border>
+
+        <!-- BOTTOM PANEL: Quick Presets -->
+        <GroupBox Grid.Row="1" Grid.Column="0" Grid.ColumnSpan="3"
+                  Header="⚡ Quick Presets" Margin="0,4,0,0" FontWeight="SemiBold">
+            <Grid>
+                <Grid.RowDefinitions>
+                    <RowDefinition Height="Auto"/>
+                    <RowDefinition Height="Auto"/>
+                </Grid.RowDefinitions>
+
+                <!-- Door presets -->
+                <StackPanel Grid.Row="0" Margin="0,2,0,4">
+                    <TextBlock Text="Doors:" FontWeight="SemiBold" FontSize="11" Foreground="#666" Margin="0,0,0,2"/>
+                    <WrapPanel>
+                        <Button Content="16'×14' OH" Margin="2" Padding="8,3" FontSize="11"
+                                Tag="overhead-16x14" Click="OnDoorPresetClick" ToolTip="16'×14' Overhead Door"/>
+                        <Button Content="10'×10' OH" Margin="2" Padding="8,3" FontSize="11"
+                                Tag="overhead-10x10" Click="OnDoorPresetClick" ToolTip="10'×10' Overhead Door"/>
+                        <Button Content="12'×12' OH" Margin="2" Padding="8,3" FontSize="11"
+                                Tag="overhead-12x12" Click="OnDoorPresetClick" ToolTip="12'×12' Overhead Door"/>
+                        <Button Content="3'×6'-8&quot; Walk" Margin="2" Padding="8,3" FontSize="11"
+                                Tag="walk-3x6.8" Click="OnDoorPresetClick" ToolTip="3'×6'-8&quot; Walk Door"/>
+                        <Button Content="3'×7' Walk" Margin="2" Padding="8,3" FontSize="11"
+                                Tag="walk-3x7" Click="OnDoorPresetClick"/>
+                        <Button Content="12'×10' Slide" Margin="2" Padding="8,3" FontSize="11"
+                                Tag="sliding-12x10" Click="OnDoorPresetClick"/>
+                        <Button Content="4'×7' Dutch" Margin="2" Padding="8,3" FontSize="11"
+                                Tag="dutch-4x7" Click="OnDoorPresetClick"/>
+                        <Button Content="6'×7' Double" Margin="2" Padding="8,3" FontSize="11"
+                                Tag="double-6x7" Click="OnDoorPresetClick"/>
+                        <Button Content="9'×8' OH (Res)" Margin="2" Padding="8,3" FontSize="11"
+                                Tag="overhead-9x8" Click="OnDoorPresetClick" ToolTip="9'×8' Residential Overhead"/>
+                    </WrapPanel>
+                </StackPanel>
+
+                <!-- Window presets -->
+                <StackPanel Grid.Row="1" Margin="0,0,0,2">
+                    <TextBlock Text="Windows:" FontWeight="SemiBold" FontSize="11" Foreground="#666" Margin="0,0,0,2"/>
+                    <WrapPanel>
+                        <Button Content="3'×4' Sgl Hung" Margin="2" Padding="8,3" FontSize="11"
+                                Tag="single-hung-3x4" Click="OnWindowPresetClick"/>
+                        <Button Content="4'×4' Fixed" Margin="2" Padding="8,3" FontSize="11"
+                                Tag="fixed-4x4" Click="OnWindowPresetClick"/>
+                        <Button Content="3'×3' Barn Sash" Margin="2" Padding="8,3" FontSize="11"
+                                Tag="barn-sash-3x3" Click="OnWindowPresetClick"/>
+                        <Button Content="2'×3' Awning" Margin="2" Padding="8,3" FontSize="11"
+                                Tag="awning-2x3" Click="OnWindowPresetClick"/>
+                        <Button Content="4'×3' Sliding" Margin="2" Padding="8,3" FontSize="11"
+                                Tag="sliding-4x3" Click="OnWindowPresetClick"/>
+                        <Button Content="2'×4' Casement" Margin="2" Padding="8,3" FontSize="11"
+                                Tag="casement-2x4" Click="OnWindowPresetClick"/>
+                        <Button Content="6'×4' Picture" Margin="2" Padding="8,3" FontSize="11"
+                                Tag="fixed-6x4" Click="OnWindowPresetClick" ToolTip="6'×4' Picture Window with Colonial Grid"/>
+                    </WrapPanel>
+                </StackPanel>
+            </Grid>
+        </GroupBox>
+    </Grid>
+</UserControl>

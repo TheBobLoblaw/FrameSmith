@@ -17,6 +17,9 @@ namespace PoleBarnGenerator.UI
             // Wire up live bay count update
             txtLength.TextChanged += OnDimensionChanged;
             txtBaySpacing.TextChanged += OnDimensionChanged;
+
+            // Bind opening manager to parameters
+            openingManager.BindParameters(Parameters);
         }
 
         private void OnDimensionChanged(object sender, TextChangedEventArgs e)
@@ -32,7 +35,7 @@ namespace PoleBarnGenerator.UI
 
         private BarnParameters ReadFromDialog()
         {
-            var p = new BarnParameters();
+            var p = Parameters; // Use the same instance so openings are preserved
 
             p.BuildingWidth = ParseDouble(txtWidth.Text, 30);
             p.BuildingLength = ParseDouble(txtLength.Text, 40);
@@ -59,6 +62,7 @@ namespace PoleBarnGenerator.UI
             p.Generate3D = chk3D.IsChecked == true;
             p.AddDimensions = chkDims.IsChecked == true;
 
+            // Openings are already synced via OpeningManagerControl
             return p;
         }
 
@@ -70,6 +74,9 @@ namespace PoleBarnGenerator.UI
             if (!isValid)
             {
                 MessageBox.Show(error, "Validation Error", MessageBoxButton.OK, MessageBoxImage.Warning);
+                // Switch to Openings tab if it's an opening error
+                if (error.Contains("Door") || error.Contains("Window") || error.Contains("overlap"))
+                    tabMain.SelectedIndex = 2;
                 return;
             }
 
@@ -83,7 +90,9 @@ namespace PoleBarnGenerator.UI
                 $"Posts:     {geo.Posts.Count}\n" +
                 $"Girt rows: {geo.Girts.Count}\n" +
                 $"Purlins:   {geo.Purlins.Count}\n" +
-                $"Post size: {Parameters.PostSize}";
+                $"Post size: {Parameters.PostSize}\n" +
+                $"Doors:     {Parameters.Doors.Count}\n" +
+                $"Windows:   {Parameters.Windows.Count}";
 
             DialogResult = true;
             Close();
@@ -97,7 +106,6 @@ namespace PoleBarnGenerator.UI
 
         private void OnLoadPreset(object sender, RoutedEventArgs e)
         {
-            // Simple preset selector
             var menu = new ContextMenu();
             foreach (var name in new[] { "24x30", "30x40", "40x60", "50x80", "60x100" })
             {
@@ -125,6 +133,10 @@ namespace PoleBarnGenerator.UI
             txtPurlinSpacing.Text = p.PurlinSpacing.ToString();
             txtOverhangEave.Text = p.OverhangEave.ToString();
             txtOverhangGable.Text = p.OverhangGable.ToString();
+
+            // Update the Parameters instance and rebind opening manager
+            Parameters = p;
+            openingManager.BindParameters(Parameters);
         }
 
         private static double ParseDouble(string text, double fallback)
