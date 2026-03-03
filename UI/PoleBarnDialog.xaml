@@ -191,7 +191,12 @@
                 <local:LeanToControl x:Name="leanToManager"/>
             </TabItem>
 
-            <!-- ═══ Tab 5: Output ═══ -->
+            <!-- ═══ Tab 5: Exterior (Sprint 4) ═══ -->
+            <TabItem Header="🏡 Exterior">
+                <local:ExteriorControl x:Name="exteriorManager"/>
+            </TabItem>
+
+            <!-- ═══ Tab 6: Output ═══ -->
             <TabItem Header="📄 Output">
                 <ScrollViewer VerticalScrollBarVisibility="Auto">
                     <StackPanel Margin="4">

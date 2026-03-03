@@ -25,6 +25,8 @@ namespace PoleBarnGenerator.Utils
             public const string Anno     = "PB-ANNO";
             public const string Wire3D   = "PB-3D";
             public const string Headers  = "PB-HEADERS";
+            public const string Porches  = "PB-PORCHES";
+            public const string Details  = "PB-DETAILS";
         }
 
         private static readonly Dictionary<string, short> LayerColors = new Dictionary<string, short>
@@ -42,6 +44,8 @@ namespace PoleBarnGenerator.Utils
             { Layers.Anno,     7 },    // White
             { Layers.Wire3D,   150 },  // Light blue
             { Layers.Headers,  22 },   // Orange-brown (structural)
+            { Layers.Porches,  60 },   // Olive (porch structures)
+            { Layers.Details,  90 },   // Dark red (exterior details)
         };
 
         /// <summary>

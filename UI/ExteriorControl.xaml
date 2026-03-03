@@ -1,0 +1,188 @@
+<UserControl x:Class="PoleBarnGenerator.UI.ExteriorControl"
+             xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+             xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml">
+
+    <ScrollViewer VerticalScrollBarVisibility="Auto">
+        <StackPanel Margin="4">
+
+            <!-- ═══ Porches ═══ -->
+            <GroupBox Header="Porches" Margin="8,4" Padding="8">
+                <UniformGrid Rows="2" Columns="2">
+
+                    <!-- Front Porch -->
+                    <GroupBox Header="Front Porch" Margin="4">
+                        <StackPanel>
+                            <CheckBox x:Name="chkFrontPorch" Content="Enable Front Porch" Margin="4" />
+                            <StackPanel x:Name="pnlFrontPorch" Margin="12,0,0,0">
+                                <StackPanel Orientation="Horizontal" Margin="2">
+                                    <Label Content="Depth (ft):" Width="90"/>
+                                    <TextBox x:Name="txtFrontDepth" Text="8" Width="50"/>
+                                </StackPanel>
+                                <StackPanel Orientation="Horizontal" Margin="2">
+                                    <Label Content="Roof Pitch:" Width="90"/>
+                                    <TextBox x:Name="txtFrontPitch" Text="3" Width="40"/>
+                                    <Label Content="/12"/>
+                                </StackPanel>
+                                <StackPanel Orientation="Horizontal" Margin="2">
+                                    <Label Content="Columns:" Width="90"/>
+                                    <ComboBox x:Name="cmbFrontColType" SelectedIndex="0" Width="100">
+                                        <ComboBoxItem Content="Square"/>
+                                        <ComboBoxItem Content="Round"/>
+                                        <ComboBoxItem Content="Decorative"/>
+                                    </ComboBox>
+                                </StackPanel>
+                                <StackPanel Orientation="Horizontal" Margin="2">
+                                    <Label Content="Col. Spacing:" Width="90"/>
+                                    <TextBox x:Name="txtFrontColSpacing" Text="8" Width="50"/>
+                                    <Label Content="ft"/>
+                                </StackPanel>
+                                <CheckBox x:Name="chkFrontRailing" Content="Railing" IsChecked="True" Margin="4"/>
+                            </StackPanel>
+                        </StackPanel>
+                    </GroupBox>
+
+                    <!-- Back Porch -->
+                    <GroupBox Header="Back Porch" Margin="4">
+                        <StackPanel>
+                            <CheckBox x:Name="chkBackPorch" Content="Enable Back Porch" Margin="4" />
+                            <StackPanel x:Name="pnlBackPorch" Margin="12,0,0,0">
+                                <StackPanel Orientation="Horizontal" Margin="2">
+                                    <Label Content="Depth (ft):" Width="90"/>
+                                    <TextBox x:Name="txtBackDepth" Text="8" Width="50"/>
+                                </StackPanel>
+                                <StackPanel Orientation="Horizontal" Margin="2">
+                                    <Label Content="Roof Pitch:" Width="90"/>
+                                    <TextBox x:Name="txtBackPitch" Text="3" Width="40"/>
+                                    <Label Content="/12"/>
+                                </StackPanel>
+                                <StackPanel Orientation="Horizontal" Margin="2">
+                                    <Label Content="Columns:" Width="90"/>
+                                    <ComboBox x:Name="cmbBackColType" SelectedIndex="0" Width="100">
+                                        <ComboBoxItem Content="Square"/>
+                                        <ComboBoxItem Content="Round"/>
+                                        <ComboBoxItem Content="Decorative"/>
+                                    </ComboBox>
+                                </StackPanel>
+                                <CheckBox x:Name="chkBackRailing" Content="Railing" IsChecked="True" Margin="4"/>
+                            </StackPanel>
+                        </StackPanel>
+                    </GroupBox>
+
+                    <!-- Left Porch -->
+                    <GroupBox Header="Left Porch" Margin="4">
+                        <StackPanel>
+                            <CheckBox x:Name="chkLeftPorch" Content="Enable Left Porch" Margin="4" />
+                            <StackPanel x:Name="pnlLeftPorch" Margin="12,0,0,0">
+                                <StackPanel Orientation="Horizontal" Margin="2">
+                                    <Label Content="Depth (ft):" Width="90"/>
+                                    <TextBox x:Name="txtLeftDepth" Text="8" Width="50"/>
+                                </StackPanel>
+                                <StackPanel Orientation="Horizontal" Margin="2">
+                                    <Label Content="Roof Pitch:" Width="90"/>
+                                    <TextBox x:Name="txtLeftPitch" Text="3" Width="40"/>
+                                    <Label Content="/12"/>
+                                </StackPanel>
+                                <CheckBox x:Name="chkLeftRailing" Content="Railing" IsChecked="True" Margin="4"/>
+                            </StackPanel>
+                        </StackPanel>
+                    </GroupBox>
+
+                    <!-- Right Porch -->
+                    <GroupBox Header="Right Porch" Margin="4">
+                        <StackPanel>
+                            <CheckBox x:Name="chkRightPorch" Content="Enable Right Porch" Margin="4" />
+                            <StackPanel x:Name="pnlRightPorch" Margin="12,0,0,0">
+                                <StackPanel Orientation="Horizontal" Margin="2">
+                                    <Label Content="Depth (ft):" Width="90"/>
+                                    <TextBox x:Name="txtRightDepth" Text="8" Width="50"/>
+                                </StackPanel>
+                                <StackPanel Orientation="Horizontal" Margin="2">
+                                    <Label Content="Roof Pitch:" Width="90"/>
+                                    <TextBox x:Name="txtRightPitch" Text="3" Width="40"/>
+                                    <Label Content="/12"/>
+                                </StackPanel>
+                                <CheckBox x:Name="chkRightRailing" Content="Railing" IsChecked="True" Margin="4"/>
+                            </StackPanel>
+                        </StackPanel>
+                    </GroupBox>
+
+                </UniformGrid>
+            </GroupBox>
+
+            <!-- ═══ Exterior Details ═══ -->
+            <GroupBox Header="Exterior Details" Margin="8,4" Padding="8">
+                <UniformGrid Rows="1" Columns="3">
+
+                    <!-- Wainscot -->
+                    <GroupBox Header="Wainscot" Margin="4">
+                        <StackPanel>
+                            <CheckBox x:Name="chkWainscot" Content="Enable Wainscot" Margin="4"/>
+                            <StackPanel x:Name="pnlWainscot" Margin="12,0,0,0">
+                                <StackPanel Orientation="Horizontal" Margin="2">
+                                    <Label Content="Height (ft):" Width="80"/>
+                                    <TextBox x:Name="txtWainscotHeight" Text="3.5" Width="50"/>
+                                </StackPanel>
+                                <StackPanel Orientation="Horizontal" Margin="2">
+                                    <Label Content="Material:" Width="80"/>
+                                    <ComboBox x:Name="cmbWainscotMaterial" SelectedIndex="0" Width="120">
+                                        <ComboBoxItem Content="Board &amp; Batten"/>
+                                        <ComboBoxItem Content="Metal Panel"/>
+                                        <ComboBoxItem Content="Vinyl Siding"/>
+                                        <ComboBoxItem Content="Wood"/>
+                                    </ComboBox>
+                                </StackPanel>
+                                <TextBlock Text="Applied to:" Margin="4,4,0,2" FontWeight="SemiBold"/>
+                                <CheckBox x:Name="chkWainFront" Content="Front" IsChecked="True" Margin="8,2"/>
+                                <CheckBox x:Name="chkWainBack" Content="Back" IsChecked="True" Margin="8,2"/>
+                                <CheckBox x:Name="chkWainLeft" Content="Left" IsChecked="True" Margin="8,2"/>
+                                <CheckBox x:Name="chkWainRight" Content="Right" IsChecked="True" Margin="8,2"/>
+                            </StackPanel>
+                        </StackPanel>
+                    </GroupBox>
+
+                    <!-- Cupolas -->
+                    <GroupBox Header="Cupolas" Margin="4">
+                        <StackPanel>
+                            <CheckBox x:Name="chkCupola" Content="Enable Cupolas" Margin="4"/>
+                            <StackPanel x:Name="pnlCupola" Margin="12,0,0,0">
+                                <StackPanel Orientation="Horizontal" Margin="2">
+                                    <Label Content="Size (in):" Width="80"/>
+                                    <TextBox x:Name="txtCupolaSize" Text="24" Width="50"/>
+                                </StackPanel>
+                                <StackPanel Orientation="Horizontal" Margin="2">
+                                    <Label Content="Count:" Width="80"/>
+                                    <TextBox x:Name="txtCupolaCount" Text="1" Width="50"/>
+                                </StackPanel>
+                                <CheckBox x:Name="chkCupolaVented" Content="Ventilated" IsChecked="True" Margin="4"/>
+                                <CheckBox x:Name="chkCupolaWindows" Content="Has Windows" Margin="4"/>
+                            </StackPanel>
+                        </StackPanel>
+                    </GroupBox>
+
+                    <!-- Gutters -->
+                    <GroupBox Header="Gutters" Margin="4">
+                        <StackPanel>
+                            <CheckBox x:Name="chkGutters" Content="Enable Gutters" Margin="4"/>
+                            <StackPanel x:Name="pnlGutters" Margin="12,0,0,0">
+                                <StackPanel Orientation="Horizontal" Margin="2">
+                                    <Label Content="Style:" Width="80"/>
+                                    <ComboBox x:Name="cmbGutterStyle" SelectedIndex="0" Width="100">
+                                        <ComboBoxItem Content="K-Style"/>
+                                        <ComboBoxItem Content="Half-Round"/>
+                                    </ComboBox>
+                                </StackPanel>
+                                <TextBlock Text="Apply to:" Margin="4,4,0,2" FontWeight="SemiBold"/>
+                                <CheckBox x:Name="chkGutterFront" Content="Front Eave" IsChecked="True" Margin="8,2"/>
+                                <CheckBox x:Name="chkGutterBack" Content="Back Eave" IsChecked="True" Margin="8,2"/>
+                                <CheckBox x:Name="chkGutterLeft" Content="Left Eave" IsChecked="True" Margin="8,2"/>
+                                <CheckBox x:Name="chkGutterRight" Content="Right Eave" IsChecked="True" Margin="8,2"/>
+                            </StackPanel>
+                        </StackPanel>
+                    </GroupBox>
+
+                </UniformGrid>
+            </GroupBox>
+
+        </StackPanel>
+    </ScrollViewer>
+</UserControl>

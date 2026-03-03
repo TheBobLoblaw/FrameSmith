@@ -168,6 +168,24 @@ namespace PoleBarnGenerator.Generators
                 catch (System.Exception) { /* skip failed lean-to render */ }
             }
 
+            // ── Porch structures ──
+            foreach (var porchGeo in geo.PorchGeometries)
+            {
+                try
+                {
+                    count += PorchGenerator.GeneratePlan(tr, btr, porchGeo, offset);
+                }
+                catch (System.Exception) { /* skip failed porch render */ }
+            }
+
+            // ── Exterior details ──
+            try
+            {
+                count += ExteriorDetailGenerator.AddCupolaPlan(tr, btr, geo, p.Cupola, offset);
+                count += ExteriorDetailGenerator.AddGutterPlan(tr, btr, geo, p.Gutters, offset);
+            }
+            catch (System.Exception) { /* skip failed detail render */ }
+
             // ── View label ──
             DrawingHelpers.AddText(tr, btr,
                 DrawingHelpers.Offset(p.BuildingWidth / 2.0, -5, offset),

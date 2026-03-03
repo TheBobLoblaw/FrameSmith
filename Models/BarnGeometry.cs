@@ -19,6 +19,7 @@ namespace PoleBarnGenerator.Models
         public List<TrussProfile> Trusses { get; private set; }
         public List<PurlinLocation> Purlins { get; private set; }
         public List<LeanToGeometry> LeanToGeometries { get; private set; }
+        public List<PorchGeometry> PorchGeometries { get; private set; }
         public List<double> BayPositions { get; private set; }
 
         // Key dimensions
@@ -42,6 +43,7 @@ namespace PoleBarnGenerator.Models
             ComputeTrusses();
             ComputePurlins();
             ComputeLeanTos();
+            ComputePorches();
         }
 
         // ───────────────────────────────────────────────
@@ -192,6 +194,16 @@ namespace PoleBarnGenerator.Models
             {
                 if (lt.Enabled)
                     LeanToGeometries.Add(new LeanToGeometry(lt, Params, this));
+            }
+        }
+
+        private void ComputePorches()
+        {
+            PorchGeometries = new List<PorchGeometry>();
+            foreach (var porch in Params.AllPorches)
+            {
+                if (porch.IsEnabled)
+                    PorchGeometries.Add(new PorchGeometry(porch, Params, this));
             }
         }
 

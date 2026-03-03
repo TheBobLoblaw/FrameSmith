@@ -95,6 +95,24 @@ namespace PoleBarnGenerator.Generators
                 catch (System.Exception) { /* skip failed lean-to render */ }
             }
 
+            // ── Porch profiles ──
+            foreach (var porchGeo in geo.PorchGeometries)
+            {
+                try
+                {
+                    count += PorchGenerator.GenerateSideElevation(tr, btr, porchGeo, geo, offset);
+                    count += PorchGenerator.GenerateSideElevationSidewall(tr, btr, porchGeo, geo, offset);
+                }
+                catch (System.Exception) { /* skip failed porch render */ }
+            }
+
+            // ── Exterior details ──
+            try
+            {
+                count += ExteriorDetailGenerator.AddWainscotSideElevation(tr, btr, geo, p.Wainscot, offset);
+            }
+            catch (System.Exception) { /* skip failed detail render */ }
+
             // ── Dimensions ──
             if (p.AddDimensions)
             {

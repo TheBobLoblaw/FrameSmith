@@ -114,6 +114,25 @@ namespace PoleBarnGenerator.Generators
                 catch (System.Exception) { /* skip failed lean-to render */ }
             }
 
+            // ── Porch profiles (sidewall porches visible in front elevation) ──
+            foreach (var porchGeo in geo.PorchGeometries)
+            {
+                try
+                {
+                    count += PorchGenerator.GenerateFrontElevation(tr, btr, porchGeo, geo, offset);
+                }
+                catch (System.Exception) { /* skip failed porch render */ }
+            }
+
+            // ── Exterior details ──
+            try
+            {
+                count += ExteriorDetailGenerator.AddWainscotFrontElevation(tr, btr, geo, p.Wainscot, offset);
+                count += ExteriorDetailGenerator.AddCupolaFrontElevation(tr, btr, geo, p.Cupola, offset);
+                count += ExteriorDetailGenerator.AddGutterFrontElevation(tr, btr, geo, p.Gutters, offset);
+            }
+            catch (System.Exception) { /* skip failed detail render */ }
+
             // ── Dimensions ──
             if (p.AddDimensions)
             {

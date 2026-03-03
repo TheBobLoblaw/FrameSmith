@@ -22,7 +22,7 @@ namespace PoleBarnGenerator.UI
             // Bind opening manager to parameters
             openingManager.BindParameters(Parameters);
             leanToManager.BindParameters(Parameters);
-            leanToManager.BindParameters(Parameters);
+            exteriorManager.BindParameters(Parameters);
         }
 
         private void OnDimensionChanged(object sender, TextChangedEventArgs e)
@@ -78,15 +78,18 @@ namespace PoleBarnGenerator.UI
         {
             Parameters = ReadFromDialog();
 
-            // Sync lean-to settings from UI
+            // Sync lean-to and exterior settings from UI
             leanToManager.SyncToParameters();
+            exteriorManager.SyncToParameters();
 
             var (isValid, error) = Parameters.Validate();
             if (!isValid)
             {
                 MessageBox.Show(error, "Validation Error", MessageBoxButton.OK, MessageBoxImage.Warning);
                 // Switch to Openings tab if it's an opening error
-                if (error.Contains("Lean-to"))
+                if (error.Contains("Porch"))
+                    tabMain.SelectedIndex = 4;
+                else if (error.Contains("Lean-to"))
                     tabMain.SelectedIndex = 3;
                 else if (error.Contains("Door") || error.Contains("Window") || error.Contains("overlap"))
                     tabMain.SelectedIndex = 2;
@@ -106,7 +109,11 @@ namespace PoleBarnGenerator.UI
                 $"Post size: {Parameters.PostSize}\n" +
                 $"Doors:     {Parameters.Doors.Count}\n" +
                 $"Windows:   {Parameters.Windows.Count}\n" +
-                $"Lean-Tos:  {Parameters.LeanTos.FindAll(lt => lt.Enabled).Count}";
+                $"Lean-Tos:  {Parameters.LeanTos.FindAll(lt => lt.Enabled).Count}\n" +
+                $"Porches:   {System.Array.FindAll(Parameters.AllPorches, p => p.IsEnabled).Length}\n" +
+                $"Wainscot:  {(Parameters.Wainscot.IsEnabled ? "Yes" : "No")}\n" +
+                $"Cupolas:   {(Parameters.Cupola.IsEnabled ? Parameters.Cupola.Count.ToString() : "No")}\n" +
+                $"Gutters:   {(Parameters.Gutters.IsEnabled ? "Yes" : "No")}";
 
             DialogResult = true;
             Close();
@@ -152,7 +159,7 @@ namespace PoleBarnGenerator.UI
             Parameters = p;
             openingManager.BindParameters(Parameters);
             leanToManager.BindParameters(Parameters);
-            leanToManager.BindParameters(Parameters);
+            exteriorManager.BindParameters(Parameters);
         }
 
         private void OnTrussTypeChanged(object sender, SelectionChangedEventArgs e)

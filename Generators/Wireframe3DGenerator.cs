@@ -118,6 +118,24 @@ namespace PoleBarnGenerator.Generators
                 catch (System.Exception) { /* skip failed lean-to render */ }
             }
 
+            // ── Porch 3D wireframes ──
+            foreach (var porchGeo in geo.PorchGeometries)
+            {
+                try
+                {
+                    count += PorchGenerator.Generate3D(tr, btr, porchGeo);
+                }
+                catch (System.Exception) { /* skip failed porch render */ }
+            }
+
+            // ── Exterior details 3D ──
+            try
+            {
+                count += ExteriorDetailGenerator.AddWainscot3D(tr, btr, geo, p.Wainscot);
+                count += ExteriorDetailGenerator.AddCupola3D(tr, btr, geo, p.Cupola);
+            }
+            catch (System.Exception) { /* skip failed detail render */ }
+
             // ── Slab outline (ground level) ──
             DrawingHelpers.AddLine3D(tr, btr, 0, 0, 0, p.BuildingWidth, 0, 0, LayerManager.Layers.Slab);
             DrawingHelpers.AddLine3D(tr, btr, p.BuildingWidth, 0, 0, p.BuildingWidth, p.BuildingLength, 0, LayerManager.Layers.Slab);

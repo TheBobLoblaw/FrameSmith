@@ -165,6 +165,67 @@ namespace PoleBarnGenerator.Models
         {
             get => _windows;
             set { _windows = value; OnPropertyChanged(); }
+        }
+
+        // ───────────────────────────────────────────────
+        // Porches
+        // ───────────────────────────────────────────────
+
+        private PorchParameters _frontPorch = new PorchParameters { AttachmentWall = WallSide.Front };
+        public PorchParameters FrontPorch
+        {
+            get => _frontPorch;
+            set { _frontPorch = value; OnPropertyChanged(); }
+        }
+
+        private PorchParameters _backPorch = new PorchParameters { AttachmentWall = WallSide.Back };
+        public PorchParameters BackPorch
+        {
+            get => _backPorch;
+            set { _backPorch = value; OnPropertyChanged(); }
+        }
+
+        private PorchParameters _leftPorch = new PorchParameters { AttachmentWall = WallSide.Left };
+        public PorchParameters LeftPorch
+        {
+            get => _leftPorch;
+            set { _leftPorch = value; OnPropertyChanged(); }
+        }
+
+        private PorchParameters _rightPorch = new PorchParameters { AttachmentWall = WallSide.Right };
+        public PorchParameters RightPorch
+        {
+            get => _rightPorch;
+            set { _rightPorch = value; OnPropertyChanged(); }
+        }
+
+        /// <summary>All porch parameters for iteration</summary>
+        public PorchParameters[] AllPorches => new[] { FrontPorch, BackPorch, LeftPorch, RightPorch };
+
+        // ───────────────────────────────────────────────
+        // Exterior Details
+        // ───────────────────────────────────────────────
+
+        private WainscotParameters _wainscot = new WainscotParameters();
+        public WainscotParameters Wainscot
+        {
+            get => _wainscot;
+            set { _wainscot = value; OnPropertyChanged(); }
+        }
+
+        private CupolaParameters _cupola = new CupolaParameters();
+        public CupolaParameters Cupola
+        {
+            get => _cupola;
+            set { _cupola = value; OnPropertyChanged(); }
+        }
+
+        private GutterParameters _gutters = new GutterParameters();
+        public GutterParameters Gutters
+        {
+            get => _gutters;
+            set { _gutters = value; OnPropertyChanged(); }
+        }
 
         // ───────────────────────────────────────────────
         // Lean-Tos
@@ -228,6 +289,22 @@ namespace PoleBarnGenerator.Models
             }
 
             // Run conflict detection
+            // Validate porches
+            foreach (var porch in AllPorches)
+            {
+                var (pValid, pError) = porch.Validate(this);
+                if (!pValid) return (false, pError);
+            }
+
+            // Check for porch-porch conflicts (no two porches on same wall)
+            var usedPorchWalls = new HashSet<WallSide>();
+            foreach (var porch in AllPorches)
+            {
+                if (!porch.IsEnabled) continue;
+                if (!usedPorchWalls.Add(porch.AttachmentWall))
+                    return (false, $"Multiple porches on the {porch.AttachmentWall} wall are not allowed.");
+            }
+
             // Validate lean-tos
             foreach (var leanTo in LeanTos)
             {
