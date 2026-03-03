@@ -62,6 +62,9 @@ namespace PoleBarnGenerator.Commands
             ed.WriteMessage($"\n  Posts: {geometry.Posts.Count}, Girt lines: {geometry.Girts.Count}");
             if (parameters.Doors.Count > 0 || parameters.Windows.Count > 0)
                 ed.WriteMessage($"\n  Openings: {parameters.Doors.Count} door(s), {parameters.Windows.Count} window(s)");
+            int leanToCount = parameters.LeanTos.FindAll(lt => lt.Enabled).Count;
+            if (leanToCount > 0)
+                ed.WriteMessage($"\n  Lean-Tos: {leanToCount}");
 
             // Run generation in a single transaction
             using (Transaction tr = db.TransactionManager.StartTransaction())

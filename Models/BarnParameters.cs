@@ -164,6 +164,18 @@ namespace PoleBarnGenerator.Models
         {
             get => _windows;
             set { _windows = value; OnPropertyChanged(); }
+
+        // ───────────────────────────────────────────────
+        // Lean-Tos
+        // ───────────────────────────────────────────────
+
+        private List<LeanToParameters> _leanTos = new List<LeanToParameters>();
+        /// <summary>Lean-to structures attached to building walls (up to 4, one per wall)</summary>
+        public List<LeanToParameters> LeanTos
+        {
+            get => _leanTos;
+            set { _leanTos = value; OnPropertyChanged(); }
+        }
         }
 
         // ───────────────────────────────────────────────
@@ -215,6 +227,21 @@ namespace PoleBarnGenerator.Models
             }
 
             // Run conflict detection
+            // Validate lean-tos
+            foreach (var leanTo in LeanTos)
+            {
+                var (ltValid, ltError) = leanTo.Validate(this);
+                if (!ltValid) return (false, ltError);
+            }
+            // Check for duplicate attachment walls
+            var usedWalls = new HashSet<WallSide>();
+            foreach (var lt in LeanTos)
+            {
+                if (!lt.Enabled) continue;
+                if (!usedWalls.Add(lt.AttachmentWall))
+                    return (false, $"Multiple lean-tos on the {lt.AttachmentWall} wall are not allowed.");
+            }
+
             var conflicts = Utils.OpeningValidator.ValidateOpenings(this);
             if (conflicts.Count > 0)
                 return (false, conflicts[0]);

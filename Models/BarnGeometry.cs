@@ -17,6 +17,7 @@ namespace PoleBarnGenerator.Models
         public List<GirtLine> Girts { get; private set; }
         public List<TrussProfile> Trusses { get; private set; }
         public List<PurlinLocation> Purlins { get; private set; }
+        public List<LeanToGeometry> LeanToGeometries { get; private set; }
         public List<double> BayPositions { get; private set; }
 
         // Key dimensions
@@ -39,6 +40,7 @@ namespace PoleBarnGenerator.Models
             ComputeGirts();
             ComputeTrusses();
             ComputePurlins();
+            ComputeLeanTos();
         }
 
         // ───────────────────────────────────────────────
@@ -193,6 +195,17 @@ namespace PoleBarnGenerator.Models
                     Z = Params.EaveHeight + fraction * RoofRise,
                     IsLeftSlope = false
                 });
+            }
+        }
+
+
+        private void ComputeLeanTos()
+        {
+            LeanToGeometries = new List<LeanToGeometry>();
+            foreach (var lt in Params.LeanTos)
+            {
+                if (lt.Enabled)
+                    LeanToGeometries.Add(new LeanToGeometry(lt, Params, this));
             }
         }
 

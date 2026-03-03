@@ -150,6 +150,17 @@ namespace PoleBarnGenerator.Generators
                 LayerManager.Layers.Roof);
             count++;
 
+
+            // ── Lean-To 3D wireframes ──
+            foreach (var ltGeo in geo.LeanToGeometries)
+            {
+                try
+                {
+                    count += LeanToGenerator.Generate3D(tr, btr, ltGeo);
+                }
+                catch (System.Exception) { /* skip failed lean-to render */ }
+            }
+
             // ── Slab outline (ground level) ──
             DrawingHelpers.AddLine3D(tr, btr, 0, 0, 0, p.BuildingWidth, 0, 0, LayerManager.Layers.Slab);
             DrawingHelpers.AddLine3D(tr, btr, p.BuildingWidth, 0, 0, p.BuildingWidth, p.BuildingLength, 0, LayerManager.Layers.Slab);

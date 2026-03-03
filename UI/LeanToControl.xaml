@@ -1,0 +1,230 @@
+<UserControl x:Class="PoleBarnGenerator.UI.LeanToControl"
+             xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+             xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+             xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
+             xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
+             mc:Ignorable="d">
+
+    <ScrollViewer VerticalScrollBarVisibility="Auto">
+        <StackPanel Margin="4">
+
+            <TextBlock Margin="8,4" TextWrapping="Wrap" FontStyle="Italic" Foreground="#666">
+                Lean-tos are single-slope structures that attach to the main building walls.
+                Enable up to 4 lean-tos (one per wall) to create L-shaped, U-shaped, or wrap-around buildings.
+            </TextBlock>
+
+            <!-- Left Sidewall Lean-To -->
+            <GroupBox Header="Left Sidewall Lean-To" Margin="8,4">
+                <StackPanel>
+                    <CheckBox x:Name="chkLeftEnabled" Content="Enable Left Lean-To"
+                              IsChecked="False" Margin="4" Click="OnLeanToChanged"/>
+                    <Grid x:Name="gridLeft" Visibility="Collapsed" Margin="16,4,4,4">
+                        <Grid.ColumnDefinitions>
+                            <ColumnDefinition Width="120"/>
+                            <ColumnDefinition Width="80"/>
+                            <ColumnDefinition Width="30"/>
+                            <ColumnDefinition Width="120"/>
+                            <ColumnDefinition Width="80"/>
+                        </Grid.ColumnDefinitions>
+                        <Grid.RowDefinitions>
+                            <RowDefinition Height="Auto"/>
+                            <RowDefinition Height="Auto"/>
+                            <RowDefinition Height="Auto"/>
+                            <RowDefinition Height="Auto"/>
+                        </Grid.RowDefinitions>
+
+                        <Label Grid.Row="0" Grid.Column="0" Content="Width (depth):"/>
+                        <TextBox Grid.Row="0" Grid.Column="1" x:Name="txtLeftWidth" Text="12"/>
+                        <Label Grid.Row="0" Grid.Column="2" Content="ft"/>
+
+                        <Label Grid.Row="0" Grid.Column="3" Content="Eave Height:"/>
+                        <TextBox Grid.Row="0" Grid.Column="4" x:Name="txtLeftEaveHeight" Text="10"/>
+
+                        <Label Grid.Row="1" Grid.Column="0" Content="Roof Pitch:"/>
+                        <StackPanel Grid.Row="1" Grid.Column="1" Orientation="Horizontal">
+                            <TextBox x:Name="txtLeftPitch" Text="3" Width="40"/>
+                            <Label Content="/12"/>
+                        </StackPanel>
+
+                        <Label Grid.Row="1" Grid.Column="3" Content="Enclosure:"/>
+                        <ComboBox Grid.Row="1" Grid.Column="4" x:Name="cmbLeftType" SelectedIndex="0" Width="100">
+                            <ComboBoxItem Content="Open"/>
+                            <ComboBoxItem Content="Partial"/>
+                            <ComboBoxItem Content="Enclosed"/>
+                        </ComboBox>
+
+                        <Label Grid.Row="2" Grid.Column="0" Content="Start Position:"/>
+                        <TextBox Grid.Row="2" Grid.Column="1" x:Name="txtLeftStart" Text="0"/>
+                        <Label Grid.Row="2" Grid.Column="2" Content="ft"/>
+
+                        <Label Grid.Row="2" Grid.Column="3" Content="End Position:"/>
+                        <StackPanel Grid.Row="2" Grid.Column="4" Orientation="Horizontal">
+                            <TextBox x:Name="txtLeftEnd" Text="0" Width="50"/>
+                            <Label Content="(0=full)" FontSize="10"/>
+                        </StackPanel>
+
+                        <TextBlock Grid.Row="3" Grid.ColumnSpan="5" x:Name="txtLeftSummary"
+                                   Margin="4" FontFamily="Consolas" FontSize="10" Foreground="#888"/>
+                    </Grid>
+                </StackPanel>
+            </GroupBox>
+
+            <!-- Right Sidewall Lean-To -->
+            <GroupBox Header="Right Sidewall Lean-To" Margin="8,4">
+                <StackPanel>
+                    <CheckBox x:Name="chkRightEnabled" Content="Enable Right Lean-To"
+                              IsChecked="False" Margin="4" Click="OnLeanToChanged"/>
+                    <Grid x:Name="gridRight" Visibility="Collapsed" Margin="16,4,4,4">
+                        <Grid.ColumnDefinitions>
+                            <ColumnDefinition Width="120"/>
+                            <ColumnDefinition Width="80"/>
+                            <ColumnDefinition Width="30"/>
+                            <ColumnDefinition Width="120"/>
+                            <ColumnDefinition Width="80"/>
+                        </Grid.ColumnDefinitions>
+                        <Grid.RowDefinitions>
+                            <RowDefinition Height="Auto"/>
+                            <RowDefinition Height="Auto"/>
+                            <RowDefinition Height="Auto"/>
+                        </Grid.RowDefinitions>
+
+                        <Label Grid.Row="0" Grid.Column="0" Content="Width (depth):"/>
+                        <TextBox Grid.Row="0" Grid.Column="1" x:Name="txtRightWidth" Text="12"/>
+                        <Label Grid.Row="0" Grid.Column="2" Content="ft"/>
+
+                        <Label Grid.Row="0" Grid.Column="3" Content="Eave Height:"/>
+                        <TextBox Grid.Row="0" Grid.Column="4" x:Name="txtRightEaveHeight" Text="10"/>
+
+                        <Label Grid.Row="1" Grid.Column="0" Content="Roof Pitch:"/>
+                        <StackPanel Grid.Row="1" Grid.Column="1" Orientation="Horizontal">
+                            <TextBox x:Name="txtRightPitch" Text="3" Width="40"/>
+                            <Label Content="/12"/>
+                        </StackPanel>
+
+                        <Label Grid.Row="1" Grid.Column="3" Content="Enclosure:"/>
+                        <ComboBox Grid.Row="1" Grid.Column="4" x:Name="cmbRightType" SelectedIndex="0" Width="100">
+                            <ComboBoxItem Content="Open"/>
+                            <ComboBoxItem Content="Partial"/>
+                            <ComboBoxItem Content="Enclosed"/>
+                        </ComboBox>
+
+                        <Label Grid.Row="2" Grid.Column="0" Content="Start Position:"/>
+                        <TextBox Grid.Row="2" Grid.Column="1" x:Name="txtRightStart" Text="0"/>
+                        <Label Grid.Row="2" Grid.Column="2" Content="ft"/>
+
+                        <Label Grid.Row="2" Grid.Column="3" Content="End Position:"/>
+                        <StackPanel Grid.Row="2" Grid.Column="4" Orientation="Horizontal">
+                            <TextBox x:Name="txtRightEnd" Text="0" Width="50"/>
+                            <Label Content="(0=full)" FontSize="10"/>
+                        </StackPanel>
+                    </Grid>
+                </StackPanel>
+            </GroupBox>
+
+            <!-- Front Endwall Lean-To -->
+            <GroupBox Header="Front Endwall Lean-To" Margin="8,4">
+                <StackPanel>
+                    <CheckBox x:Name="chkFrontEnabled" Content="Enable Front Lean-To"
+                              IsChecked="False" Margin="4" Click="OnLeanToChanged"/>
+                    <Grid x:Name="gridFront" Visibility="Collapsed" Margin="16,4,4,4">
+                        <Grid.ColumnDefinitions>
+                            <ColumnDefinition Width="120"/>
+                            <ColumnDefinition Width="80"/>
+                            <ColumnDefinition Width="30"/>
+                            <ColumnDefinition Width="120"/>
+                            <ColumnDefinition Width="80"/>
+                        </Grid.ColumnDefinitions>
+                        <Grid.RowDefinitions>
+                            <RowDefinition Height="Auto"/>
+                            <RowDefinition Height="Auto"/>
+                            <RowDefinition Height="Auto"/>
+                        </Grid.RowDefinitions>
+
+                        <Label Grid.Row="0" Grid.Column="0" Content="Width (depth):"/>
+                        <TextBox Grid.Row="0" Grid.Column="1" x:Name="txtFrontWidth" Text="12"/>
+                        <Label Grid.Row="0" Grid.Column="2" Content="ft"/>
+
+                        <Label Grid.Row="0" Grid.Column="3" Content="Eave Height:"/>
+                        <TextBox Grid.Row="0" Grid.Column="4" x:Name="txtFrontEaveHeight" Text="10"/>
+
+                        <Label Grid.Row="1" Grid.Column="0" Content="Roof Pitch:"/>
+                        <StackPanel Grid.Row="1" Grid.Column="1" Orientation="Horizontal">
+                            <TextBox x:Name="txtFrontPitch" Text="3" Width="40"/>
+                            <Label Content="/12"/>
+                        </StackPanel>
+
+                        <Label Grid.Row="1" Grid.Column="3" Content="Enclosure:"/>
+                        <ComboBox Grid.Row="1" Grid.Column="4" x:Name="cmbFrontType" SelectedIndex="0" Width="100">
+                            <ComboBoxItem Content="Open"/>
+                            <ComboBoxItem Content="Partial"/>
+                            <ComboBoxItem Content="Enclosed"/>
+                        </ComboBox>
+
+                        <Label Grid.Row="2" Grid.Column="0" Content="Start Position:"/>
+                        <TextBox Grid.Row="2" Grid.Column="1" x:Name="txtFrontStart" Text="0"/>
+                        <Label Grid.Row="2" Grid.Column="2" Content="ft"/>
+
+                        <Label Grid.Row="2" Grid.Column="3" Content="End Position:"/>
+                        <StackPanel Grid.Row="2" Grid.Column="4" Orientation="Horizontal">
+                            <TextBox x:Name="txtFrontEnd" Text="0" Width="50"/>
+                            <Label Content="(0=full)" FontSize="10"/>
+                        </StackPanel>
+                    </Grid>
+                </StackPanel>
+            </GroupBox>
+
+            <!-- Back Endwall Lean-To -->
+            <GroupBox Header="Back Endwall Lean-To" Margin="8,4">
+                <StackPanel>
+                    <CheckBox x:Name="chkBackEnabled" Content="Enable Back Lean-To"
+                              IsChecked="False" Margin="4" Click="OnLeanToChanged"/>
+                    <Grid x:Name="gridBack" Visibility="Collapsed" Margin="16,4,4,4">
+                        <Grid.ColumnDefinitions>
+                            <ColumnDefinition Width="120"/>
+                            <ColumnDefinition Width="80"/>
+                            <ColumnDefinition Width="30"/>
+                            <ColumnDefinition Width="120"/>
+                            <ColumnDefinition Width="80"/>
+                        </Grid.ColumnDefinitions>
+                        <Grid.RowDefinitions>
+                            <RowDefinition Height="Auto"/>
+                            <RowDefinition Height="Auto"/>
+                            <RowDefinition Height="Auto"/>
+                        </Grid.RowDefinitions>
+
+                        <Label Grid.Row="0" Grid.Column="0" Content="Width (depth):"/>
+                        <TextBox Grid.Row="0" Grid.Column="1" x:Name="txtBackWidth" Text="12"/>
+                        <Label Grid.Row="0" Grid.Column="2" Content="ft"/>
+
+                        <Label Grid.Row="0" Grid.Column="3" Content="Eave Height:"/>
+                        <TextBox Grid.Row="0" Grid.Column="4" x:Name="txtBackEaveHeight" Text="10"/>
+
+                        <Label Grid.Row="1" Grid.Column="0" Content="Roof Pitch:"/>
+                        <StackPanel Grid.Row="1" Grid.Column="1" Orientation="Horizontal">
+                            <TextBox x:Name="txtBackPitch" Text="3" Width="40"/>
+                            <Label Content="/12"/>
+                        </StackPanel>
+
+                        <Label Grid.Row="1" Grid.Column="3" Content="Enclosure:"/>
+                        <ComboBox Grid.Row="1" Grid.Column="4" x:Name="cmbBackType" SelectedIndex="0" Width="100">
+                            <ComboBoxItem Content="Open"/>
+                            <ComboBoxItem Content="Partial"/>
+                            <ComboBoxItem Content="Enclosed"/>
+                        </ComboBox>
+
+                        <Label Grid.Row="2" Grid.Column="0" Content="Start Position:"/>
+                        <TextBox Grid.Row="2" Grid.Column="1" x:Name="txtBackStart" Text="0"/>
+                        <Label Grid.Row="2" Grid.Column="2" Content="ft"/>
+
+                        <Label Grid.Row="2" Grid.Column="3" Content="End Position:"/>
+                        <StackPanel Grid.Row="2" Grid.Column="4" Orientation="Horizontal">
+                            <TextBox x:Name="txtBackEnd" Text="0" Width="50"/>
+                            <Label Content="(0=full)" FontSize="10"/>
+                        </StackPanel>
+                    </Grid>
+                </StackPanel>
+            </GroupBox>
+
+        </StackPanel>
+    </ScrollViewer>
+</UserControl>

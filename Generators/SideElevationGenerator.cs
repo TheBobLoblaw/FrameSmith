@@ -121,6 +121,20 @@ namespace PoleBarnGenerator.Generators
                 }
             }
 
+
+            // ── Lean-To profiles ──
+            foreach (var ltGeo in geo.LeanToGeometries)
+            {
+                try
+                {
+                    // Endwall lean-tos shown as profile in side elevation
+                    count += LeanToGenerator.GenerateSideElevation(tr, btr, ltGeo, geo, offset);
+                    // Sidewall lean-tos shown as flat roof lines
+                    count += LeanToGenerator.GenerateSideElevationSidewall(tr, btr, ltGeo, geo, offset);
+                }
+                catch (System.Exception) { /* skip failed lean-to render */ }
+            }
+
             // ── Dimensions ──
             if (p.AddDimensions)
             {

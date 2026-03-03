@@ -20,6 +20,8 @@ namespace PoleBarnGenerator.UI
 
             // Bind opening manager to parameters
             openingManager.BindParameters(Parameters);
+            leanToManager.BindParameters(Parameters);
+            leanToManager.BindParameters(Parameters);
         }
 
         private void OnDimensionChanged(object sender, TextChangedEventArgs e)
@@ -70,12 +72,17 @@ namespace PoleBarnGenerator.UI
         {
             Parameters = ReadFromDialog();
 
+            // Sync lean-to settings from UI
+            leanToManager.SyncToParameters();
+
             var (isValid, error) = Parameters.Validate();
             if (!isValid)
             {
                 MessageBox.Show(error, "Validation Error", MessageBoxButton.OK, MessageBoxImage.Warning);
                 // Switch to Openings tab if it's an opening error
-                if (error.Contains("Door") || error.Contains("Window") || error.Contains("overlap"))
+                if (error.Contains("Lean-to"))
+                    tabMain.SelectedIndex = 3;
+                else if (error.Contains("Door") || error.Contains("Window") || error.Contains("overlap"))
                     tabMain.SelectedIndex = 2;
                 return;
             }
@@ -92,7 +99,8 @@ namespace PoleBarnGenerator.UI
                 $"Purlins:   {geo.Purlins.Count}\n" +
                 $"Post size: {Parameters.PostSize}\n" +
                 $"Doors:     {Parameters.Doors.Count}\n" +
-                $"Windows:   {Parameters.Windows.Count}";
+                $"Windows:   {Parameters.Windows.Count}\n" +
+                $"Lean-Tos:  {Parameters.LeanTos.FindAll(lt => lt.Enabled).Count}";
 
             DialogResult = true;
             Close();
@@ -137,6 +145,8 @@ namespace PoleBarnGenerator.UI
             // Update the Parameters instance and rebind opening manager
             Parameters = p;
             openingManager.BindParameters(Parameters);
+            leanToManager.BindParameters(Parameters);
+            leanToManager.BindParameters(Parameters);
         }
 
         private static double ParseDouble(string text, double fallback)

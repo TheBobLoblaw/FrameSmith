@@ -150,6 +150,17 @@ namespace PoleBarnGenerator.Generators
                 count += AddPlanDimensions(tr, btr, geo, offset);
             }
 
+
+            // ── Lean-To structures ──
+            foreach (var ltGeo in geo.LeanToGeometries)
+            {
+                try
+                {
+                    count += LeanToGenerator.GeneratePlan(tr, btr, ltGeo, offset);
+                }
+                catch (System.Exception) { /* skip failed lean-to render */ }
+            }
+
             // ── View label ──
             DrawingHelpers.AddText(tr, btr,
                 DrawingHelpers.Offset(p.BuildingWidth / 2.0, -5, offset),

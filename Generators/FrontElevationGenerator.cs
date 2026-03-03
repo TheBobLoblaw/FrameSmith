@@ -136,6 +136,17 @@ namespace PoleBarnGenerator.Generators
                 }
             }
 
+
+            // ── Lean-To profiles (sidewall lean-tos visible in front elevation) ──
+            foreach (var ltGeo in geo.LeanToGeometries)
+            {
+                try
+                {
+                    count += LeanToGenerator.GenerateFrontElevation(tr, btr, ltGeo, geo, offset);
+                }
+                catch (System.Exception) { /* skip failed lean-to render */ }
+            }
+
             // ── Dimensions ──
             if (p.AddDimensions)
             {

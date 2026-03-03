@@ -174,7 +174,13 @@
                 <local:OpeningManagerControl x:Name="openingManager"/>
             </TabItem>
 
-            <!-- ═══ Tab 4: Output ═══ -->
+
+            <!-- ═══ Tab 4: Lean-Tos (Sprint 2) ═══ -->
+            <TabItem Header="🏠 Lean-Tos">
+                <local:LeanToControl x:Name="leanToManager"/>
+            </TabItem>
+
+            <!-- ═══ Tab 5: Output ═══ -->
             <TabItem Header="📄 Output">
                 <ScrollViewer VerticalScrollBarVisibility="Auto">
                     <StackPanel Margin="4">
