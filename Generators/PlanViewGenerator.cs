@@ -1,6 +1,7 @@
 using Autodesk.AutoCAD.DatabaseServices;
 using Autodesk.AutoCAD.Geometry;
 using PoleBarnGenerator.Models;
+using PoleBarnGenerator.Generators.Renderers;
 using PoleBarnGenerator.Utils;
 using System;
 using System.Collections.Generic;
@@ -122,13 +123,17 @@ namespace PoleBarnGenerator.Generators
             // ── Door openings (shown as breaks/rectangles on walls) ──
             foreach (var door in p.Doors)
             {
-                count += DrawDoorInPlan(tr, btr, door, p, offset);
+                var wallGeo = new WallGeometry(p, door.Wall);
+                var renderer = RendererFactory.GetDoorRenderer(door.Type);
+                count += renderer.RenderPlan(tr, btr, door, wallGeo, offset);
             }
 
             // ── Window openings ──
             foreach (var window in p.Windows)
             {
-                count += DrawWindowInPlan(tr, btr, window, p, offset);
+                var wallGeo = new WallGeometry(p, window.Wall);
+                var renderer = RendererFactory.GetWindowRenderer(window.Type);
+                count += renderer.RenderPlan(tr, btr, window, wallGeo, offset);
             }
 
             // ── Dimensions ──

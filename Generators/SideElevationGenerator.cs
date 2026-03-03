@@ -1,6 +1,7 @@
 using Autodesk.AutoCAD.DatabaseServices;
 using Autodesk.AutoCAD.Geometry;
 using PoleBarnGenerator.Models;
+using PoleBarnGenerator.Generators.Renderers;
 using PoleBarnGenerator.Utils;
 
 namespace PoleBarnGenerator.Generators
@@ -96,19 +97,8 @@ namespace PoleBarnGenerator.Generators
             {
                 if (door.Wall == WallSide.Left)
                 {
-                    double left = door.CenterOffset - door.Width / 2.0;
-                    DrawingHelpers.AddRectangle(tr, btr,
-                        DrawingHelpers.Offset2d(left, 0, offset),
-                        door.Width, door.Height,
-                        LayerManager.Layers.Doors);
-
-                    string label = door.Type == DoorType.Overhead ? "OH" :
-                                  door.Type == DoorType.Sliding ? "SL" : "WK";
-                    DrawingHelpers.AddText(tr, btr,
-                        DrawingHelpers.Offset(door.CenterOffset, door.Height / 2, offset),
-                        $"{label}\n{door.Width}' x {door.Height}'",
-                        0.5, LayerManager.Layers.Anno);
-                    count += 2;
+                    var renderer = RendererFactory.GetDoorRenderer(door.Type);
+                    count += renderer.RenderElevation(tr, btr, door, p.EaveHeight, offset);
                 }
             }
 
@@ -117,12 +107,8 @@ namespace PoleBarnGenerator.Generators
             {
                 if (window.Wall == WallSide.Left)
                 {
-                    double left = window.CenterOffset - window.Width / 2.0;
-                    DrawingHelpers.AddRectangle(tr, btr,
-                        DrawingHelpers.Offset2d(left, window.SillHeight, offset),
-                        window.Width, window.Height,
-                        LayerManager.Layers.Windows);
-                    count++;
+                    var renderer = RendererFactory.GetWindowRenderer(window.Type);
+                    count += renderer.RenderElevation(tr, btr, window, p.EaveHeight, offset);
                 }
             }
 

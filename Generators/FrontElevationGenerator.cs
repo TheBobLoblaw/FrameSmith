@@ -1,6 +1,7 @@
 using Autodesk.AutoCAD.DatabaseServices;
 using Autodesk.AutoCAD.Geometry;
 using PoleBarnGenerator.Models;
+using PoleBarnGenerator.Generators.Renderers;
 using PoleBarnGenerator.Utils;
 using System.Collections.Generic;
 
@@ -112,7 +113,8 @@ namespace PoleBarnGenerator.Generators
             {
                 if (door.Wall == WallSide.Front)
                 {
-                    count += DrawDoorElevation(tr, btr, door, offset);
+                    var renderer = RendererFactory.GetDoorRenderer(door.Type);
+                    count += renderer.RenderElevation(tr, btr, door, p.EaveHeight, offset);
                 }
             }
 
@@ -121,7 +123,8 @@ namespace PoleBarnGenerator.Generators
             {
                 if (window.Wall == WallSide.Front)
                 {
-                    count += DrawWindowElevation(tr, btr, window, offset);
+                    var renderer = RendererFactory.GetWindowRenderer(window.Type);
+                    count += renderer.RenderElevation(tr, btr, window, p.EaveHeight, offset);
                 }
             }
 
