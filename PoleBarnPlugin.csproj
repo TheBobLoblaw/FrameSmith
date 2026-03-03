@@ -1,7 +1,7 @@
 <Project Sdk="Microsoft.NET.Sdk">
 
   <PropertyGroup>
-    <TargetFramework>net48</TargetFramework>
+    <TargetFramework>net8.0-windows</TargetFramework>
     <LangVersion>latest</LangVersion>
     <AssemblyName>PoleBarnGenerator</AssemblyName>
     <RootNamespace>PoleBarnGenerator</RootNamespace>
@@ -22,7 +22,7 @@
     If using AutoCAD 2025+ with .NET 8, change TargetFramework to net8.0-windows
   -->
   <PropertyGroup>
-    <AutoCADPath>C:\Program Files\Autodesk\AutoCAD 2024\</AutoCADPath>
+    <AutoCADPath>C:\Program Files\Autodesk\AutoCAD 2026\</AutoCADPath>
   </PropertyGroup>
 
   <ItemGroup>
@@ -40,12 +40,5 @@
     </Reference>
   </ItemGroup>
 
-  <!-- System references for WPF -->
-  <ItemGroup>
-    <Reference Include="PresentationCore" />
-    <Reference Include="PresentationFramework" />
-    <Reference Include="WindowsBase" />
-    <Reference Include="System.Xaml" />
-  </ItemGroup>
 
 </Project>
