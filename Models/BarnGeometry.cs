@@ -1,5 +1,6 @@
 using System;
 using System.Collections.Generic;
+using PoleBarnGenerator.Generators.TrussProfiles;
 
 namespace PoleBarnGenerator.Models
 {
@@ -22,7 +23,7 @@ namespace PoleBarnGenerator.Models
 
         // Key dimensions
         public double RoofRise => Params.RoofRise;
-        public double PeakHeight => Params.PeakHeight;
+        public double PeakHeight => TrussProfile?.CalculatePeakHeight(Params.EaveHeight, Params.BuildingWidth, Params.RoofPitchRise) ?? Params.PeakHeight;
         public double RidgeY => Params.BuildingWidth / 2.0;
         public int NumBays => Params.NumberOfBays;
         public double ActualBaySpacing => Params.ActualBaySpacing;
@@ -130,32 +131,17 @@ namespace PoleBarnGenerator.Models
         // ───────────────────────────────────────────────
         // Truss profiles at each bay line
         // ───────────────────────────────────────────────
+        /// <summary>The active truss profile strategy for this geometry.</summary>
+        public ITrussProfile TrussProfile { get; private set; }
+
         private void ComputeTrusses()
         {
             Trusses = new List<TrussProfile>();
-            double halfWidth = Params.BuildingWidth / 2.0;
+            TrussProfile = TrussFactory.GetTrussProfile(Params.TrussType);
 
             foreach (double bayY in BayPositions)
             {
-                var truss = new TrussProfile
-                {
-                    BayPosition = bayY,
-                    LeftEaveX = 0 - Params.OverhangEave,
-                    RightEaveX = Params.BuildingWidth + Params.OverhangEave,
-                    LeftEaveZ = Params.EaveHeight,
-                    RightEaveZ = Params.EaveHeight,
-                    PeakX = halfWidth,
-                    PeakZ = Params.PeakHeight,
-                    // Bottom chord (for common truss, same as eave height)
-                    BottomChordZ = Params.EaveHeight
-                };
-
-                // Overhang: extend roof slope beyond eave
-                double overhangDrop = Params.OverhangEave * (Params.RoofPitchRise / 12.0);
-                truss.LeftEaveZ -= overhangDrop;
-                truss.RightEaveZ -= overhangDrop;
-
-                Trusses.Add(truss);
+                Trusses.Add(TrussProfile.ComputeTruss(Params, bayY));
             }
         }
 
@@ -247,6 +233,19 @@ namespace PoleBarnGenerator.Models
         public double PeakX { get; set; }
         public double PeakZ { get; set; }
         public double BottomChordZ { get; set; }
+
+        // ── Gambrel-specific ──
+        public double GambrelBreakX { get; set; }
+        public double GambrelBreakZ { get; set; }
+
+        // ── Scissor-specific ──
+        public double ScissorBottomPeakZ { get; set; }
+
+        // ── Monitor-specific ──
+        public double MonitorLeftX { get; set; }
+        public double MonitorRightX { get; set; }
+        public double MonitorBaseZ { get; set; }
+        public double MonitorTopZ { get; set; }
     }
 
     public class PurlinLocation

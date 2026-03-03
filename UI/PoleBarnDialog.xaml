@@ -134,10 +134,14 @@
                                 </ComboBox>
 
                                 <Label Grid.Row="0" Grid.Column="2" Content="Truss Type:"/>
-                                <ComboBox Grid.Row="0" Grid.Column="3" x:Name="cmbTrussType" SelectedIndex="0" Width="100">
-                                    <ComboBoxItem Content="Common"/>
-                                    <ComboBoxItem Content="Scissor"/>
-                                    <ComboBoxItem Content="Mono-Slope"/>
+                                <ComboBox Grid.Row="0" Grid.Column="3" x:Name="cmbTrussType" SelectedIndex="0" Width="160"
+                                          SelectionChanged="OnTrussTypeChanged">
+                                    <ComboBoxItem Content="Common Gable"/>
+                                    <ComboBoxItem Content="Scissor (Vaulted)"/>
+                                    <ComboBoxItem Content="Mono-Slope (Shed)"/>
+                                    <ComboBoxItem Content="Gambrel (Barn)"/>
+                                    <ComboBoxItem Content="Monitor (Raised Center)"/>
+                                    <ComboBoxItem Content="Attic Storage"/>
                                 </ComboBox>
 
                                 <Label Grid.Row="1" Grid.Column="0" Content="Girt Spacing:"/>
@@ -164,6 +168,13 @@
                                     <Label Content="ft" FontWeight="Normal"/>
                                 </StackPanel>
                             </Grid>
+                        </GroupBox>
+
+                        <!-- Truss type description -->
+                        <GroupBox Header="Roof Type Description">
+                            <TextBlock x:Name="txtTrussDescription" TextWrapping="Wrap"
+                                       FontStyle="Italic" Margin="4"
+                                       Text="Standard symmetrical gable roof with peak at center. The most common pole barn roof type."/>
                         </GroupBox>
                     </StackPanel>
                 </ScrollViewer>

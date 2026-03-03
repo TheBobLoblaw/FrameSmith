@@ -2,6 +2,7 @@ using System;
 using System.Windows;
 using System.Windows.Controls;
 using PoleBarnGenerator.Models;
+using PoleBarnGenerator.Generators.TrussProfiles;
 
 namespace PoleBarnGenerator.UI
 {
@@ -52,10 +53,15 @@ namespace PoleBarnGenerator.UI
             p.OverhangEave = ParseDouble(txtOverhangEave.Text, 1);
             p.OverhangGable = ParseDouble(txtOverhangGable.Text, 1);
 
-            int trussIdx = cmbTrussType.SelectedIndex;
-            p.TrussType = trussIdx == 1 ? TrussType.Scissor :
-                          trussIdx == 2 ? TrussType.MonoSlope :
-                          TrussType.Common;
+            p.TrussType = cmbTrussType.SelectedIndex switch
+            {
+                1 => TrussType.Scissor,
+                2 => TrussType.MonoSlope,
+                3 => TrussType.Gambrel,
+                4 => TrussType.Monitor,
+                5 => TrussType.Attic,
+                _ => TrussType.Common
+            };
 
             // Output options
             p.GeneratePlan = chkPlan.IsChecked == true;
@@ -147,6 +153,22 @@ namespace PoleBarnGenerator.UI
             openingManager.BindParameters(Parameters);
             leanToManager.BindParameters(Parameters);
             leanToManager.BindParameters(Parameters);
+        }
+
+        private void OnTrussTypeChanged(object sender, SelectionChangedEventArgs e)
+        {
+            if (txtTrussDescription == null) return;
+            var trussType = cmbTrussType.SelectedIndex switch
+            {
+                1 => TrussType.Scissor,
+                2 => TrussType.MonoSlope,
+                3 => TrussType.Gambrel,
+                4 => TrussType.Monitor,
+                5 => TrussType.Attic,
+                _ => TrussType.Common
+            };
+            var profile = TrussFactory.GetTrussProfile(trussType);
+            txtTrussDescription.Text = profile.Description;
         }
 
         private static double ParseDouble(string text, double fallback)

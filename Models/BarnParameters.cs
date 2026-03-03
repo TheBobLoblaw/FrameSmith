@@ -2,6 +2,7 @@ using System;
 using System.Collections.Generic;
 using System.ComponentModel;
 using System.Runtime.CompilerServices;
+using PoleBarnGenerator.Generators.TrussProfiles;
 
 namespace PoleBarnGenerator.Models
 {
@@ -55,8 +56,8 @@ namespace PoleBarnGenerator.Models
         /// <summary>Display string for roof pitch (e.g., "4/12")</summary>
         public string RoofPitchDisplay => $"{RoofPitchRise}/12";
 
-        /// <summary>Computed peak height in feet</summary>
-        public double PeakHeight => EaveHeight + RoofRise;
+        /// <summary>Computed peak height in feet (uses truss profile strategy)</summary>
+        public double PeakHeight => TrussFactory.GetTrussProfile(TrussType).CalculatePeakHeight(EaveHeight, BuildingWidth, RoofPitchRise);
 
         /// <summary>Computed roof rise in feet (from eave to peak)</summary>
         public double RoofRise => (BuildingWidth / 2.0) * (RoofPitchRise / 12.0);
@@ -280,7 +281,10 @@ namespace PoleBarnGenerator.Models
     {
         Common,
         Scissor,
-        MonoSlope
+        MonoSlope,
+        Gambrel,
+        Monitor,
+        Attic
     }
 
     public enum WallSide

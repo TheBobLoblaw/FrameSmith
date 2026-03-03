@@ -2,6 +2,7 @@ using Autodesk.AutoCAD.DatabaseServices;
 using Autodesk.AutoCAD.Geometry;
 using PoleBarnGenerator.Models;
 using PoleBarnGenerator.Generators.Renderers;
+using PoleBarnGenerator.Generators.TrussProfiles;
 using PoleBarnGenerator.Utils;
 
 namespace PoleBarnGenerator.Generators
@@ -48,49 +49,8 @@ namespace PoleBarnGenerator.Generators
                 count++;
             }
 
-            // ── Roof line (flat in side view — eave to eave with gable overhang) ──
-            // Left gable overhang
-            DrawingHelpers.AddLine(tr, btr,
-                DrawingHelpers.Offset(-p.OverhangGable, p.EaveHeight, offset),
-                DrawingHelpers.Offset(0, p.EaveHeight, offset),
-                LayerManager.Layers.Roof);
-            count++;
-
-            // Eave line across full length
-            DrawingHelpers.AddLine(tr, btr,
-                DrawingHelpers.Offset(0, p.EaveHeight, offset),
-                DrawingHelpers.Offset(p.BuildingLength, p.EaveHeight, offset),
-                LayerManager.Layers.Roof);
-            count++;
-
-            // Right gable overhang
-            DrawingHelpers.AddLine(tr, btr,
-                DrawingHelpers.Offset(p.BuildingLength, p.EaveHeight, offset),
-                DrawingHelpers.Offset(p.BuildingLength + p.OverhangGable, p.EaveHeight, offset),
-                LayerManager.Layers.Roof);
-            count++;
-
-            // Roof slope line (showing the roof pitch from the side)
-            // In side elevation, you see the roof as a sloped line from eave up to ridge height
-            double roofTopY = p.EaveHeight + p.OverhangEave * (p.RoofPitchRise / 12.0);
-            DrawingHelpers.AddLine(tr, btr,
-                DrawingHelpers.Offset(-p.OverhangGable, roofTopY, offset),
-                DrawingHelpers.Offset(p.BuildingLength + p.OverhangGable, roofTopY, offset),
-                LayerManager.Layers.Roof);
-            count++;
-
-            // Fascia at gable ends
-            DrawingHelpers.AddLine(tr, btr,
-                DrawingHelpers.Offset(-p.OverhangGable, p.EaveHeight, offset),
-                DrawingHelpers.Offset(-p.OverhangGable, roofTopY, offset),
-                LayerManager.Layers.Roof);
-            count++;
-
-            DrawingHelpers.AddLine(tr, btr,
-                DrawingHelpers.Offset(p.BuildingLength + p.OverhangGable, p.EaveHeight, offset),
-                DrawingHelpers.Offset(p.BuildingLength + p.OverhangGable, roofTopY, offset),
-                LayerManager.Layers.Roof);
-            count++;
+            // ── Roof line (strategy pattern) ──
+            count += geo.TrussProfile.RenderSideElevation(tr, btr, geo, offset);
 
             // ── Door openings on sidewalls ──
             // Shows both Left and Right wall openings in the side elevation

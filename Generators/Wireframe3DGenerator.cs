@@ -1,6 +1,7 @@
 using Autodesk.AutoCAD.DatabaseServices;
 using Autodesk.AutoCAD.Geometry;
 using PoleBarnGenerator.Models;
+using PoleBarnGenerator.Generators.TrussProfiles;
 using PoleBarnGenerator.Utils;
 
 namespace PoleBarnGenerator.Generators
@@ -64,65 +65,21 @@ namespace PoleBarnGenerator.Generators
                 count++;
             }
 
-            // ── Trusses at each bay ──
-            double halfW = p.BuildingWidth / 2.0;
-
+            // ── Trusses at each bay (strategy pattern) ──
             foreach (var truss in geo.Trusses)
             {
-                double y = truss.BayPosition;
-
-                // Bottom chord (eave to eave)
-                DrawingHelpers.AddLine3D(tr, btr,
-                    0, y, truss.BottomChordZ,
-                    p.BuildingWidth, y, truss.BottomChordZ,
-                    LayerManager.Layers.Trusses);
-                count++;
-
-                // Left top chord (left eave to peak)
-                DrawingHelpers.AddLine3D(tr, btr,
-                    0, y, p.EaveHeight,
-                    halfW, y, geo.PeakHeight,
-                    LayerManager.Layers.Trusses);
-                count++;
-
-                // Right top chord (peak to right eave)
-                DrawingHelpers.AddLine3D(tr, btr,
-                    halfW, y, geo.PeakHeight,
-                    p.BuildingWidth, y, p.EaveHeight,
-                    LayerManager.Layers.Trusses);
-                count++;
-
-                // King post (center vertical from bottom chord to peak)
-                DrawingHelpers.AddLine3D(tr, btr,
-                    halfW, y, truss.BottomChordZ,
-                    halfW, y, geo.PeakHeight,
-                    LayerManager.Layers.Trusses);
-                count++;
-
-                // Simple web members (diagonal bracing)
-                // Left web: quarter point
-                double qx = halfW / 2.0;
-                double qz = p.EaveHeight + geo.RoofRise / 2.0;
-                DrawingHelpers.AddLine3D(tr, btr,
-                    qx, y, truss.BottomChordZ,
-                    qx, y, qz,
-                    LayerManager.Layers.Trusses);
-                count++;
-
-                // Right web: three-quarter point
-                DrawingHelpers.AddLine3D(tr, btr,
-                    p.BuildingWidth - qx, y, truss.BottomChordZ,
-                    p.BuildingWidth - qx, y, qz,
-                    LayerManager.Layers.Trusses);
-                count++;
+                count += geo.TrussProfile.Render3DTruss(tr, btr, geo, truss);
             }
 
             // ── Ridge line (connecting all truss peaks) ──
+            double halfW = p.BuildingWidth / 2.0;
             if (geo.BayPositions.Count >= 2)
             {
+                // For mono-slope, ridge is at high wall (X=0)
+                double ridgeX = p.TrussType == TrussType.MonoSlope ? 0 : halfW;
                 DrawingHelpers.AddLine3D(tr, btr,
-                    halfW, 0, geo.PeakHeight,
-                    halfW, p.BuildingLength, geo.PeakHeight,
+                    ridgeX, 0, geo.PeakHeight,
+                    ridgeX, p.BuildingLength, geo.PeakHeight,
                     LayerManager.Layers.Purlins);
                 count++;
             }

@@ -2,6 +2,7 @@ using Autodesk.AutoCAD.DatabaseServices;
 using Autodesk.AutoCAD.Geometry;
 using PoleBarnGenerator.Models;
 using PoleBarnGenerator.Generators.Renderers;
+using PoleBarnGenerator.Generators.TrussProfiles;
 using PoleBarnGenerator.Utils;
 using System.Collections.Generic;
 
@@ -47,9 +48,16 @@ namespace PoleBarnGenerator.Generators
             // Center post (if present on endwall)
             if (p.BuildingWidth > 24)
             {
+                // For mono-slope, center post height is mid-slope; for gable types it's at peak
+                double centerPostHeight;
+                if (p.TrussType == TrussType.MonoSlope)
+                    centerPostHeight = geo.PeakHeight - (geo.PeakHeight - p.EaveHeight) * 0.5;
+                else
+                    centerPostHeight = geo.PeakHeight;
+
                 DrawingHelpers.AddLine(tr, btr,
                     DrawingHelpers.Offset(p.BuildingWidth / 2, 0, offset),
-                    DrawingHelpers.Offset(p.BuildingWidth / 2, geo.PeakHeight, offset),
+                    DrawingHelpers.Offset(p.BuildingWidth / 2, centerPostHeight, offset),
                     LayerManager.Layers.Posts);
                 count++;
             }
@@ -64,49 +72,8 @@ namespace PoleBarnGenerator.Generators
                 count++;
             }
 
-            // ── Roof profile ──
-            double halfW = p.BuildingWidth / 2.0;
-
-            // Left eave to peak
-            DrawingHelpers.AddLine(tr, btr,
-                DrawingHelpers.Offset(-p.OverhangEave, p.EaveHeight - p.OverhangEave * (p.RoofPitchRise / 12.0), offset),
-                DrawingHelpers.Offset(halfW, geo.PeakHeight, offset),
-                LayerManager.Layers.Roof);
-            count++;
-
-            // Peak to right eave
-            DrawingHelpers.AddLine(tr, btr,
-                DrawingHelpers.Offset(halfW, geo.PeakHeight, offset),
-                DrawingHelpers.Offset(p.BuildingWidth + p.OverhangEave, p.EaveHeight - p.OverhangEave * (p.RoofPitchRise / 12.0), offset),
-                LayerManager.Layers.Roof);
-            count++;
-
-            // Eave lines (horizontal at top of wall)
-            DrawingHelpers.AddLine(tr, btr,
-                DrawingHelpers.Offset(-p.OverhangEave, p.EaveHeight, offset),
-                DrawingHelpers.Offset(0, p.EaveHeight, offset),
-                LayerManager.Layers.Roof);
-            count++;
-
-            DrawingHelpers.AddLine(tr, btr,
-                DrawingHelpers.Offset(p.BuildingWidth, p.EaveHeight, offset),
-                DrawingHelpers.Offset(p.BuildingWidth + p.OverhangEave, p.EaveHeight, offset),
-                LayerManager.Layers.Roof);
-            count++;
-
-            // Overhang fascia (vertical lines at eave ends)
-            double overhangDrop = p.OverhangEave * (p.RoofPitchRise / 12.0);
-            DrawingHelpers.AddLine(tr, btr,
-                DrawingHelpers.Offset(-p.OverhangEave, p.EaveHeight, offset),
-                DrawingHelpers.Offset(-p.OverhangEave, p.EaveHeight - overhangDrop, offset),
-                LayerManager.Layers.Roof);
-            count++;
-
-            DrawingHelpers.AddLine(tr, btr,
-                DrawingHelpers.Offset(p.BuildingWidth + p.OverhangEave, p.EaveHeight, offset),
-                DrawingHelpers.Offset(p.BuildingWidth + p.OverhangEave, p.EaveHeight - overhangDrop, offset),
-                LayerManager.Layers.Roof);
-            count++;
+            // ── Roof profile (strategy pattern) ──
+            count += geo.TrussProfile.RenderFrontElevation(tr, btr, geo, offset);
 
             // ── Door openings on endwalls (front & back) ──
             foreach (var door in p.Doors)

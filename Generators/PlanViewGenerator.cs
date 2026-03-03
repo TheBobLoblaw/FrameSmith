@@ -4,6 +4,7 @@ using PoleBarnGenerator.Models;
 using PoleBarnGenerator.Generators.Renderers;
 using PoleBarnGenerator.Utils;
 using System;
+using PoleBarnGenerator.Generators.TrussProfiles;
 using System.Collections.Generic;
 
 namespace PoleBarnGenerator.Generators
@@ -88,13 +89,19 @@ namespace PoleBarnGenerator.Generators
                 LayerManager.Layers.Girts);
             count++;
 
-            // ── Ridge line (dashed center line) ──
-            Line ridgeLine = DrawingHelpers.AddLine(tr, btr,
-                DrawingHelpers.Offset(p.BuildingWidth / 2.0, 0 - p.OverhangGable, offset),
-                DrawingHelpers.Offset(p.BuildingWidth / 2.0, p.BuildingLength + p.OverhangGable, offset),
-                LayerManager.Layers.Trusses);
-            ridgeLine.Linetype = "CENTER";
-            count++;
+            // ── Ridge line (dashed center line) — varies by truss type ──
+            if (p.TrussType != TrussType.MonoSlope)
+            {
+                Line ridgeLine = DrawingHelpers.AddLine(tr, btr,
+                    DrawingHelpers.Offset(p.BuildingWidth / 2.0, 0 - p.OverhangGable, offset),
+                    DrawingHelpers.Offset(p.BuildingWidth / 2.0, p.BuildingLength + p.OverhangGable, offset),
+                    LayerManager.Layers.Trusses);
+                ridgeLine.Linetype = "CENTER";
+                count++;
+            }
+
+            // ── Truss-type-specific plan roof outlines ──
+            count += geo.TrussProfile.RenderPlanRoofOutline(tr, btr, geo, offset);
 
             // ── Bay lines (dashed) ──
             foreach (double bayY in geo.BayPositions)
