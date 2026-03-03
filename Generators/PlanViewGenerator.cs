@@ -123,17 +123,25 @@ namespace PoleBarnGenerator.Generators
             // ── Door openings (shown as breaks/rectangles on walls) ──
             foreach (var door in p.Doors)
             {
-                var wallGeo = new WallGeometry(p, door.Wall);
-                var renderer = RendererFactory.GetDoorRenderer(door.Type);
-                count += renderer.RenderPlan(tr, btr, door, wallGeo, offset);
+                try
+                {
+                    var wallGeo = new WallGeometry(p, door.Wall);
+                    var renderer = RendererFactory.GetDoorRenderer(door.Type);
+                    count += renderer.RenderPlan(tr, btr, door, wallGeo, offset);
+                }
+                catch (System.Exception) { /* skip failed opening render */ }
             }
 
             // ── Window openings ──
             foreach (var window in p.Windows)
             {
-                var wallGeo = new WallGeometry(p, window.Wall);
-                var renderer = RendererFactory.GetWindowRenderer(window.Type);
-                count += renderer.RenderPlan(tr, btr, window, wallGeo, offset);
+                try
+                {
+                    var wallGeo = new WallGeometry(p, window.Wall);
+                    var renderer = RendererFactory.GetWindowRenderer(window.Type);
+                    count += renderer.RenderPlan(tr, btr, window, wallGeo, offset);
+                }
+                catch (System.Exception) { /* skip failed opening render */ }
             }
 
             // ── Dimensions ──

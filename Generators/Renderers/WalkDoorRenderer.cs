@@ -176,7 +176,7 @@ namespace PoleBarnGenerator.Generators.Renderers
             DrawingHelpers.AddRectangle(tr, btr,
                 P2(left, door.Height, offset),
                 door.Width, hDepth,
-                LayerManager.Layers.Doors);
+                LayerManager.Layers.Headers);
 
             string desc = HeaderSizing.GetHeaderDescription(header);
             DrawingHelpers.AddText(tr, btr,

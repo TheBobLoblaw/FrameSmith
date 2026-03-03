@@ -94,11 +94,79 @@ Create an MSI installer that:
 | `PB-RAFTERS` | Rafter lines | Blue (6) |
 | `PB-ROOF` | Roof outline | Yellow (2) |
 | `PB-SLAB` | Foundation outline | White (8) |
-| `PB-DOORS` | Door openings | Red (30) |
-| `PB-WINDOWS` | Window openings | Blue (40) |
+| `PB-DOORS` | Door openings & frames | Orange (30) |
+| `PB-WINDOWS` | Window openings & frames | Lt Orange (40) |
+| `PB-HEADERS` | Structural headers above openings | Brown (22) |
 | `PB-DIM` | Dimensions | White (7) |
 | `PB-ANNO` | Annotations | White (7) |
 | `PB-3D` | 3D wireframe | Gray (150) |
+
+
+
+## Opening System (Sprint 1)
+
+### Supported Door Types
+| Type | Plan Symbol | Elevation Details |
+|------|-------------|-------------------|
+| **Overhead** | Frame + track lines (CENTER linetype) | Sectional panels, track type label (OH/HL/VL) |
+| **Walk** | 90 degree swing arc from hinge side | Frame, threshold, handle indication |
+| **Sliding** | Track line + direction arrow | Vertical panel divisions, track hardware |
+| **Dutch** | Dual swing arcs (full + 85% radius) | Horizontal split line at split height |
+| **Double** | Paired swing arcs from center | Meeting stile, paired frame |
+
+### Supported Window Types
+| Type | Plan Symbol | Elevation Details |
+|------|-------------|-------------------|
+| **Fixed** | Frame rectangle + glass line | Outer frame, sill, inner sash |
+| **Single Hung** | Frame rectangle + glass line | Meeting rail at mid-height, upper/lower sash |
+| **Sliding** | (uses Single Hung renderer) | Same as Single Hung |
+
+### Grid Patterns
+- **Colonial**: Vertical center line in each sash
+- **Prairie**: Vertical lines at 25% inset from edges
+
+### Structural Headers
+Headers are automatically sized based on span width:
+| Span | Header |
+|------|--------|
+| 4 ft or less | (2) 2x6 DF |
+| 6 ft or less | (2) 2x8 DF |
+| 8 ft or less | (2) 2x10 DF |
+| 10 ft or less | (2) 2x12 DF |
+| 14 ft or less | (3) 2x12 DF |
+| 20 ft or less | 3.5x11.875 LVL |
+| 24 ft or less | 5.25x11.875 LVL |
+| Over 24 ft | 7.0x11.875 LVL |
+
+### Conflict Detection
+The validator checks:
+- **Edge clearance**: Min 6 inches from opening edge to wall corner
+- **Opening spacing**: Min 6 inches between adjacent openings
+- **Height limits**: Opening cannot exceed eave height
+- **Post interference**: Openings cannot overlap structural posts
+- **Sliding clearance**: Sliding doors need clear wall space equal to door width
+
+### UI Workflow
+1. Go to the **Openings** tab in the main dialog
+2. Use **Quick Presets** buttons to add common configurations
+3. Or click **Add Door/Window** for custom openings
+4. Select an opening in the list to edit properties in the detail panel
+5. Validation runs automatically with debounced 300ms timer
+6. Structural info (header size, rough opening) updates in real-time
+
+### Advanced Configurations
+
+**Overhead door with high-lift track:**
+Add overhead door preset, then change Track Type to High Lift.
+Plan view shows extended track lines with DASHED linetype.
+
+**Dutch door with custom split:**
+Add Dutch door, then set Split Height (default 3.5 ft).
+Elevation shows horizontal split line; plan shows dual arcs.
+
+**Multiple openings per wall:**
+Add openings freely. Validator prevents overlaps.
+Duplicate button copies selected opening with offset to avoid conflict.
 
 ## Troubleshooting
 
@@ -116,6 +184,14 @@ Create an MSI installer that:
 - **Entities on wrong layers**: Check `LayerManager.CreateLayers()` call
 - **Colors not showing**: Verify layer color assignments
 
+### Opening Issues
+- **Overlapping openings error**: Adjust CenterOffset to space openings apart (min 6 inch gap)
+- **Exceeds eave height**: Reduce door height or increase eave height
+- **Conflicts with structural post**: Move opening away from post positions (corners + bay intervals)
+- **Missing swing arc**: Check WalkDoorRenderer has valid hinge/free positions
+- **No grid lines**: Ensure HasGrid is true AND GridPattern is not None
+- **Header not showing**: Verify door height is less than eave height (header draws above door)
+
 ## Development Notes
 
 ### Code Structure
@@ -123,20 +199,34 @@ Create an MSI installer that:
 Commands/
 ├── PoleBarnCommand.cs      # POLEBARN command entry point
 UI/
-├── PoleBarnDialog.xaml     # WPF input dialog
+├── PoleBarnDialog.xaml     # WPF input dialog (tabbed: Dimensions, Structure, Openings, Output)
 ├── PoleBarnDialog.xaml.cs  # Dialog code-behind
+├── OpeningManagerControl.xaml    # Opening management user control
+├── OpeningManagerControl.xaml.cs # Opening manager logic + view models
+├── OpeningPresets.cs             # Quick-add presets for common door/window configs
 Generators/
 ├── PlanViewGenerator.cs    # Top-down view
 ├── FrontElevationGenerator.cs # Front elevation
 ├── SideElevationGenerator.cs  # Side elevation
 ├── Wireframe3DGenerator.cs    # 3D wireframe
 ├── DimensionGenerator.cs      # Automatic dimensioning
+├── Renderers/
+│   ├── IOpeningRenderer.cs     # Strategy interfaces for door/window rendering
+│   ├── RendererFactory.cs      # Factory selecting renderer by opening type
+│   ├── WallGeometry.cs         # Wall-relative coordinate transforms
+│   ├── OverheadDoorRenderer.cs # Sectional panels + track indicators
+│   ├── WalkDoorRenderer.cs     # Swing arc + frame (also handles Double)
+│   ├── SlidingDoorRenderer.cs  # Track line + slide direction arrow
+│   ├── DutchDoorRenderer.cs    # Dual swing arcs at split height
+│   └── SingleHungWindowRenderer.cs # Sash + meeting rail + grid patterns
 Models/
-├── BarnParameters.cs       # Input parameter model
+├── BarnParameters.cs       # Input parameter model (+ DoorOpening, WindowOpening types)
 ├── BarnGeometry.cs         # Computed structural geometry
+├── StructuralCalculations.cs # Header sizing (sawn lumber + LVL beams)
 Utils/
 ├── LayerManager.cs         # AutoCAD layer management
 ├── DrawingHelpers.cs       # Common drawing utilities
+├── OpeningValidator.cs     # Conflict detection & clearance validation
 ```
 
 ### Adding Features

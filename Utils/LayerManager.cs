@@ -24,6 +24,7 @@ namespace PoleBarnGenerator.Utils
             public const string Dims     = "PB-DIM";
             public const string Anno     = "PB-ANNO";
             public const string Wire3D   = "PB-3D";
+            public const string Headers  = "PB-HEADERS";
         }
 
         private static readonly Dictionary<string, short> LayerColors = new Dictionary<string, short>
@@ -40,6 +41,7 @@ namespace PoleBarnGenerator.Utils
             { Layers.Dims,     7 },    // White
             { Layers.Anno,     7 },    // White
             { Layers.Wire3D,   150 },  // Light blue
+            { Layers.Headers,  22 },   // Orange-brown (structural)
         };
 
         /// <summary>

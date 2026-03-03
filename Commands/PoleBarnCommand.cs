@@ -60,6 +60,8 @@ namespace PoleBarnGenerator.Commands
             ed.WriteMessage($"\n  Eave: {parameters.EaveHeight}', Peak: {geometry.PeakHeight:F1}', Pitch: {parameters.RoofPitchDisplay}");
             ed.WriteMessage($"\n  Bays: {geometry.NumBays} @ {geometry.ActualBaySpacing:F1}' O.C.");
             ed.WriteMessage($"\n  Posts: {geometry.Posts.Count}, Girt lines: {geometry.Girts.Count}");
+            if (parameters.Doors.Count > 0 || parameters.Windows.Count > 0)
+                ed.WriteMessage($"\n  Openings: {parameters.Doors.Count} door(s), {parameters.Windows.Count} window(s)");
 
             // Run generation in a single transaction
             using (Transaction tr = db.TransactionManager.StartTransaction())

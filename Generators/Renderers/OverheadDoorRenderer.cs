@@ -143,7 +143,7 @@ namespace PoleBarnGenerator.Generators.Renderers
                 P2(right, top, offset),
                 P2(right, bottom, offset),
             };
-            var hdr = DrawingHelpers.AddPolyline(tr, btr, pts, LayerManager.Layers.Doors, closed: true);
+            var hdr = DrawingHelpers.AddPolyline(tr, btr, pts, LayerManager.Layers.Headers, closed: true);
             hdr.LineWeight = LineWeight.LineWeight030;
 
             // Header label

@@ -92,23 +92,32 @@ namespace PoleBarnGenerator.Generators
                 LayerManager.Layers.Roof);
             count++;
 
-            // ── Door openings on left sidewall ──
+            // ── Door openings on sidewalls ──
+            // Shows both Left and Right wall openings in the side elevation
             foreach (var door in p.Doors)
             {
-                if (door.Wall == WallSide.Left)
+                if (door.Wall == WallSide.Left || door.Wall == WallSide.Right)
                 {
-                    var renderer = RendererFactory.GetDoorRenderer(door.Type);
-                    count += renderer.RenderElevation(tr, btr, door, p.EaveHeight, offset);
+                    try
+                    {
+                        var renderer = RendererFactory.GetDoorRenderer(door.Type);
+                        count += renderer.RenderElevation(tr, btr, door, p.EaveHeight, offset);
+                    }
+                    catch (System.Exception) { /* skip failed opening render */ }
                 }
             }
 
-            // ── Window openings on left sidewall ──
+            // ── Window openings on sidewalls ──
             foreach (var window in p.Windows)
             {
-                if (window.Wall == WallSide.Left)
+                if (window.Wall == WallSide.Left || window.Wall == WallSide.Right)
                 {
-                    var renderer = RendererFactory.GetWindowRenderer(window.Type);
-                    count += renderer.RenderElevation(tr, btr, window, p.EaveHeight, offset);
+                    try
+                    {
+                        var renderer = RendererFactory.GetWindowRenderer(window.Type);
+                        count += renderer.RenderElevation(tr, btr, window, p.EaveHeight, offset);
+                    }
+                    catch (System.Exception) { /* skip failed opening render */ }
                 }
             }
 

@@ -143,7 +143,7 @@ namespace PoleBarnGenerator.Generators.Renderers
 
             DrawingHelpers.AddRectangle(tr, btr,
                 P2(left, door.Height, offset), door.Width, hDepth,
-                LayerManager.Layers.Doors);
+                LayerManager.Layers.Headers);
 
             DrawingHelpers.AddText(tr, btr,
                 P3(door.CenterOffset, door.Height + hDepth / 2, offset),

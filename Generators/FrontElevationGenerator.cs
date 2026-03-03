@@ -108,22 +108,30 @@ namespace PoleBarnGenerator.Generators
                 LayerManager.Layers.Roof);
             count++;
 
-            // ── Door openings on front wall ──
+            // ── Door openings on endwalls (front & back) ──
             foreach (var door in p.Doors)
             {
-                if (door.Wall == WallSide.Front)
+                if (door.Wall == WallSide.Front || door.Wall == WallSide.Back)
                 {
+                    try
+                    {
                     var renderer = RendererFactory.GetDoorRenderer(door.Type);
+                    }
+                    catch (System.Exception) { /* skip failed opening render */ }
                     count += renderer.RenderElevation(tr, btr, door, p.EaveHeight, offset);
                 }
             }
 
-            // ── Window openings on front wall ──
+            // ── Window openings on endwalls (front & back) ──
             foreach (var window in p.Windows)
             {
-                if (window.Wall == WallSide.Front)
+                if (window.Wall == WallSide.Front || window.Wall == WallSide.Back)
                 {
+                    try
+                    {
                     var renderer = RendererFactory.GetWindowRenderer(window.Type);
+                    }
+                    catch (System.Exception) { /* skip failed opening render */ }
                     count += renderer.RenderElevation(tr, btr, window, p.EaveHeight, offset);
                 }
             }

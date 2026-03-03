@@ -28,6 +28,7 @@ namespace PoleBarnGenerator.Utils
         public static List<string> ValidateOpenings(BarnParameters parameters)
         {
             var errors = new List<string>();
+            const int MaxErrors = 20; // Cap error count for performance
 
             // Build a unified list of openings with their wall positions
             var allOpenings = new List<OpeningRect>();
@@ -85,6 +86,8 @@ namespace PoleBarnGenerator.Utils
                     if (opening.RightEdge > wallLength - MinEdgeClearance)
                         errors.Add($"{opening.Label} on {wall} wall: right edge extends to {opening.RightEdge:F1}' (wall is {wallLength}', min clearance {MinEdgeClearance}').");
 
+                    if (errors.Count >= MaxErrors) break;
+
                     // Check sliding door clearances — need wall space equal to door width for slide
                     if (opening.IsDoor && opening.DoorType == DoorType.Sliding)
                     {
@@ -100,9 +103,9 @@ namespace PoleBarnGenerator.Utils
                 }
 
                 // Check for overlaps between openings on the same wall
-                for (int i = 0; i < openings.Count; i++)
+                for (int i = 0; i < openings.Count && errors.Count < MaxErrors; i++)
                 {
-                    for (int j = i + 1; j < openings.Count; j++)
+                    for (int j = i + 1; j < openings.Count && errors.Count < MaxErrors; j++)
                     {
                         var a = openings[i];
                         var b = openings[j];
