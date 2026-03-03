@@ -1,0 +1,51 @@
+<Project Sdk="Microsoft.NET.Sdk">
+
+  <PropertyGroup>
+    <TargetFramework>net48</TargetFramework>
+    <LangVersion>latest</LangVersion>
+    <AssemblyName>PoleBarnGenerator</AssemblyName>
+    <RootNamespace>PoleBarnGenerator</RootNamespace>
+    <UseWPF>true</UseWPF>
+    <OutputType>Library</OutputType>
+    <AppendTargetFrameworkToOutputPath>false</AppendTargetFrameworkToOutputPath>
+    <GenerateAssemblyInfo>false</GenerateAssemblyInfo>
+  </PropertyGroup>
+
+  <!--
+    AutoCAD API References
+    =====================
+    Update these paths to match YOUR AutoCAD installation.
+    Common locations:
+      C:\Program Files\Autodesk\AutoCAD 2024\
+      C:\Program Files\Autodesk\AutoCAD 2025\
+
+    If using AutoCAD 2025+ with .NET 8, change TargetFramework to net8.0-windows
+  -->
+  <PropertyGroup>
+    <AutoCADPath>C:\Program Files\Autodesk\AutoCAD 2024\</AutoCADPath>
+  </PropertyGroup>
+
+  <ItemGroup>
+    <Reference Include="AcDbMgd">
+      <HintPath>$(AutoCADPath)AcDbMgd.dll</HintPath>
+      <Private>false</Private>
+    </Reference>
+    <Reference Include="AcMgd">
+      <HintPath>$(AutoCADPath)AcMgd.dll</HintPath>
+      <Private>false</Private>
+    </Reference>
+    <Reference Include="AcCoreMgd">
+      <HintPath>$(AutoCADPath)AcCoreMgd.dll</HintPath>
+      <Private>false</Private>
+    </Reference>
+  </ItemGroup>
+
+  <!-- System references for WPF -->
+  <ItemGroup>
+    <Reference Include="PresentationCore" />
+    <Reference Include="PresentationFramework" />
+    <Reference Include="WindowsBase" />
+    <Reference Include="System.Xaml" />
+  </ItemGroup>
+
+</Project>

@@ -1,0 +1,270 @@
+using System;
+using System.Collections.Generic;
+using System.ComponentModel;
+using System.Runtime.CompilerServices;
+
+namespace PoleBarnGenerator.Models
+{
+    /// <summary>
+    /// All user-supplied parameters for generating a pole barn structure.
+    /// Implements INotifyPropertyChanged for WPF data binding.
+    /// </summary>
+    public class BarnParameters : INotifyPropertyChanged
+    {
+        public event PropertyChangedEventHandler PropertyChanged;
+
+        protected void OnPropertyChanged([CallerMemberName] string name = null)
+            => PropertyChanged?.Invoke(this, new PropertyChangedEventArgs(name));
+
+        // ───────────────────────────────────────────────
+        // Primary Dimensions
+        // ───────────────────────────────────────────────
+
+        private double _buildingWidth = 30.0;
+        /// <summary>Overall width in feet (sidewall to sidewall)</summary>
+        public double BuildingWidth
+        {
+            get => _buildingWidth;
+            set { _buildingWidth = value; OnPropertyChanged(); OnPropertyChanged(nameof(PeakHeight)); }
+        }
+
+        private double _buildingLength = 40.0;
+        /// <summary>Overall length in feet (endwall to endwall)</summary>
+        public double BuildingLength
+        {
+            get => _buildingLength;
+            set { _buildingLength = value; OnPropertyChanged(); }
+        }
+
+        private double _eaveHeight = 12.0;
+        /// <summary>Height at eave in feet (ground to top of wall plate)</summary>
+        public double EaveHeight
+        {
+            get => _eaveHeight;
+            set { _eaveHeight = value; OnPropertyChanged(); OnPropertyChanged(nameof(PeakHeight)); }
+        }
+
+        private double _roofPitchRise = 4.0;
+        /// <summary>Roof pitch as rise over 12 (e.g., 4 means 4/12)</summary>
+        public double RoofPitchRise
+        {
+            get => _roofPitchRise;
+            set { _roofPitchRise = value; OnPropertyChanged(); OnPropertyChanged(nameof(PeakHeight)); OnPropertyChanged(nameof(RoofPitchDisplay)); }
+        }
+
+        /// <summary>Display string for roof pitch (e.g., "4/12")</summary>
+        public string RoofPitchDisplay => $"{RoofPitchRise}/12";
+
+        /// <summary>Computed peak height in feet</summary>
+        public double PeakHeight => EaveHeight + RoofRise;
+
+        /// <summary>Computed roof rise in feet (from eave to peak)</summary>
+        public double RoofRise => (BuildingWidth / 2.0) * (RoofPitchRise / 12.0);
+
+        /// <summary>Roof slope angle in degrees</summary>
+        public double RoofAngleDegrees => Math.Atan(RoofPitchRise / 12.0) * (180.0 / Math.PI);
+
+        private double _baySpacing = 10.0;
+        /// <summary>On-center distance between bays in feet</summary>
+        public double BaySpacing
+        {
+            get => _baySpacing;
+            set { _baySpacing = value; OnPropertyChanged(); OnPropertyChanged(nameof(NumberOfBays)); }
+        }
+
+        /// <summary>Computed number of bays</summary>
+        public int NumberOfBays => Math.Max(1, (int)Math.Round(BuildingLength / BaySpacing));
+
+        /// <summary>Actual bay spacing after rounding to whole bays</summary>
+        public double ActualBaySpacing => BuildingLength / NumberOfBays;
+
+        // ───────────────────────────────────────────────
+        // Structural Options
+        // ───────────────────────────────────────────────
+
+        private string _postSize = "6x6";
+        public string PostSize
+        {
+            get => _postSize;
+            set { _postSize = value; OnPropertyChanged(); }
+        }
+
+        /// <summary>Post width in inches (parsed from PostSize)</summary>
+        public double PostWidthInches
+        {
+            get
+            {
+                var parts = PostSize.Split('x');
+                return parts.Length >= 1 && double.TryParse(parts[0], out double w) ? w : 6.0;
+            }
+        }
+
+        /// <summary>Post depth in inches (parsed from PostSize)</summary>
+        public double PostDepthInches
+        {
+            get
+            {
+                var parts = PostSize.Split('x');
+                return parts.Length >= 2 && double.TryParse(parts[1], out double d) ? d : PostWidthInches;
+            }
+        }
+
+        private double _girtSpacing = 24.0;
+        /// <summary>Vertical spacing of wall girts in inches</summary>
+        public double GirtSpacing
+        {
+            get => _girtSpacing;
+            set { _girtSpacing = value; OnPropertyChanged(); }
+        }
+
+        private double _purlinSpacing = 24.0;
+        /// <summary>On-center purlin spacing in inches</summary>
+        public double PurlinSpacing
+        {
+            get => _purlinSpacing;
+            set { _purlinSpacing = value; OnPropertyChanged(); }
+        }
+
+        private TrussType _trussType = TrussType.Common;
+        public TrussType TrussType
+        {
+            get => _trussType;
+            set { _trussType = value; OnPropertyChanged(); }
+        }
+
+        private double _overhangEave = 1.0;
+        /// <summary>Eave overhang in feet</summary>
+        public double OverhangEave
+        {
+            get => _overhangEave;
+            set { _overhangEave = value; OnPropertyChanged(); }
+        }
+
+        private double _overhangGable = 1.0;
+        /// <summary>Gable overhang in feet</summary>
+        public double OverhangGable
+        {
+            get => _overhangGable;
+            set { _overhangGable = value; OnPropertyChanged(); }
+        }
+
+        // ───────────────────────────────────────────────
+        // Openings
+        // ───────────────────────────────────────────────
+
+        private List<DoorOpening> _doors = new List<DoorOpening>();
+        public List<DoorOpening> Doors
+        {
+            get => _doors;
+            set { _doors = value; OnPropertyChanged(); }
+        }
+
+        private List<WindowOpening> _windows = new List<WindowOpening>();
+        public List<WindowOpening> Windows
+        {
+            get => _windows;
+            set { _windows = value; OnPropertyChanged(); }
+        }
+
+        // ───────────────────────────────────────────────
+        // Output Options
+        // ───────────────────────────────────────────────
+
+        public bool GeneratePlan { get; set; } = true;
+        public bool GenerateFront { get; set; } = true;
+        public bool GenerateSide { get; set; } = true;
+        public bool Generate3D { get; set; } = true;
+        public bool AddDimensions { get; set; } = true;
+
+        // ───────────────────────────────────────────────
+        // Validation
+        // ───────────────────────────────────────────────
+
+        public (bool IsValid, string Error) Validate()
+        {
+            if (BuildingWidth <= 0) return (false, "Building width must be positive.");
+            if (BuildingLength <= 0) return (false, "Building length must be positive.");
+            if (EaveHeight <= 0) return (false, "Eave height must be positive.");
+            if (RoofPitchRise < 0 || RoofPitchRise > 24) return (false, "Roof pitch must be between 0/12 and 24/12.");
+            if (BaySpacing <= 0 || BaySpacing > BuildingLength) return (false, "Bay spacing must be positive and less than building length.");
+            if (BuildingWidth < 10) return (false, "Building width should be at least 10 feet.");
+            if (BuildingLength < 10) return (false, "Building length should be at least 10 feet.");
+            if (EaveHeight < 6) return (false, "Eave height should be at least 6 feet.");
+
+            foreach (var door in Doors)
+            {
+                double wallLen = (door.Wall == WallSide.Front || door.Wall == WallSide.Back) ? BuildingWidth : BuildingLength;
+                if (door.CenterOffset + door.Width / 2 > wallLen)
+                    return (false, $"Door on {door.Wall} wall extends past wall edge.");
+            }
+
+            return (true, null);
+        }
+
+        /// <summary>
+        /// Returns a deep copy with default preset values for common barn sizes.
+        /// </summary>
+        public static BarnParameters CreatePreset(string name)
+        {
+            switch (name)
+            {
+                case "24x30":
+                    return new BarnParameters { BuildingWidth = 24, BuildingLength = 30, EaveHeight = 10, BaySpacing = 10, RoofPitchRise = 4 };
+                case "30x40":
+                    return new BarnParameters { BuildingWidth = 30, BuildingLength = 40, EaveHeight = 12, BaySpacing = 10, RoofPitchRise = 4 };
+                case "40x60":
+                    return new BarnParameters { BuildingWidth = 40, BuildingLength = 60, EaveHeight = 14, BaySpacing = 12, RoofPitchRise = 4 };
+                case "50x80":
+                    return new BarnParameters { BuildingWidth = 50, BuildingLength = 80, EaveHeight = 16, BaySpacing = 10, RoofPitchRise = 3 };
+                case "60x100":
+                    return new BarnParameters { BuildingWidth = 60, BuildingLength = 100, EaveHeight = 16, BaySpacing = 10, RoofPitchRise = 3 };
+                default:
+                    return new BarnParameters();
+            }
+        }
+    }
+
+    // ───────────────────────────────────────────────
+    // Supporting Types
+    // ───────────────────────────────────────────────
+
+    public enum TrussType
+    {
+        Common,
+        Scissor,
+        MonoSlope
+    }
+
+    public enum WallSide
+    {
+        Front,  // Endwall at Y = 0
+        Back,   // Endwall at Y = BuildingLength
+        Left,   // Sidewall at X = 0
+        Right   // Sidewall at X = BuildingWidth
+    }
+
+    public enum DoorType
+    {
+        Overhead,
+        Sliding,
+        Walk
+    }
+
+    public class DoorOpening
+    {
+        public WallSide Wall { get; set; } = WallSide.Front;
+        public DoorType Type { get; set; } = DoorType.Overhead;
+        public double Width { get; set; } = 10.0;   // feet
+        public double Height { get; set; } = 10.0;  // feet
+        public double CenterOffset { get; set; } = 15.0; // feet from left corner of wall
+    }
+
+    public class WindowOpening
+    {
+        public WallSide Wall { get; set; } = WallSide.Left;
+        public double Width { get; set; } = 3.0;    // feet
+        public double Height { get; set; } = 3.0;   // feet
+        public double SillHeight { get; set; } = 4.0; // feet from ground
+        public double CenterOffset { get; set; } = 10.0; // feet from left corner
+    }
+}
