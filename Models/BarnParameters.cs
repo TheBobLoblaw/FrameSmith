@@ -191,12 +191,33 @@ namespace PoleBarnGenerator.Models
             if (BuildingLength < 10) return (false, "Building length should be at least 10 feet.");
             if (EaveHeight < 6) return (false, "Eave height should be at least 6 feet.");
 
+            // Validate individual door properties
             foreach (var door in Doors)
             {
-                double wallLen = (door.Wall == WallSide.Front || door.Wall == WallSide.Back) ? BuildingWidth : BuildingLength;
-                if (door.CenterOffset + door.Width / 2 > wallLen)
-                    return (false, $"Door on {door.Wall} wall extends past wall edge.");
+                if (door.Width <= 0) return (false, "Door width must be positive.");
+                if (door.Height <= 0) return (false, "Door height must be positive.");
+                if (door.Height > EaveHeight) return (false, $"Door on {door.Wall} wall ({door.Height}') exceeds eave height ({EaveHeight}').");
+                if (door.CenterOffset < 0) return (false, "Door center offset must not be negative.");
+
+                if (door.Type == DoorType.Dutch && (door.SplitHeight <= 0 || door.SplitHeight >= door.Height))
+                    return (false, $"Dutch door split height must be between 0 and door height ({door.Height}').");
             }
+
+            // Validate individual window properties
+            foreach (var window in Windows)
+            {
+                if (window.Width <= 0) return (false, "Window width must be positive.");
+                if (window.Height <= 0) return (false, "Window height must be positive.");
+                if (window.SillHeight < 0) return (false, "Window sill height must not be negative.");
+                if (window.SillHeight + window.Height > EaveHeight)
+                    return (false, $"Window on {window.Wall} wall top ({window.SillHeight + window.Height}') exceeds eave height ({EaveHeight}').");
+                if (window.CenterOffset < 0) return (false, "Window center offset must not be negative.");
+            }
+
+            // Run conflict detection
+            var conflicts = Utils.OpeningValidator.ValidateOpenings(this);
+            if (conflicts.Count > 0)
+                return (false, conflicts[0]);
 
             return (true, null);
         }
@@ -247,24 +268,101 @@ namespace PoleBarnGenerator.Models
     {
         Overhead,
         Sliding,
-        Walk
+        Walk,
+        /// <summary>Dutch door — split horizontally at SplitHeight</summary>
+        Dutch,
+        /// <summary>Double (French) door — two swing leaves</summary>
+        Double
+    }
+
+    public enum SwingDirection
+    {
+        Out,
+        In
+    }
+
+    public enum HandingDirection
+    {
+        /// <summary>Hinges on left side (opens from right)</summary>
+        Left,
+        /// <summary>Hinges on right side (opens from left)</summary>
+        Right
+    }
+
+    public enum TrackType
+    {
+        StandardLift,
+        HighLift,
+        VerticalLift
     }
 
     public class DoorOpening
     {
+        // ── Existing properties (backward compatible) ──
         public WallSide Wall { get; set; } = WallSide.Front;
         public DoorType Type { get; set; } = DoorType.Overhead;
         public double Width { get; set; } = 10.0;   // feet
         public double Height { get; set; } = 10.0;  // feet
         public double CenterOffset { get; set; } = 15.0; // feet from left corner of wall
+
+        // ── Enhanced properties ──
+
+        /// <summary>Swing direction for Walk/Dutch/Double doors</summary>
+        public SwingDirection SwingDirection { get; set; } = SwingDirection.Out;
+
+        /// <summary>Handing direction — which side the hinges are on</summary>
+        public HandingDirection HandingDirection { get; set; } = HandingDirection.Left;
+
+        /// <summary>Track type for Overhead doors</summary>
+        public TrackType TrackType { get; set; } = TrackType.StandardLift;
+
+        /// <summary>Whether the door has a lite (window insert)</summary>
+        public bool HasLite { get; set; } = false;
+
+        /// <summary>Split height for Dutch doors in feet (measured from bottom)</summary>
+        public double SplitHeight { get; set; } = 3.5;
+
+        /// <summary>Auto-calculated header size description (e.g., "2x10 DF")</summary>
+        public string HeaderSize => StructuralCalculations.HeaderSizing.GetHeaderDescription(
+            StructuralCalculations.HeaderSizing.CalculateHeaderSize(Width, LoadType.Roof));
+    }
+
+    public enum WindowType
+    {
+        Fixed,
+        SingleHung,
+        Sliding,
+        BarnSash,
+        Awning,
+        Casement
+    }
+
+    public enum GridPattern
+    {
+        None,
+        Colonial,
+        Prairie,
+        Custom
     }
 
     public class WindowOpening
     {
+        // ── Existing properties (backward compatible) ──
         public WallSide Wall { get; set; } = WallSide.Left;
         public double Width { get; set; } = 3.0;    // feet
         public double Height { get; set; } = 3.0;   // feet
         public double SillHeight { get; set; } = 4.0; // feet from ground
         public double CenterOffset { get; set; } = 10.0; // feet from left corner
+
+        // ── Enhanced properties ──
+
+        /// <summary>Window type</summary>
+        public WindowType Type { get; set; } = WindowType.Fixed;
+
+        /// <summary>Whether the window has a grid pattern</summary>
+        public bool HasGrid { get; set; } = false;
+
+        /// <summary>Grid pattern style</summary>
+        public GridPattern GridPattern { get; set; } = GridPattern.None;
     }
 }
