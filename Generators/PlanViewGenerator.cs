@@ -2,6 +2,7 @@ using Autodesk.AutoCAD.DatabaseServices;
 using Autodesk.AutoCAD.Geometry;
 using PoleBarnGenerator.Models;
 using PoleBarnGenerator.Utils;
+using System;
 using System.Collections.Generic;
 
 namespace PoleBarnGenerator.Generators
@@ -22,6 +23,13 @@ namespace PoleBarnGenerator.Generators
         {
             int count = 0;
             var p = geo.Params;
+
+            // Load linetypes to prevent crash if not already present in drawing
+            Database db = btr.Database;
+            try { db.LoadLineTypeFile("CENTER", "acad.lin"); }
+            catch (Autodesk.AutoCAD.Runtime.Exception) { /* already loaded */ }
+            try { db.LoadLineTypeFile("DASHED", "acad.lin"); }
+            catch (Autodesk.AutoCAD.Runtime.Exception) { /* already loaded */ }
 
             // ── Slab / Foundation outline ──
             DrawingHelpers.AddRectangle(tr, btr,

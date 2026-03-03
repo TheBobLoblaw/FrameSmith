@@ -71,7 +71,7 @@ namespace PoleBarnGenerator.Models
                     Height = Params.EaveHeight,
                     PostWidth = Params.PostWidthInches / 12.0,
                     PostDepth = Params.PostDepthInches / 12.0,
-                    Wall = bayY == 0 || bayY == Params.BuildingLength ? WallSide.Front : WallSide.Left
+                    Wall = bayY == 0 ? WallSide.Front : bayY == Params.BuildingLength ? WallSide.Back : WallSide.Left
                 });
 
                 // Right sidewall post
@@ -82,7 +82,7 @@ namespace PoleBarnGenerator.Models
                     Height = Params.EaveHeight,
                     PostWidth = Params.PostWidthInches / 12.0,
                     PostDepth = Params.PostDepthInches / 12.0,
-                    Wall = bayY == 0 || bayY == Params.BuildingLength ? WallSide.Front : WallSide.Right
+                    Wall = bayY == 0 ? WallSide.Front : bayY == Params.BuildingLength ? WallSide.Back : WallSide.Right
                 });
 
                 // Center post on endwalls (optional for wider buildings)

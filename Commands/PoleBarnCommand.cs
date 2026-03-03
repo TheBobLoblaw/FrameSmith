@@ -81,29 +81,60 @@ namespace PoleBarnGenerator.Commands
 
                 int entityCount = 0;
 
-                // Generate each view
+                // Set dimension style before generating any views with dimensions
+                DimensionGenerator.SetCurrentDimStyle(tr, db);
+
+                // Generate each view with error handling
                 if (parameters.GeneratePlan)
                 {
-                    ed.WriteMessage("\n  Drawing plan view...");
-                    entityCount += PlanViewGenerator.Generate(tr, btr, geometry, planOffset);
+                    try
+                    {
+                        ed.WriteMessage("\n  Drawing plan view...");
+                        entityCount += PlanViewGenerator.Generate(tr, btr, geometry, planOffset);
+                    }
+                    catch (System.Exception ex)
+                    {
+                        ed.WriteMessage($"\n  ERROR generating plan view: {ex.Message}");
+                    }
                 }
 
                 if (parameters.GenerateFront)
                 {
-                    ed.WriteMessage("\n  Drawing front elevation...");
-                    entityCount += FrontElevationGenerator.Generate(tr, btr, geometry, frontOffset);
+                    try
+                    {
+                        ed.WriteMessage("\n  Drawing front elevation...");
+                        entityCount += FrontElevationGenerator.Generate(tr, btr, geometry, frontOffset);
+                    }
+                    catch (System.Exception ex)
+                    {
+                        ed.WriteMessage($"\n  ERROR generating front elevation: {ex.Message}");
+                    }
                 }
 
                 if (parameters.GenerateSide)
                 {
-                    ed.WriteMessage("\n  Drawing side elevation...");
-                    entityCount += SideElevationGenerator.Generate(tr, btr, geometry, sideOffset);
+                    try
+                    {
+                        ed.WriteMessage("\n  Drawing side elevation...");
+                        entityCount += SideElevationGenerator.Generate(tr, btr, geometry, sideOffset);
+                    }
+                    catch (System.Exception ex)
+                    {
+                        ed.WriteMessage($"\n  ERROR generating side elevation: {ex.Message}");
+                    }
                 }
 
                 if (parameters.Generate3D)
                 {
-                    ed.WriteMessage("\n  Building 3D wireframe...");
-                    entityCount += Wireframe3DGenerator.Generate(tr, btr, geometry);
+                    try
+                    {
+                        ed.WriteMessage("\n  Building 3D wireframe...");
+                        entityCount += Wireframe3DGenerator.Generate(tr, btr, geometry);
+                    }
+                    catch (System.Exception ex)
+                    {
+                        ed.WriteMessage($"\n  ERROR generating 3D wireframe: {ex.Message}");
+                    }
                 }
 
                 tr.Commit();
@@ -153,10 +184,20 @@ namespace PoleBarnGenerator.Commands
                 double planWidth = parameters.BuildingWidth + 10;
                 double elevWidth = parameters.BuildingWidth + 10;
 
-                PlanViewGenerator.Generate(tr, btr, geometry, new Vector3d(0, 0, 0));
-                FrontElevationGenerator.Generate(tr, btr, geometry, new Vector3d(planWidth + gap, 0, 0));
-                SideElevationGenerator.Generate(tr, btr, geometry, new Vector3d(planWidth + elevWidth + gap * 2, 0, 0));
-                Wireframe3DGenerator.Generate(tr, btr, geometry);
+                // Set dimension style before generating
+                DimensionGenerator.SetCurrentDimStyle(tr, doc.Database);
+
+                try
+                {
+                    PlanViewGenerator.Generate(tr, btr, geometry, new Vector3d(0, 0, 0));
+                    FrontElevationGenerator.Generate(tr, btr, geometry, new Vector3d(planWidth + gap, 0, 0));
+                    SideElevationGenerator.Generate(tr, btr, geometry, new Vector3d(planWidth + elevWidth + gap * 2, 0, 0));
+                    Wireframe3DGenerator.Generate(tr, btr, geometry);
+                }
+                catch (System.Exception ex)
+                {
+                    ed.WriteMessage($"\nERROR during generation: {ex.Message}");
+                }
 
                 tr.Commit();
             }
