@@ -73,7 +73,11 @@ namespace PoleBarnGenerator.Commands
                 BlockTableRecord btr = tr.GetObject(bt[BlockTableRecord.ModelSpace], OpenMode.ForWrite) as BlockTableRecord;
 
                 // Create all layers
+                // Professional drawing setup
                 LayerManager.EnsureLayers(tr, db);
+                LinetypeManager.SetLinetypeScale(db);
+                StyleManager.CreateTextStyles(tr, db);
+                StyleManager.CreateDimensionStyle(tr, db);
 
                 // View placement offsets (side by side in model space)
                 double gap = 20.0; // feet between views
@@ -183,7 +187,11 @@ namespace PoleBarnGenerator.Commands
                 BlockTable bt = tr.GetObject(doc.Database.BlockTableId, OpenMode.ForRead) as BlockTable;
                 BlockTableRecord btr = tr.GetObject(bt[BlockTableRecord.ModelSpace], OpenMode.ForWrite) as BlockTableRecord;
 
+                // Professional drawing setup
                 LayerManager.EnsureLayers(tr, doc.Database);
+                LinetypeManager.SetLinetypeScale(doc.Database);
+                StyleManager.CreateTextStyles(tr, doc.Database);
+                StyleManager.CreateDimensionStyle(tr, doc.Database);
 
                 double gap = 20.0;
                 double planWidth = parameters.BuildingWidth + 10;

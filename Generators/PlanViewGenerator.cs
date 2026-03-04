@@ -208,11 +208,13 @@ namespace PoleBarnGenerator.Generators
                 catch (System.Exception) { /* skip failed interior render */ }
             }
 
+            // ── Grid system ──
+            count += GridBubbleGenerator.Generate(tr, btr, geo, offset);
+
             // ── View label ──
-            DrawingHelpers.AddText(tr, btr,
-                DrawingHelpers.Offset(p.BuildingWidth / 2.0, -5, offset),
-                "PLAN VIEW", 1.5, LayerManager.Layers.Anno);
-            count++;
+            count += ViewLabelGenerator.AddViewLabel(tr, btr,
+                "PLAN VIEW", "1/4\" = 1'-0\"",
+                DrawingHelpers.Offset(p.BuildingWidth / 2.0, -5, offset));
 
             return count;
         }

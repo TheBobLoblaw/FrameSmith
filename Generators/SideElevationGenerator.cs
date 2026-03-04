@@ -120,10 +120,9 @@ namespace PoleBarnGenerator.Generators
             }
 
             // ── View label ──
-            DrawingHelpers.AddText(tr, btr,
-                DrawingHelpers.Offset(p.BuildingLength / 2.0, -3, offset),
-                "SIDE ELEVATION", 1.5, LayerManager.Layers.Anno);
-            count++;
+            count += ViewLabelGenerator.AddViewLabel(tr, btr,
+                "SIDE ELEVATION", "1/4\" = 1'-0\"",
+                DrawingHelpers.Offset(p.BuildingLength / 2.0, -3, offset));
 
             return count;
         }
