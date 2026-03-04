@@ -1,0 +1,178 @@
+<UserControl x:Class="PoleBarnGenerator.UI.StructuralControl"
+             xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+             xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+             xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
+             xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
+             mc:Ignorable="d">
+    <ScrollViewer VerticalScrollBarVisibility="Auto">
+        <StackPanel Margin="8">
+            
+            <!-- Enable Structural Analysis -->
+            <CheckBox x:Name="chkEnable" Content="Enable Structural Analysis"
+                      IsChecked="{Binding IncludeStructuralAnalysis}"
+                      Margin="0,0,0,8" FontWeight="Bold"/>
+            
+            <StackPanel IsEnabled="{Binding IsChecked, ElementName=chkEnable}">
+                
+                <!-- Design Loads -->
+                <GroupBox Header="🌬️ Wind Loads (ASCE 7-22)" Margin="0,0,0,4">
+                    <UniformGrid Columns="2" Margin="4">
+                        <TextBlock Text="Basic Wind Speed (mph):" VerticalAlignment="Center"/>
+                        <TextBox Text="{Binding Structural.BasicWindSpeed, UpdateSourceTrigger=PropertyChanged}" Margin="2"/>
+                        
+                        <TextBlock Text="Exposure Category:" VerticalAlignment="Center"/>
+                        <ComboBox SelectedValue="{Binding Structural.ExposureCategory}" 
+                                  SelectedValuePath="Tag" Margin="2">
+                            <ComboBoxItem Content="B - Urban/Suburban" Tag="B"/>
+                            <ComboBoxItem Content="C - Open Terrain" Tag="C"/>
+                            <ComboBoxItem Content="D - Flat, Unobstructed" Tag="D"/>
+                        </ComboBox>
+                        
+                        <TextBlock Text="Importance Factor:" VerticalAlignment="Center"/>
+                        <ComboBox SelectedValue="{Binding Structural.WindImportance}"
+                                  SelectedValuePath="Tag" Margin="2">
+                            <ComboBoxItem Content="I - Low Hazard" Tag="I"/>
+                            <ComboBoxItem Content="II - Standard" Tag="II"/>
+                            <ComboBoxItem Content="III - Substantial Hazard" Tag="III"/>
+                            <ComboBoxItem Content="IV - Essential" Tag="IV"/>
+                        </ComboBox>
+                    </UniformGrid>
+                </GroupBox>
+                
+                <!-- Snow Loads -->
+                <GroupBox Header="❄️ Snow Loads (ASCE 7-22)" Margin="0,0,0,4">
+                    <UniformGrid Columns="2" Margin="4">
+                        <TextBlock Text="Ground Snow Load (psf):" VerticalAlignment="Center"/>
+                        <TextBox Text="{Binding Structural.GroundSnowLoad, UpdateSourceTrigger=PropertyChanged}" Margin="2"/>
+                        
+                        <TextBlock Text="Exposure Condition:" VerticalAlignment="Center"/>
+                        <ComboBox SelectedValue="{Binding Structural.SnowExposure}"
+                                  SelectedValuePath="Tag" Margin="2">
+                            <ComboBoxItem Content="Fully Exposed" Tag="FullyExposed"/>
+                            <ComboBoxItem Content="Partially Exposed" Tag="PartiallyExposed"/>
+                            <ComboBoxItem Content="Sheltered" Tag="Sheltered"/>
+                        </ComboBox>
+                        
+                        <TextBlock Text="Thermal Condition:" VerticalAlignment="Center"/>
+                        <ComboBox SelectedValue="{Binding Structural.ThermalCondition}"
+                                  SelectedValuePath="Tag" Margin="2">
+                            <ComboBoxItem Content="Heated" Tag="Heated"/>
+                            <ComboBoxItem Content="Unheated" Tag="Unheated"/>
+                            <ComboBoxItem Content="Continuously Heated" Tag="ContinuouslyHeated"/>
+                            <ComboBoxItem Content="Freezer Building" Tag="FreezerBuilding"/>
+                        </ComboBox>
+                        
+                        <TextBlock Text="Rain-on-Snow Zone:" VerticalAlignment="Center"/>
+                        <CheckBox IsChecked="{Binding Structural.RainOnSnowZone}" Margin="2" VerticalAlignment="Center"/>
+                    </UniformGrid>
+                </GroupBox>
+                
+                <!-- Building Use -->
+                <GroupBox Header="🏗️ Building Use &amp; Live Loads" Margin="0,0,0,4">
+                    <UniformGrid Columns="2" Margin="4">
+                        <TextBlock Text="Building Use:" VerticalAlignment="Center"/>
+                        <ComboBox SelectedValue="{Binding Structural.BuildingUse}"
+                                  SelectedValuePath="Tag" Margin="2">
+                            <ComboBoxItem Content="Agricultural (20 psf)" Tag="Agricultural"/>
+                            <ComboBoxItem Content="Storage (125 psf)" Tag="Storage"/>
+                            <ComboBoxItem Content="Assembly (100 psf)" Tag="Assembly"/>
+                            <ComboBoxItem Content="Workshop (50 psf)" Tag="Workshop"/>
+                            <ComboBoxItem Content="Parking (50 psf)" Tag="Parking"/>
+                        </ComboBox>
+                    </UniformGrid>
+                </GroupBox>
+                
+                <!-- Materials -->
+                <GroupBox Header="🔧 Materials" Margin="0,0,0,4">
+                    <UniformGrid Columns="2" Margin="4">
+                        <TextBlock Text="Roof Material:" VerticalAlignment="Center"/>
+                        <ComboBox SelectedValue="{Binding Structural.RoofMaterial}"
+                                  SelectedValuePath="Tag" Margin="2">
+                            <ComboBoxItem Content="Metal Panel (1.5 psf)" Tag="MetalPanel"/>
+                            <ComboBoxItem Content="Standing Seam (1.8 psf)" Tag="StandingSeam"/>
+                            <ComboBoxItem Content="Shingles (3.0 psf)" Tag="Shingles"/>
+                        </ComboBox>
+                        
+                        <TextBlock Text="Wall Material:" VerticalAlignment="Center"/>
+                        <ComboBox SelectedValue="{Binding Structural.SidingMaterial}"
+                                  SelectedValuePath="Tag" Margin="2">
+                            <ComboBoxItem Content="Metal Panel (1.5 psf)" Tag="MetalPanel"/>
+                            <ComboBoxItem Content="Wood Board (3.0 psf)" Tag="WoodBoard"/>
+                            <ComboBoxItem Content="Vinyl (0.8 psf)" Tag="Vinyl"/>
+                            <ComboBoxItem Content="Fiber Cement (4.0 psf)" Tag="FiberCement"/>
+                        </ComboBox>
+                        
+                        <TextBlock Text="Insulation:" VerticalAlignment="Center"/>
+                        <CheckBox IsChecked="{Binding Structural.HasInsulation}" Content="Yes" Margin="2"/>
+                        
+                        <TextBlock Text="Ceiling:" VerticalAlignment="Center"/>
+                        <CheckBox IsChecked="{Binding Structural.HasCeiling}" Content="Yes" Margin="2"/>
+                    </UniformGrid>
+                </GroupBox>
+                
+                <!-- Lumber Grades -->
+                <GroupBox Header="🪵 Lumber Grades (NDS 2024)" Margin="0,0,0,4">
+                    <UniformGrid Columns="2" Margin="4">
+                        <TextBlock Text="Post Species:" VerticalAlignment="Center"/>
+                        <ComboBox SelectedValue="{Binding Structural.PostSpecies}"
+                                  SelectedValuePath="Tag" Margin="2">
+                            <ComboBoxItem Content="Douglas Fir" Tag="DouglasFir"/>
+                            <ComboBoxItem Content="Southern Pine" Tag="SouthernPine"/>
+                            <ComboBoxItem Content="Spruce-Pine-Fir" Tag="SprucePineFir"/>
+                        </ComboBox>
+                        
+                        <TextBlock Text="Post Grade:" VerticalAlignment="Center"/>
+                        <ComboBox SelectedValue="{Binding Structural.PostGrade}"
+                                  SelectedValuePath="Tag" Margin="2">
+                            <ComboBoxItem Content="#1" Tag="No1"/>
+                            <ComboBoxItem Content="#2" Tag="No2"/>
+                        </ComboBox>
+                        
+                        <TextBlock Text="Beam/Girt Species:" VerticalAlignment="Center"/>
+                        <ComboBox SelectedValue="{Binding Structural.BeamSpecies}"
+                                  SelectedValuePath="Tag" Margin="2">
+                            <ComboBoxItem Content="Douglas Fir" Tag="DouglasFir"/>
+                            <ComboBoxItem Content="Southern Pine" Tag="SouthernPine"/>
+                            <ComboBoxItem Content="Spruce-Pine-Fir" Tag="SprucePineFir"/>
+                        </ComboBox>
+                        
+                        <TextBlock Text="Beam/Girt Grade:" VerticalAlignment="Center"/>
+                        <ComboBox SelectedValue="{Binding Structural.BeamGrade}"
+                                  SelectedValuePath="Tag" Margin="2">
+                            <ComboBoxItem Content="#1" Tag="No1"/>
+                            <ComboBoxItem Content="#2" Tag="No2"/>
+                        </ComboBox>
+                    </UniformGrid>
+                </GroupBox>
+                
+                <!-- Soil Properties -->
+                <GroupBox Header="🌍 Soil &amp; Foundation" Margin="0,0,0,4">
+                    <UniformGrid Columns="2" Margin="4">
+                        <TextBlock Text="Bearing Capacity (psf):" VerticalAlignment="Center"/>
+                        <TextBox Text="{Binding Structural.SoilBearingCapacity, UpdateSourceTrigger=PropertyChanged}" Margin="2"/>
+                        
+                        <TextBlock Text="Frost Depth (inches):" VerticalAlignment="Center"/>
+                        <TextBox Text="{Binding Structural.FrostDepth, UpdateSourceTrigger=PropertyChanged}" Margin="2"/>
+                        
+                        <TextBlock Text="Soil Friction Angle (°):" VerticalAlignment="Center"/>
+                        <TextBox Text="{Binding Structural.SoilFrictionAngle, UpdateSourceTrigger=PropertyChanged}" Margin="2"/>
+                    </UniformGrid>
+                </GroupBox>
+                
+                <!-- Results placeholder -->
+                <GroupBox Header="📊 Design Results" Margin="0,0,0,4">
+                    <StackPanel Margin="4">
+                        <TextBlock x:Name="txtResults" TextWrapping="Wrap" FontFamily="Consolas" FontSize="11"
+                                   Text="Click 'Run Structural Analysis' to calculate..."/>
+                        <Button x:Name="btnRunAnalysis" Content="🔬 Run Structural Analysis"
+                                Margin="0,8,0,4" Padding="8,4" Click="BtnRunAnalysis_Click"/>
+                        <Button x:Name="btnExportReport" Content="📄 Export Calculation Package"
+                                Margin="0,4,0,0" Padding="8,4" Click="BtnExportReport_Click"
+                                IsEnabled="False"/>
+                    </StackPanel>
+                </GroupBox>
+                
+            </StackPanel>
+        </StackPanel>
+    </ScrollViewer>
+</UserControl>

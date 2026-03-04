@@ -272,6 +272,21 @@ namespace PoleBarnGenerator.Models
         }
 
         // ───────────────────────────────────────────────
+        // ───────────────────────────────────────────────
+        // Structural Engineering
+        // ───────────────────────────────────────────────
+
+        private StructuralParameters _structural = new StructuralParameters();
+        /// <summary>Structural engineering design parameters</summary>
+        public StructuralParameters Structural
+        {
+            get => _structural;
+            set { _structural = value; OnPropertyChanged(); }
+        }
+
+        /// <summary>Whether to run structural analysis and include load tables on drawings</summary>
+        public bool IncludeStructuralAnalysis { get; set; } = false;
+
         // Output Options
         // ───────────────────────────────────────────────
 
