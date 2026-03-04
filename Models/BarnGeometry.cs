@@ -20,6 +20,7 @@ namespace PoleBarnGenerator.Models
         public List<PurlinLocation> Purlins { get; private set; }
         public List<LeanToGeometry> LeanToGeometries { get; private set; }
         public List<PorchGeometry> PorchGeometries { get; private set; }
+        public InteriorGeometry InteriorGeometry { get; private set; }
         public List<double> BayPositions { get; private set; }
 
         // Key dimensions
@@ -44,6 +45,13 @@ namespace PoleBarnGenerator.Models
             ComputePurlins();
             ComputeLeanTos();
             ComputePorches();
+            ComputeInterior();
+        }
+
+        private void ComputeInterior()
+        {
+            InteriorGeometry = InteriorGeometry.Calculate(this,
+                Params.HorseStalls, Params.Loft, Params.Partitions, Params.Workshop);
         }
 
         // ───────────────────────────────────────────────

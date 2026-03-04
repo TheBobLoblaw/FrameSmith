@@ -186,6 +186,28 @@ namespace PoleBarnGenerator.Generators
             }
             catch (System.Exception) { /* skip failed detail render */ }
 
+            // ── Interior features ──
+            if (geo.InteriorGeometry != null)
+            {
+                try
+                {
+                    var interior = geo.InteriorGeometry;
+
+                    if (interior.StallLayout != null)
+                        count += InteriorGenerator.GenerateHorseStalls(tr, btr, geo, interior.StallLayout, offset);
+
+                    if (interior.LoftGeometry != null)
+                        count += InteriorGenerator.GenerateLoft(tr, btr, geo, interior.LoftGeometry, offset);
+
+                    if (interior.PartitionGeometries?.Count > 0)
+                        count += InteriorGenerator.GeneratePartitions(tr, btr, geo, interior.PartitionGeometries, offset);
+
+                    if (interior.WorkshopFeatures?.Count > 0)
+                        count += InteriorGenerator.GenerateWorkshopFeatures(tr, btr, geo, interior.WorkshopFeatures, offset);
+                }
+                catch (System.Exception) { /* skip failed interior render */ }
+            }
+
             // ── View label ──
             DrawingHelpers.AddText(tr, btr,
                 DrawingHelpers.Offset(p.BuildingWidth / 2.0, -5, offset),

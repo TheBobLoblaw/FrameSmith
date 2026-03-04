@@ -238,6 +238,37 @@ namespace PoleBarnGenerator.Models
             get => _leanTos;
             set { _leanTos = value; OnPropertyChanged(); }
         }
+
+        // ───────────────────────────────────────────────
+        // Interior Features
+        // ───────────────────────────────────────────────
+
+        private HorseStallParameters _horseStalls = new HorseStallParameters();
+        public HorseStallParameters HorseStalls
+        {
+            get => _horseStalls;
+            set { _horseStalls = value; OnPropertyChanged(); }
+        }
+
+        private LoftParameters _loft = new LoftParameters();
+        public LoftParameters Loft
+        {
+            get => _loft;
+            set { _loft = value; OnPropertyChanged(); }
+        }
+
+        private InteriorPartitionParameters _partitions = new InteriorPartitionParameters();
+        public InteriorPartitionParameters Partitions
+        {
+            get => _partitions;
+            set { _partitions = value; OnPropertyChanged(); }
+        }
+
+        private WorkshopParameters _workshop = new WorkshopParameters();
+        public WorkshopParameters Workshop
+        {
+            get => _workshop;
+            set { _workshop = value; OnPropertyChanged(); }
         }
 
         // ───────────────────────────────────────────────
@@ -323,6 +354,28 @@ namespace PoleBarnGenerator.Models
             var conflicts = Utils.OpeningValidator.ValidateOpenings(this);
             if (conflicts.Count > 0)
                 return (false, conflicts[0]);
+
+            // Validate interior features
+            var (hsValid, hsError) = HorseStalls.Validate(this);
+            if (!hsValid) return (false, hsError);
+
+            if (Loft != null)
+            {
+                var (lValid, lError) = Loft.Validate(this);
+                if (!lValid) return (false, lError);
+            }
+
+            if (Partitions != null)
+            {
+                var (ptValid, ptError) = Partitions.Validate(this);
+                if (!ptValid) return (false, ptError);
+            }
+
+            if (Workshop != null)
+            {
+                var (wValid, wError) = Workshop.Validate(this);
+                if (!wValid) return (false, wError);
+            }
 
             return (true, null);
         }

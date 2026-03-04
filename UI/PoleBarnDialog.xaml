@@ -196,6 +196,11 @@
                 <local:ExteriorControl x:Name="exteriorManager"/>
             </TabItem>
 
+            <!-- Interior Features -->
+            <TabItem Header="🏠 Interior">
+                <local:InteriorControl x:Name="interiorManager"/>
+            </TabItem>
+
             <!-- ═══ Tab 6: Output ═══ -->
             <TabItem Header="📄 Output">
                 <ScrollViewer VerticalScrollBarVisibility="Auto">

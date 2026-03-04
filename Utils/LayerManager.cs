@@ -27,6 +27,10 @@ namespace PoleBarnGenerator.Utils
             public const string Headers  = "PB-HEADERS";
             public const string Porches  = "PB-PORCHES";
             public const string Details  = "PB-DETAILS";
+            public const string Stalls     = "PB-STALLS";
+            public const string Loft       = "PB-LOFT";
+            public const string Partitions = "PB-PARTITIONS";
+            public const string Workshop   = "PB-WORKSHOP";
         }
 
         private static readonly Dictionary<string, short> LayerColors = new Dictionary<string, short>
@@ -46,6 +50,10 @@ namespace PoleBarnGenerator.Utils
             { Layers.Headers,  22 },   // Orange-brown (structural)
             { Layers.Porches,  60 },   // Olive (porch structures)
             { Layers.Details,  90 },   // Dark red (exterior details)
+            { Layers.Stalls,     100 },  // Interior stalls
+            { Layers.Loft,       110 },  // Loft/mezzanine
+            { Layers.Partitions, 120 },  // Interior partitions
+            { Layers.Workshop,   130 },  // Workshop features
         };
 
         /// <summary>
