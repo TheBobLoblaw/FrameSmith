@@ -1,0 +1,150 @@
+<UserControl x:Class="PoleBarnGenerator.UI.MaterialsControl"
+             xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+             xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml">
+    <TabControl>
+        <!-- Takeoffs Tab -->
+        <TabItem Header="📋 Takeoffs">
+            <ScrollViewer VerticalScrollBarVisibility="Auto">
+                <StackPanel Margin="8">
+                    <StackPanel Orientation="Horizontal" Margin="0,0,0,8">
+                        <Button x:Name="btnCalculate" Content="📊 Calculate Materials"
+                                Click="BtnCalculate_Click" Padding="12,6"
+                                Background="#4CAF50" Foreground="White" FontWeight="Bold"/>
+                        <TextBlock x:Name="txtStatus" VerticalAlignment="Center"
+                                   Margin="12,0" Foreground="Gray"/>
+                    </StackPanel>
+
+                    <GroupBox Header="Lumber Schedule" Margin="0,0,0,8">
+                        <DataGrid x:Name="dgLumber" AutoGenerateColumns="False"
+                                  IsReadOnly="True" CanUserSortColumns="True"
+                                  MaxHeight="300" FontSize="11">
+                            <DataGrid.Columns>
+                                <DataGridTextColumn Header="Category" Binding="{Binding Category}" Width="80"/>
+                                <DataGridTextColumn Header="Description" Binding="{Binding Description}" Width="200"/>
+                                <DataGridTextColumn Header="Grade" Binding="{Binding Grade}" Width="60"/>
+                                <DataGridTextColumn Header="Length" Binding="{Binding Length, StringFormat=F0}" Width="50"/>
+                                <DataGridTextColumn Header="Qty" Binding="{Binding Quantity}" Width="40"/>
+                                <DataGridTextColumn Header="Lin Ft" Binding="{Binding LinearFeet, StringFormat=F0}" Width="60"/>
+                                <DataGridTextColumn Header="Bd Ft" Binding="{Binding BoardFeet, StringFormat=F1}" Width="60"/>
+                                <DataGridTextColumn Header="Usage" Binding="{Binding Usage}" Width="180"/>
+                                <DataGridTextColumn Header="Unit $" Binding="{Binding UnitPrice, StringFormat=C}" Width="70"/>
+                                <DataGridTextColumn Header="Total $" Binding="{Binding TotalPrice, StringFormat=C}" Width="80"/>
+                            </DataGrid.Columns>
+                        </DataGrid>
+                    </GroupBox>
+
+                    <GroupBox Header="Hardware Schedule" Margin="0,0,0,8">
+                        <DataGrid x:Name="dgHardware" AutoGenerateColumns="False"
+                                  IsReadOnly="True" MaxHeight="250" FontSize="11">
+                            <DataGrid.Columns>
+                                <DataGridTextColumn Header="Part #" Binding="{Binding PartNumber}" Width="100"/>
+                                <DataGridTextColumn Header="Description" Binding="{Binding Description}" Width="250"/>
+                                <DataGridTextColumn Header="Spec" Binding="{Binding Specification}" Width="100"/>
+                                <DataGridTextColumn Header="Qty" Binding="{Binding Quantity}" Width="50"/>
+                                <DataGridTextColumn Header="Unit $" Binding="{Binding UnitCost, StringFormat=C}" Width="70"/>
+                                <DataGridTextColumn Header="Total $" Binding="{Binding TotalCost, StringFormat=C}" Width="80"/>
+                                <DataGridTextColumn Header="Usage" Binding="{Binding Usage}" Width="180"/>
+                            </DataGrid.Columns>
+                        </DataGrid>
+                    </GroupBox>
+
+                    <GroupBox Header="Summary" Margin="0,0,0,8">
+                        <TextBlock x:Name="txtSummary" FontFamily="Consolas" FontSize="11"
+                                   Padding="8"/>
+                    </GroupBox>
+
+                    <StackPanel Orientation="Horizontal" Margin="0,4">
+                        <Button x:Name="btnExportCsv" Content="📥 Export CSV"
+                                Click="BtnExportCsv_Click" Padding="8,4" Margin="0,0,8,0"/>
+                        <Button x:Name="btnExportReport" Content="📄 Full Report"
+                                Click="BtnExportReport_Click" Padding="8,4" Margin="0,0,8,0"/>
+                        <Button x:Name="btnExportRfq" Content="📨 Generate RFQ"
+                                Click="BtnExportRfq_Click" Padding="8,4"/>
+                    </StackPanel>
+                </StackPanel>
+            </ScrollViewer>
+        </TabItem>
+
+        <!-- Pricing Tab -->
+        <TabItem Header="💰 Pricing">
+            <ScrollViewer VerticalScrollBarVisibility="Auto">
+                <StackPanel Margin="8">
+                    <GroupBox Header="Pricing Options" Margin="0,0,0,8">
+                        <StackPanel Orientation="Horizontal" Margin="4">
+                            <TextBlock Text="Zip Code:" VerticalAlignment="Center" Margin="0,0,4,0"/>
+                            <TextBox x:Name="txtZipCode" Width="80" Text="43001" Margin="0,0,12,0"/>
+                            <TextBlock Text="Tier:" VerticalAlignment="Center" Margin="0,0,4,0"/>
+                            <ComboBox x:Name="cmbTier" Width="100" SelectedIndex="1" Margin="0,0,12,0">
+                                <ComboBoxItem Content="Budget"/>
+                                <ComboBoxItem Content="Standard"/>
+                                <ComboBoxItem Content="Premium"/>
+                            </ComboBox>
+                            <TextBlock Text="Tax Rate:" VerticalAlignment="Center" Margin="0,0,4,0"/>
+                            <TextBox x:Name="txtTaxRate" Width="50" Text="7.0" Margin="0,0,4,0"/>
+                            <TextBlock Text="%" VerticalAlignment="Center" Margin="0,0,12,0"/>
+                            <Button x:Name="btnPrice" Content="Calculate Pricing"
+                                    Click="BtnPrice_Click" Padding="8,4" Background="LightBlue"/>
+                        </StackPanel>
+                    </GroupBox>
+
+                    <GroupBox Header="Project Cost Summary" Margin="0,0,0,8">
+                        <TextBlock x:Name="txtPricing" FontFamily="Consolas" FontSize="12"
+                                   Padding="8"/>
+                    </GroupBox>
+
+                    <GroupBox Header="Supplier Quote Estimates" Margin="0,0,0,8">
+                        <StackPanel>
+                            <Button x:Name="btnQuotes" Content="📊 Get Supplier Estimates"
+                                    Click="BtnQuotes_Click" Padding="8,4" Margin="4"
+                                    HorizontalAlignment="Left"/>
+                            <DataGrid x:Name="dgQuotes" AutoGenerateColumns="False"
+                                      IsReadOnly="True" MaxHeight="250" FontSize="11">
+                                <DataGrid.Columns>
+                                    <DataGridTextColumn Header="Supplier" Binding="{Binding SupplierName}" Width="150"/>
+                                    <DataGridTextColumn Header="Material $" Binding="{Binding MaterialTotal, StringFormat=C}" Width="100"/>
+                                    <DataGridTextColumn Header="Delivery $" Binding="{Binding DeliveryFee, StringFormat=C}" Width="80"/>
+                                    <DataGridTextColumn Header="Total $" Binding="{Binding TotalPrice, StringFormat=C}" Width="100"/>
+                                    <DataGridTextColumn Header="Delivery By" Binding="{Binding EarliestDelivery, StringFormat=d}" Width="100"/>
+                                    <DataGridTextColumn Header="Expires" Binding="{Binding ExpirationDate, StringFormat=d}" Width="100"/>
+                                </DataGrid.Columns>
+                            </DataGrid>
+                        </StackPanel>
+                    </GroupBox>
+                </StackPanel>
+            </ScrollViewer>
+        </TabItem>
+
+        <!-- Cut Lists Tab -->
+        <TabItem Header="✂️ Cut Lists">
+            <ScrollViewer VerticalScrollBarVisibility="Auto">
+                <StackPanel Margin="8">
+                    <StackPanel Orientation="Horizontal" Margin="0,0,0,8">
+                        <Button x:Name="btnCutList" Content="🔧 Generate Optimized Cut List"
+                                Click="BtnCutList_Click" Padding="8,4"/>
+                        <TextBlock x:Name="txtCutStats" VerticalAlignment="Center"
+                                   Margin="12,0" FontWeight="Bold"/>
+                    </StackPanel>
+
+                    <GroupBox Header="Optimized Cut Lists" Margin="0,0,0,8">
+                        <DataGrid x:Name="dgCutList" AutoGenerateColumns="False"
+                                  IsReadOnly="True" MaxHeight="400" FontSize="11">
+                            <DataGrid.Columns>
+                                <DataGridTextColumn Header="Material" Binding="{Binding MaterialDescription}" Width="180"/>
+                                <DataGridTextColumn Header="Stock Pieces" Binding="{Binding StockPieces}" Width="90"/>
+                                <DataGridTextColumn Header="Cuts" Binding="{Binding CutPatterns.Count}" Width="50"/>
+                                <DataGridTextColumn Header="Waste/Piece (ft)" Binding="{Binding WastePerPiece, StringFormat=F1}" Width="100"/>
+                                <DataGridTextColumn Header="Priority" Binding="{Binding CutPriority}" Width="60"/>
+                                <DataGridTextColumn Header="Notes" Binding="{Binding CutNotes}" Width="200"/>
+                            </DataGrid.Columns>
+                        </DataGrid>
+                    </GroupBox>
+
+                    <GroupBox Header="Waste Analysis" Margin="0,0,0,8">
+                        <TextBlock x:Name="txtWaste" FontFamily="Consolas" FontSize="11"
+                                   Padding="8"/>
+                    </GroupBox>
+                </StackPanel>
+            </ScrollViewer>
+        </TabItem>
+    </TabControl>
+</UserControl>

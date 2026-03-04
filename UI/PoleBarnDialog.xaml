@@ -201,7 +201,12 @@
                 <local:InteriorControl x:Name="interiorManager"/>
             </TabItem>
 
-            <!-- ═══ Tab 6: Output ═══ -->
+            <!-- ═══ Tab 6: Materials ═══ -->
+            <TabItem Header="📋 Materials">
+                <local:MaterialsControl x:Name="materialsControl"/>
+            </TabItem>
+
+            <!-- ═══ Tab 7: Output ═══ -->
             <TabItem Header="📄 Output">
                 <ScrollViewer VerticalScrollBarVisibility="Auto">
                     <StackPanel Margin="4">

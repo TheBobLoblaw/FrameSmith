@@ -12,6 +12,12 @@ namespace PoleBarnGenerator.UI
     {
         private StructuralDesignResult _lastResult;
 
+        /// <summary>Last structural analysis result, accessible for material takeoffs.</summary>
+        public StructuralDesignResult LastResult => _lastResult;
+
+        /// <summary>Fired when structural analysis completes successfully.</summary>
+        public event EventHandler<StructuralDesignResult> AnalysisCompleted;
+
         public StructuralControl()
         {
             InitializeComponent();
@@ -33,6 +39,7 @@ namespace PoleBarnGenerator.UI
 
                 txtResults.Text = _lastResult.DesignSummary;
                 btnExportReport.IsEnabled = true;
+                AnalysisCompleted?.Invoke(this, _lastResult);
             }
             catch (Exception ex)
             {
