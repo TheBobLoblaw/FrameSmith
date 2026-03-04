@@ -9,7 +9,7 @@ namespace PoleBarnGenerator.Generators
 {
     /// <summary>
     /// Generates dimension annotations for plan and elevation views.
-    /// All dimensions are placed on the PB-DIM layer.
+    /// All dimensions are placed on the FS-S-DIM layer.
     /// </summary>
     public static class DimensionGenerator
     {
@@ -234,7 +234,7 @@ namespace PoleBarnGenerator.Generators
         // ─────────────────────────────────────────────
 
         /// <summary>
-        /// Ensures a "PB-DIM" dimension style exists. If the drawing already has one,
+        /// Ensures a "FS-DIM" dimension style exists. If the drawing already has one,
         /// it's reused. Otherwise creates a default with architectural formatting.
         /// Must be called within an active Transaction.
         /// </summary>
@@ -242,7 +242,7 @@ namespace PoleBarnGenerator.Generators
         {
             DimStyleTable dst = tr.GetObject(db.DimStyleTableId, OpenMode.ForRead) as DimStyleTable;
 
-            const string styleName = "PB-DIM";
+            const string styleName = "FS-DIM";
 
             if (dst.Has(styleName))
             {
@@ -280,7 +280,7 @@ namespace PoleBarnGenerator.Generators
         }
 
         /// <summary>
-        /// Sets PB-DIM as the current dimension style on the database.
+        /// Sets FS-DIM as the current dimension style on the database.
         /// Call once before generating any dimensions.
         /// </summary>
         public static void SetCurrentDimStyle(Transaction tr, Database db)

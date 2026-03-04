@@ -13,7 +13,7 @@ namespace PoleBarnGenerator.Generators
     /// </summary>
     public static class PorchGenerator
     {
-        private const string PorchLayer = "PB-PORCHES";
+        private const string PorchLayer = LayerManager.Layers.Porches;
 
         // ═══════════════════════════════════════════════
         // Plan View

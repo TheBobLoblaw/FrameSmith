@@ -13,7 +13,7 @@ namespace PoleBarnGenerator.Generators
     /// </summary>
     public static class ExteriorDetailGenerator
     {
-        private const string DetailLayer = "PB-DETAILS";
+        private const string DetailLayer = LayerManager.Layers.Details;
 
         // ═══════════════════════════════════════════════
         // Wainscot
