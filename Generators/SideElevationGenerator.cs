@@ -162,6 +162,8 @@ namespace PoleBarnGenerator.Generators
             try
             {
                 count += ExteriorDetailGenerator.AddWainscotSideElevation(tr, btr, geo, p.Wainscot, offset);
+                count += AddVentilationOpenings(tr, btr, geo, offset);
+                count += AddEquipmentDetails(tr, btr, geo, offset);
             }
             catch (System.Exception) { /* skip failed detail render */ }
 
@@ -175,6 +177,78 @@ namespace PoleBarnGenerator.Generators
             count += ViewLabelGenerator.AddViewLabel(tr, btr,
                 "SIDE ELEVATION", "1/4\" = 1'-0\"",
                 DrawingHelpers.Offset(p.BuildingLength / 2.0, -3, offset));
+
+            return count;
+        }
+
+        private static int AddVentilationOpenings(Transaction tr, BlockTableRecord btr,
+            BarnGeometry geo, Vector3d offset)
+        {
+            int count = 0;
+            var p = geo.Params;
+            var v = p.Ventilation;
+            if (v?.IsEnabled != true && p.DairyBarn?.IsEnabled != true)
+            {
+                return 0;
+            }
+
+            if (v?.RidgeVentEnabled == true)
+            {
+                DrawingHelpers.AddLine(tr, btr,
+                    DrawingHelpers.Offset(p.BuildingLength * 0.25, p.EaveHeight + 0.25, offset),
+                    DrawingHelpers.Offset(p.BuildingLength * 0.75, p.EaveHeight + 0.25, offset),
+                    LayerManager.Layers.Vent);
+                count++;
+            }
+
+            int louverCount = Math.Max(2, v?.WallLouverCount ?? 2);
+            double spacing = p.BuildingLength / (louverCount + 1);
+            for (int i = 1; i <= louverCount; i++)
+            {
+                DrawingHelpers.AddRectangle(tr, btr,
+                    DrawingHelpers.Offset2d(i * spacing - 0.5, p.EaveHeight * 0.55, offset),
+                    1.0, 0.8, LayerManager.Layers.Vent);
+                count++;
+            }
+
+            return count;
+        }
+
+        private static int AddEquipmentDetails(Transaction tr, BlockTableRecord btr,
+            BarnGeometry geo, Vector3d offset)
+        {
+            int count = 0;
+            var p = geo.Params;
+            var equip = p.EquipmentStorage;
+            if (equip?.IsEnabled != true)
+            {
+                return 0;
+            }
+
+            if (equip.CraneRail.IsEnabled)
+            {
+                DrawingHelpers.AddLine(tr, btr,
+                    DrawingHelpers.Offset(0, equip.CraneRail.RailHeight, offset),
+                    DrawingHelpers.Offset(p.BuildingLength, equip.CraneRail.RailHeight, offset),
+                    LayerManager.Layers.Crane);
+                DrawingHelpers.AddText(tr, btr,
+                    DrawingHelpers.Offset(p.BuildingLength * 0.5, equip.CraneRail.RailHeight + 0.4, offset),
+                    $"CRANE RAIL {equip.CraneRail.CapacityTons:F1}T", 0.35, LayerManager.Layers.Crane);
+                count += 2;
+            }
+
+            if (equip.LargeDoor.IsEnabled &&
+                (equip.LargeDoor.Wall == WallSide.Left || equip.LargeDoor.Wall == WallSide.Right))
+            {
+                double x0 = Math.Max(0, (p.BuildingLength - equip.LargeDoor.Width) / 2.0);
+                DrawingHelpers.AddRectangle(tr, btr,
+                    DrawingHelpers.Offset2d(x0, 0, offset),
+                    equip.LargeDoor.Width, equip.LargeDoor.Height, LayerManager.Layers.Equip);
+                DrawingHelpers.AddText(tr, btr,
+                    DrawingHelpers.Offset(x0 + equip.LargeDoor.Width / 2.0, equip.LargeDoor.Height + 0.5, offset),
+                    $"{equip.LargeDoor.DoorType} DOOR {equip.LargeDoor.Width:F0}'", 0.35, LayerManager.Layers.Equip);
+                count += 2;
+            }
 
             return count;
         }

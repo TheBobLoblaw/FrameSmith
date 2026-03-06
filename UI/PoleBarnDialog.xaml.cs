@@ -26,6 +26,7 @@ namespace PoleBarnGenerator.UI
             openingManager.BindParameters(Parameters);
             leanToManager.BindParameters(Parameters);
             exteriorManager.BindParameters(Parameters);
+            interiorManager.BindParameters(Parameters);
         }
 
         private void OnDimensionChanged(object sender, TextChangedEventArgs e)
@@ -106,6 +107,37 @@ namespace PoleBarnGenerator.UI
                 _ => ExpansionJointType.SlipPlate
             };
 
+            // Industry specialization - dairy
+            p.DairyBarn.IsEnabled = chkDairyEnabled.IsChecked == true;
+            p.DairyBarn.ParlorType = cmbParlorType.SelectedIndex switch
+            {
+                1 => MilkingParlorType.Parallel,
+                2 => MilkingParlorType.Rotary,
+                _ => MilkingParlorType.Herringbone
+            };
+            p.DairyBarn.HerdSize = (int)ParseDouble(txtHerdSize.Text, 120);
+
+            // Industry specialization - equipment storage
+            p.EquipmentStorage.IsEnabled = chkEquipStorageEnabled.IsChecked == true;
+            p.EquipmentStorage.RequireClearSpan = chkClearSpan.IsChecked == true;
+            p.EquipmentStorage.CraneRail.IsEnabled = chkCraneRail.IsChecked == true;
+            p.EquipmentStorage.CraneRail.RailHeight = ParseDouble(txtCraneRailHeight.Text, 16);
+            p.EquipmentStorage.CraneRail.CapacityTons = ParseDouble(txtCraneCapacity.Text, 5);
+            p.EquipmentStorage.LargeDoor.IsEnabled = chkLargeDoor.IsChecked == true;
+            p.EquipmentStorage.LargeDoor.DoorType = cmbLargeDoorType.SelectedIndex == 1
+                ? LargeDoorType.Hydraulic
+                : LargeDoorType.Bifold;
+            p.EquipmentStorage.LargeDoor.Width = ParseDouble(txtLargeDoorWidth.Text, 30);
+            p.EquipmentStorage.LargeDoor.Height = ParseDouble(txtLargeDoorHeight.Text, 16);
+
+            // Industry specialization - agricultural
+            p.GrainStorage.IsEnabled = chkGrainStorage.IsChecked == true;
+            p.GrainStorage.BinPadCount = (int)ParseDouble(txtBinPadCount.Text, 2);
+            p.GrainStorage.BinPadDiameter = ParseDouble(txtBinPadDiameter.Text, 24);
+            p.MachineryBuilding.IsEnabled = chkMachineryBuilding.IsChecked == true;
+            p.MachineryBuilding.ClearSpanBayWidth = ParseDouble(txtMachineryBayWidth.Text, 40);
+            p.MachineryBuilding.PreferredEaveHeight = ParseDouble(txtMachineryEaveHeight.Text, 20);
+
             // Output options
             p.GeneratePlan = chkPlan.IsChecked == true;
             p.GenerateFront = chkFront.IsChecked == true;
@@ -124,6 +156,7 @@ namespace PoleBarnGenerator.UI
             // Sync lean-to and exterior settings from UI
             leanToManager.SyncToParameters();
             exteriorManager.SyncToParameters();
+            interiorManager.SyncToParameters();
 
             var (isValid, error) = Parameters.Validate();
             if (!isValid)
@@ -142,11 +175,11 @@ namespace PoleBarnGenerator.UI
             // Show summary
             var geo = new BarnGeometry(Parameters);
             txtSummary.Text =
-                $"Building:  {Parameters.BuildingWidth}' W × {Parameters.BuildingLength}' L\n" +
+                $"Building:  {Parameters.BuildingWidth}' W x {Parameters.BuildingLength}' L\n" +
                 $"Eave:      {Parameters.EaveHeight}'   Peak: {geo.PeakHeight:F1}'\n" +
-                $"Pitch:     {Parameters.RoofPitchDisplay}  ({Parameters.RoofAngleDegrees:F1}°)\n" +
+                $"Pitch:     {Parameters.RoofPitchDisplay}  ({Parameters.RoofAngleDegrees:F1} deg)\n" +
                 $"Bays:      {geo.NumBays} @ {geo.ActualBaySpacing:F1}' O.C.\n" +
-                $"Stories:   {Parameters.NumberOfFloors} ({(Parameters.FloorHeights.Count > 0 ? string.Join(\", \", Parameters.FloorHeights.Select(h => $\"{h:F1}'\")) : \"auto\")})\n" +
+                $"Stories:   {Parameters.NumberOfFloors} ({(Parameters.FloorHeights.Count > 0 ? string.Join(", ", Parameters.FloorHeights.Select(h => $"{h:F1}'")) : "auto")})\n" +
                 $"Posts:     {geo.Posts.Count}\n" +
                 $"Girt rows: {geo.Girts.Count}\n" +
                 $"Purlins:   {geo.Purlins.Count}\n" +
@@ -156,8 +189,11 @@ namespace PoleBarnGenerator.UI
                 $"Lean-Tos:  {Parameters.LeanTos.FindAll(lt => lt.Enabled).Count}\n" +
                 $"Porches:   {System.Array.FindAll(Parameters.AllPorches, p => p.IsEnabled).Length}\n" +
                 $"Footprint: {Parameters.FootprintShape}\n" +
-                $"Curved:    {(Parameters.CurvedWall.Enabled ? $\"R={Parameters.CurvedWall.Radius:F1}', A={Parameters.CurvedWall.ArcAngleDegrees:F1}°\" : \"No\")}\n" +
-                $"Joints:    {(geo.ExpansionJoints.Count > 0 ? geo.ExpansionJoints.Count.ToString() : \"None\")}\n" +
+                $"Curved:    {(Parameters.CurvedWall.Enabled ? $"R={Parameters.CurvedWall.Radius:F1}', A={Parameters.CurvedWall.ArcAngleDegrees:F1} deg" : "No")}\n" +
+                $"Joints:    {(geo.ExpansionJoints.Count > 0 ? geo.ExpansionJoints.Count.ToString() : "None")}\n" +
+                $"Dairy:     {(Parameters.DairyBarn.IsEnabled ? $"{Parameters.DairyBarn.ParlorType}, Herd {Parameters.DairyBarn.HerdSize}" : "No")}\n" +
+                $"Equipment: {(Parameters.EquipmentStorage.IsEnabled ? "Yes" : "No")}\n" +
+                $"Ag Spec:   {(Parameters.GrainStorage.IsEnabled || Parameters.MachineryBuilding.IsEnabled ? "Yes" : "No")}\n" +
                 $"Wainscot:  {(Parameters.Wainscot.IsEnabled ? "Yes" : "No")}\n" +
                 $"Cupolas:   {(Parameters.Cupola.IsEnabled ? Parameters.Cupola.Count.ToString() : "No")}\n" +
                 $"Gutters:   {(Parameters.Gutters.IsEnabled ? "Yes" : "No")}";
@@ -240,11 +276,38 @@ namespace PoleBarnGenerator.UI
                 _ => 0
             };
 
+            chkDairyEnabled.IsChecked = p.DairyBarn.IsEnabled;
+            cmbParlorType.SelectedIndex = p.DairyBarn.ParlorType switch
+            {
+                MilkingParlorType.Parallel => 1,
+                MilkingParlorType.Rotary => 2,
+                _ => 0
+            };
+            txtHerdSize.Text = p.DairyBarn.HerdSize.ToString(CultureInfo.InvariantCulture);
+
+            chkEquipStorageEnabled.IsChecked = p.EquipmentStorage.IsEnabled;
+            chkClearSpan.IsChecked = p.EquipmentStorage.RequireClearSpan;
+            chkCraneRail.IsChecked = p.EquipmentStorage.CraneRail.IsEnabled;
+            txtCraneRailHeight.Text = p.EquipmentStorage.CraneRail.RailHeight.ToString("0.##", CultureInfo.InvariantCulture);
+            txtCraneCapacity.Text = p.EquipmentStorage.CraneRail.CapacityTons.ToString("0.##", CultureInfo.InvariantCulture);
+            chkLargeDoor.IsChecked = p.EquipmentStorage.LargeDoor.IsEnabled;
+            cmbLargeDoorType.SelectedIndex = p.EquipmentStorage.LargeDoor.DoorType == LargeDoorType.Hydraulic ? 1 : 0;
+            txtLargeDoorWidth.Text = p.EquipmentStorage.LargeDoor.Width.ToString("0.##", CultureInfo.InvariantCulture);
+            txtLargeDoorHeight.Text = p.EquipmentStorage.LargeDoor.Height.ToString("0.##", CultureInfo.InvariantCulture);
+
+            chkGrainStorage.IsChecked = p.GrainStorage.IsEnabled;
+            txtBinPadCount.Text = p.GrainStorage.BinPadCount.ToString(CultureInfo.InvariantCulture);
+            txtBinPadDiameter.Text = p.GrainStorage.BinPadDiameter.ToString("0.##", CultureInfo.InvariantCulture);
+            chkMachineryBuilding.IsChecked = p.MachineryBuilding.IsEnabled;
+            txtMachineryBayWidth.Text = p.MachineryBuilding.ClearSpanBayWidth.ToString("0.##", CultureInfo.InvariantCulture);
+            txtMachineryEaveHeight.Text = p.MachineryBuilding.PreferredEaveHeight.ToString("0.##", CultureInfo.InvariantCulture);
+
             // Update the Parameters instance and rebind opening manager
             Parameters = p;
             openingManager.BindParameters(Parameters);
             leanToManager.BindParameters(Parameters);
             exteriorManager.BindParameters(Parameters);
+            interiorManager.BindParameters(Parameters);
         }
 
         private void OnTrussTypeChanged(object sender, SelectionChangedEventArgs e)

@@ -85,6 +85,12 @@ namespace PoleBarnGenerator.Utils
             public const string Curved         = "PB-CURVED";
             public const string Joint          = "PB-JOINT";
             public const string JointDetail    = "PB-JOINT-DETAIL";
+            public const string Dairy          = "PB-DAIRY";
+            public const string Crane          = "PB-CRANE";
+            public const string Vent           = "PB-VENT";
+            public const string Drain          = "PB-DRAIN";
+            public const string Grain          = "PB-GRAIN";
+            public const string Equip          = "PB-EQUIP";
 
             // Legacy aliases
             public const string Rafters        = "FS-S-RAFT";
@@ -174,6 +180,12 @@ namespace PoleBarnGenerator.Utils
             { Layers.Curved,        new LayerDef(151, LineWeight.LineWeight035) },
             { Layers.Joint,         new LayerDef(10,  LineWeight.LineWeight050, "CENTER") },
             { Layers.JointDetail,   new LayerDef(10,  LineWeight.LineWeight018) },
+            { Layers.Dairy,         new LayerDef(33,  LineWeight.LineWeight025) },
+            { Layers.Crane,         new LayerDef(21,  LineWeight.LineWeight035, "DASHED") },
+            { Layers.Vent,          new LayerDef(92,  LineWeight.LineWeight025) },
+            { Layers.Drain,         new LayerDef(150, LineWeight.LineWeight025, "CENTER") },
+            { Layers.Grain,         new LayerDef(32,  LineWeight.LineWeight025) },
+            { Layers.Equip,         new LayerDef(23,  LineWeight.LineWeight035) },
 
             // Legacy
             { Layers.Rafters,       new LayerDef(6,   LineWeight.LineWeight025) },

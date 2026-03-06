@@ -268,6 +268,21 @@ namespace PoleBarnGenerator.Generators
 
                     if (interior.WorkshopFeatures?.Count > 0)
                         count += InteriorGenerator.GenerateWorkshopFeatures(tr, btr, geo, interior.WorkshopFeatures, offset);
+
+                    if (interior.DairyLayout != null)
+                        count += InteriorGenerator.GenerateDairyLayout(tr, btr, geo, interior.DairyLayout, offset);
+
+                    if (interior.EquipmentLayout != null)
+                        count += InteriorGenerator.GenerateEquipmentStorageLayout(tr, btr, interior.EquipmentLayout, offset);
+
+                    if (interior.DrainageLayout != null)
+                        count += InteriorGenerator.GenerateDrainageLayout(tr, btr, interior.DrainageLayout, offset);
+
+                    if (interior.GrainStorageLayout != null)
+                        count += InteriorGenerator.GenerateGrainStorageLayout(tr, btr, interior.GrainStorageLayout, offset);
+
+                    if (interior.MachineryLayout != null)
+                        count += InteriorGenerator.GenerateMachineryLayout(tr, btr, interior.MachineryLayout, offset);
                 }
                 catch (System.Exception) { /* skip failed interior render */ }
             }

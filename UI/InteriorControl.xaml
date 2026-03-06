@@ -79,6 +79,46 @@
                             <CheckBox Content="Wash Bay" IsChecked="{Binding HorseStalls.WashBay.IsEnabled}" Margin="4"/>
                         </UniformGrid>
                     </GroupBox>
+
+                    <GroupBox Header="Horse Facility Upgrades" Margin="0,0,0,8"
+                              Visibility="{Binding IsChecked, ElementName=chkStallsEnabled, Converter={StaticResource BoolToVisibility}}">
+                        <StackPanel Margin="4">
+                            <TextBlock Text="Ventilation" FontWeight="SemiBold" Margin="0,0,0,4"/>
+                            <WrapPanel>
+                                <CheckBox x:Name="chkVentEnabled" Content="Enable Ventilation" Margin="4"/>
+                                <CheckBox x:Name="chkRidgeVent" Content="Ridge Vent" Margin="4"/>
+                                <CheckBox x:Name="chkCupolas" Content="Cupolas" Margin="4"/>
+                                <CheckBox x:Name="chkWallLouvers" Content="Wall Louvers" Margin="4"/>
+                            </WrapPanel>
+
+                            <Grid Margin="0,4,0,8">
+                                <Grid.ColumnDefinitions>
+                                    <ColumnDefinition Width="180"/>
+                                    <ColumnDefinition Width="70"/>
+                                    <ColumnDefinition Width="120"/>
+                                    <ColumnDefinition Width="70"/>
+                                </Grid.ColumnDefinitions>
+                                <TextBlock Grid.Column="0" Text="Cupola Count:" VerticalAlignment="Center"/>
+                                <TextBox x:Name="txtCupolaCount" Grid.Column="1" Text="1" Width="50"/>
+                                <TextBlock Grid.Column="2" Text="Louver Count:" VerticalAlignment="Center"/>
+                                <TextBox x:Name="txtLouverCount" Grid.Column="3" Text="4" Width="50"/>
+                            </Grid>
+
+                            <TextBlock Text="Drainage" FontWeight="SemiBold" Margin="0,0,0,4"/>
+                            <WrapPanel>
+                                <CheckBox x:Name="chkDrainEnabled" Content="Enable Drainage Plan" Margin="4"/>
+                                <CheckBox x:Name="chkFrenchDrain" Content="French Drain" Margin="4"/>
+                            </WrapPanel>
+                            <Grid Margin="0,4,0,0">
+                                <Grid.ColumnDefinitions>
+                                    <ColumnDefinition Width="180"/>
+                                    <ColumnDefinition Width="80"/>
+                                </Grid.ColumnDefinitions>
+                                <TextBlock Grid.Column="0" Text="Floor Slope (%):" VerticalAlignment="Center"/>
+                                <TextBox x:Name="txtFloorSlope" Grid.Column="1" Text="1.5" Width="60"/>
+                            </Grid>
+                        </StackPanel>
+                    </GroupBox>
                 </StackPanel>
             </ScrollViewer>
         </TabItem>

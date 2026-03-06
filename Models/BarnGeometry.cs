@@ -64,7 +64,8 @@ namespace PoleBarnGenerator.Models
         private void ComputeInterior()
         {
             InteriorGeometry = InteriorGeometry.Calculate(this,
-                Params.HorseStalls, Params.Loft, Params.Partitions, Params.Workshop);
+                Params.HorseStalls, Params.Loft, Params.Partitions, Params.Workshop,
+                Params.Drainage);
         }
 
         private void ComputeFloorLevels()

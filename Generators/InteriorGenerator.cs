@@ -412,6 +412,221 @@ namespace PoleBarnGenerator.Generators
             return count;
         }
 
+        public static int GenerateDairyLayout(Transaction tr, BlockTableRecord btr,
+            BarnGeometry mainGeo, DairyLayoutData layout, Vector3d offset)
+        {
+            if (layout == null) return 0;
+            int count = 0;
+
+            if (layout.FeedAlley != null)
+            {
+                DrawingHelpers.AddRectangle(tr, btr,
+                    DrawingHelpers.Offset2d(layout.FeedAlley.X, layout.FeedAlley.Y, offset),
+                    layout.FeedAlley.Width, layout.FeedAlley.Height, LayerManager.Layers.Dairy);
+                DrawingHelpers.AddText(tr, btr,
+                    DrawingHelpers.Offset(layout.FeedAlley.X + layout.FeedAlley.Width / 2.0, layout.FeedAlley.Y + layout.FeedAlley.Height / 2.0, offset),
+                    "FEED ALLEY / BUNK LINE", 0.45, LayerManager.Layers.Dairy);
+                count += 2;
+            }
+
+            if (layout.ManureAlley != null)
+            {
+                var manure = DrawingHelpers.AddRectangle(tr, btr,
+                    DrawingHelpers.Offset2d(layout.ManureAlley.X, layout.ManureAlley.Y, offset),
+                    layout.ManureAlley.Width, layout.ManureAlley.Height, LayerManager.Layers.Dairy);
+                try { manure.Linetype = "DASHED"; } catch { }
+                DrawingHelpers.AddText(tr, btr,
+                    DrawingHelpers.Offset(layout.ManureAlley.X + layout.ManureAlley.Width / 2.0, layout.ManureAlley.Y + layout.ManureAlley.Height / 2.0, offset),
+                    "MANURE ALLEY / GUTTER", 0.4, LayerManager.Layers.Dairy);
+                count += 2;
+            }
+
+            if (layout.MilkingParlor != null)
+            {
+                DrawingHelpers.AddRectangle(tr, btr,
+                    DrawingHelpers.Offset2d(layout.MilkingParlor.X, layout.MilkingParlor.Y, offset),
+                    layout.MilkingParlor.Width, layout.MilkingParlor.Height, LayerManager.Layers.Dairy);
+                DrawingHelpers.AddText(tr, btr,
+                    DrawingHelpers.Offset(layout.MilkingParlor.X + layout.MilkingParlor.Width / 2.0, layout.MilkingParlor.Y + layout.MilkingParlor.Height / 2.0, offset),
+                    $"{layout.ParlorType.ToString().ToUpper()} PARLOR", 0.5, LayerManager.Layers.Anno);
+                count += 2;
+            }
+
+            foreach (var stall in layout.Freestalls)
+            {
+                DrawingHelpers.AddRectangle(tr, btr,
+                    DrawingHelpers.Offset2d(stall.X, stall.Y, offset),
+                    stall.Width, stall.Height, LayerManager.Layers.Dairy);
+                count++;
+            }
+
+            foreach (var path in layout.TrafficPaths)
+            {
+                var flow = DrawingHelpers.AddLine(tr, btr,
+                    DrawingHelpers.Offset(path.StartX, path.StartY, offset),
+                    DrawingHelpers.Offset(path.EndX, path.EndY, offset),
+                    LayerManager.Layers.Dairy);
+                try { flow.Linetype = "CENTER"; } catch { }
+                count++;
+            }
+
+            return count;
+        }
+
+        public static int GenerateEquipmentStorageLayout(Transaction tr, BlockTableRecord btr,
+            EquipmentStorageLayoutData layout, Vector3d offset)
+        {
+            if (layout == null) return 0;
+            int count = 0;
+
+            if (layout.ClearanceZone != null)
+            {
+                var zone = DrawingHelpers.AddRectangle(tr, btr,
+                    DrawingHelpers.Offset2d(layout.ClearanceZone.X, layout.ClearanceZone.Y, offset),
+                    layout.ClearanceZone.Width, layout.ClearanceZone.Height, LayerManager.Layers.Equip);
+                try { zone.Linetype = "DASHED"; } catch { }
+                DrawingHelpers.AddText(tr, btr,
+                    DrawingHelpers.Offset(layout.ClearanceZone.X + layout.ClearanceZone.Width / 2.0, layout.ClearanceZone.Y + layout.ClearanceZone.Height / 2.0, offset),
+                    "EQUIPMENT CLEARANCE ZONE", 0.4, LayerManager.Layers.Equip);
+                count += 2;
+            }
+
+            if (layout.CraneRailLeft != null)
+            {
+                var left = DrawingHelpers.AddLine(tr, btr,
+                    DrawingHelpers.Offset(layout.CraneRailLeft.StartX, layout.CraneRailLeft.StartY, offset),
+                    DrawingHelpers.Offset(layout.CraneRailLeft.EndX, layout.CraneRailLeft.EndY, offset),
+                    LayerManager.Layers.Crane);
+                try { left.Linetype = "DASHED"; } catch { }
+                count++;
+            }
+
+            if (layout.CraneRailRight != null)
+            {
+                var right = DrawingHelpers.AddLine(tr, btr,
+                    DrawingHelpers.Offset(layout.CraneRailRight.StartX, layout.CraneRailRight.StartY, offset),
+                    DrawingHelpers.Offset(layout.CraneRailRight.EndX, layout.CraneRailRight.EndY, offset),
+                    LayerManager.Layers.Crane);
+                try { right.Linetype = "DASHED"; } catch { }
+                DrawingHelpers.AddText(tr, btr,
+                    DrawingHelpers.Offset(layout.CraneRailRight.StartX - 2.0, 1.0, offset),
+                    $"CRANE RAIL {layout.CraneCapacityTons:F1}T @ {layout.CraneRailHeight:F1}'", 0.4, LayerManager.Layers.Crane);
+                count += 2;
+            }
+
+            if (!string.IsNullOrWhiteSpace(layout.SlabSpec))
+            {
+                DrawingHelpers.AddText(tr, btr,
+                    DrawingHelpers.Offset(2.0, 2.0, offset),
+                    $"SLAB: {layout.SlabSpec}", 0.35, LayerManager.Layers.Equip);
+                count++;
+            }
+
+            if (layout.IsClearSpan)
+            {
+                DrawingHelpers.AddText(tr, btr,
+                    DrawingHelpers.Offset(2.0, 3.0, offset),
+                    "CLEAR-SPAN MODE (NO INTERIOR POSTS)", 0.35, LayerManager.Layers.Equip);
+                count++;
+            }
+
+            return count;
+        }
+
+        public static int GenerateDrainageLayout(Transaction tr, BlockTableRecord btr,
+            DrainageLayoutData layout, Vector3d offset)
+        {
+            if (layout == null) return 0;
+            int count = 0;
+
+            foreach (var drain in layout.DrainLocations)
+            {
+                AddFloorDrainSymbol(tr, btr, drain.X, drain.Y, offset);
+                count++;
+            }
+
+            DrawingHelpers.AddText(tr, btr,
+                DrawingHelpers.Offset(1.5, 1.0, offset),
+                $"FLOOR SLOPE {layout.FloorSlopePercent:F1}% TO DRAINS", 0.35, LayerManager.Layers.Drain);
+            count++;
+
+            if (layout.FrenchDrainEnabled)
+            {
+                var french = DrawingHelpers.AddLine(tr, btr,
+                    DrawingHelpers.Offset(0.5, 0.5, offset),
+                    DrawingHelpers.Offset(0.5, 10.0, offset),
+                    LayerManager.Layers.Drain);
+                try { french.Linetype = "DASHED"; } catch { }
+                DrawingHelpers.AddText(tr, btr,
+                    DrawingHelpers.Offset(1.2, 9.5, offset),
+                    "FRENCH DRAIN", 0.3, LayerManager.Layers.Drain);
+                count += 2;
+            }
+
+            return count;
+        }
+
+        public static int GenerateGrainStorageLayout(Transaction tr, BlockTableRecord btr,
+            GrainStorageLayoutData layout, Vector3d offset)
+        {
+            if (layout == null) return 0;
+            int count = 0;
+
+            foreach (var pad in layout.BinPads)
+            {
+                Circle bin = new Circle(
+                    DrawingHelpers.Offset(pad.Center.X, pad.Center.Y, offset),
+                    Vector3d.ZAxis, pad.Diameter / 2.0);
+                LayerManager.SetLayer(bin, LayerManager.Layers.Grain);
+                btr.AppendEntity(bin);
+                tr.AddNewlyCreatedDBObject(bin, true);
+                count++;
+            }
+
+            if (layout.AerationFloorEnabled)
+            {
+                DrawingHelpers.AddText(tr, btr,
+                    DrawingHelpers.Offset(2.0, 1.5, offset),
+                    "AERATION FLOOR", 0.35, LayerManager.Layers.Grain);
+                count++;
+            }
+
+            if (layout.FlatStorageEnabled)
+            {
+                DrawingHelpers.AddText(tr, btr,
+                    DrawingHelpers.Offset(2.0, 2.2, offset),
+                    "FLAT STORAGE ZONE", 0.35, LayerManager.Layers.Grain);
+                count++;
+            }
+
+            return count;
+        }
+
+        public static int GenerateMachineryLayout(Transaction tr, BlockTableRecord btr,
+            MachineryLayoutData layout, Vector3d offset)
+        {
+            if (layout == null) return 0;
+            int count = 0;
+
+            foreach (var bay in layout.ClearSpanBays)
+            {
+                DrawingHelpers.AddRectangle(tr, btr,
+                    DrawingHelpers.Offset2d(bay.X, bay.Y, offset),
+                    bay.Width, bay.Height, LayerManager.Layers.Equip);
+                count++;
+            }
+
+            DrawingHelpers.AddText(tr, btr,
+                DrawingHelpers.Offset(2.0, 3.0, offset),
+                $"MACHINERY EAVE TARGET {layout.PreferredEaveHeight:F1}'", 0.35, LayerManager.Layers.Equip);
+            DrawingHelpers.AddText(tr, btr,
+                DrawingHelpers.Offset(2.0, 3.7, offset),
+                $"RECOMMENDED EQUIPMENT DOOR HEIGHT {layout.RecommendedDoorHeight:F1}'", 0.35, LayerManager.Layers.Equip);
+            count += 2;
+
+            return count;
+        }
+
         // ── Private helper methods ──
 
         private static int DrawWorkbench(Transaction tr, BlockTableRecord btr,

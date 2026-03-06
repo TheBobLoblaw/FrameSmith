@@ -15,13 +15,19 @@ namespace PoleBarnGenerator.Models
         public LoftGeometryData LoftGeometry { get; set; }
         public List<PartitionGeometryData> PartitionGeometries { get; set; } = new();
         public List<WorkshopFeatureGeometry> WorkshopFeatures { get; set; } = new();
+        public DairyLayoutData DairyLayout { get; set; }
+        public EquipmentStorageLayoutData EquipmentLayout { get; set; }
+        public DrainageLayoutData DrainageLayout { get; set; }
+        public GrainStorageLayoutData GrainStorageLayout { get; set; }
+        public MachineryLayoutData MachineryLayout { get; set; }
 
         /// <summary>
         /// Calculate all interior geometry from building geometry and interior parameters.
         /// </summary>
         public static InteriorGeometry Calculate(BarnGeometry mainGeo,
             HorseStallParameters stalls, LoftParameters loft,
-            InteriorPartitionParameters partitions, WorkshopParameters workshop)
+            InteriorPartitionParameters partitions, WorkshopParameters workshop,
+            DrainageParameters drainage)
         {
             var result = new InteriorGeometry();
             var p = mainGeo.Params;
@@ -50,7 +56,207 @@ namespace PoleBarnGenerator.Models
                 result.WorkshopFeatures = CalculateWorkshopGeometries(mainGeo, workshop);
             }
 
+            // ── Industry-specialized layouts (strategy pattern) ──
+            foreach (var strategy in IndustryLayoutStrategyFactory.GetStrategies(p))
+            {
+                strategy.Apply(mainGeo, result);
+            }
+
+            // Explicit overlays requested on horse facilities
+            if (drainage?.IsEnabled == true)
+            {
+                result.DrainageLayout = CalculateDrainageLayout(mainGeo, drainage);
+            }
+
             return result;
+        }
+
+        internal static DairyLayoutData CalculateDairyLayout(BarnGeometry geo, DairyBarnModuleParameters dairy)
+        {
+            var p = geo.Params;
+            var layout = new DairyLayoutData
+            {
+                ParlorType = dairy.ParlorType,
+                FeedAlley = new RectangleData
+                {
+                    X = 0,
+                    Y = p.BuildingLength * 0.35,
+                    Width = p.BuildingWidth,
+                    Height = dairy.FeedAlleyWidth
+                },
+                ManureAlley = new RectangleData
+                {
+                    X = 0,
+                    Y = p.BuildingLength * 0.15,
+                    Width = p.BuildingWidth,
+                    Height = dairy.ManureAlleyWidth
+                }
+            };
+
+            double parlorWidth = p.BuildingWidth * 0.4;
+            double parlorLength = p.BuildingLength * 0.25;
+            layout.MilkingParlor = new RectangleData
+            {
+                X = (p.BuildingWidth - parlorWidth) / 2.0,
+                Y = p.BuildingLength * 0.55,
+                Width = parlorWidth,
+                Height = parlorLength
+            };
+
+            int stallsPerRow = Math.Max(6, dairy.HerdSize / 8);
+            double stallPitch = Math.Max(dairy.FreestallWidth, 4.0);
+            double rowY = p.BuildingLength * 0.02;
+            for (int i = 0; i < stallsPerRow; i++)
+            {
+                double x = 1.0 + i * stallPitch;
+                if (x + dairy.FreestallWidth > p.BuildingWidth - 1.0) break;
+                layout.Freestalls.Add(new RectangleData
+                {
+                    X = x,
+                    Y = rowY,
+                    Width = dairy.FreestallWidth,
+                    Height = dairy.FreestallLength
+                });
+            }
+
+            if (dairy.ShowCowTrafficFlow)
+            {
+                layout.TrafficPaths.Add(new LineData
+                {
+                    StartX = p.BuildingWidth * 0.15,
+                    StartY = p.BuildingLength * 0.1,
+                    EndX = p.BuildingWidth * 0.5,
+                    EndY = p.BuildingLength * 0.6
+                });
+                layout.TrafficPaths.Add(new LineData
+                {
+                    StartX = p.BuildingWidth * 0.85,
+                    StartY = p.BuildingLength * 0.1,
+                    EndX = p.BuildingWidth * 0.5,
+                    EndY = p.BuildingLength * 0.6
+                });
+            }
+
+            return layout;
+        }
+
+        internal static EquipmentStorageLayoutData CalculateEquipmentLayout(BarnGeometry geo, EquipmentStorageParameters equipment)
+        {
+            var p = geo.Params;
+            var layout = new EquipmentStorageLayoutData
+            {
+                IsClearSpan = equipment.RequireClearSpan,
+                SlabSpec = equipment.HeavyDutySlabSpec,
+                ClearanceZone = new RectangleData
+                {
+                    X = p.BuildingWidth / 2.0 - equipment.ClearanceZoneRadius,
+                    Y = p.BuildingLength / 2.0 - equipment.ClearanceZoneRadius,
+                    Width = equipment.ClearanceZoneRadius * 2.0,
+                    Height = equipment.ClearanceZoneRadius * 2.0
+                }
+            };
+
+            if (equipment.CraneRail.IsEnabled)
+            {
+                layout.CraneRailLeft = new LineData
+                {
+                    StartX = 2.0,
+                    StartY = 0,
+                    EndX = 2.0,
+                    EndY = p.BuildingLength
+                };
+                layout.CraneRailRight = new LineData
+                {
+                    StartX = p.BuildingWidth - 2.0,
+                    StartY = 0,
+                    EndX = p.BuildingWidth - 2.0,
+                    EndY = p.BuildingLength
+                };
+                layout.CraneCapacityTons = equipment.CraneRail.CapacityTons;
+                layout.CraneRailHeight = equipment.CraneRail.RailHeight;
+            }
+
+            if (equipment.LargeDoor.IsEnabled)
+            {
+                layout.LargeDoor = new DoorOpening
+                {
+                    Type = DoorType.Overhead,
+                    Width = equipment.LargeDoor.Width,
+                    Height = equipment.LargeDoor.Height,
+                    Wall = equipment.LargeDoor.Wall,
+                    CenterOffset = equipment.LargeDoor.Width / 2.0 + 2.0
+                };
+            }
+
+            return layout;
+        }
+
+        internal static DrainageLayoutData CalculateDrainageLayout(BarnGeometry geo, DrainageParameters drainage)
+        {
+            var p = geo.Params;
+            var layout = new DrainageLayoutData
+            {
+                FloorSlopePercent = drainage.FloorSlopePercent,
+                FrenchDrainEnabled = drainage.FrenchDrainEnabled
+            };
+
+            var drains = drainage.DrainLocations?.Count > 0
+                ? drainage.DrainLocations
+                : new List<Point2d> { new Point2d(p.BuildingWidth / 2.0, p.BuildingLength / 2.0) };
+
+            layout.DrainLocations.AddRange(drains);
+            return layout;
+        }
+
+        internal static GrainStorageLayoutData CalculateGrainLayout(BarnGeometry geo, GrainStorageParameters grain)
+        {
+            var p = geo.Params;
+            var layout = new GrainStorageLayoutData
+            {
+                AerationFloorEnabled = grain.AerationFloorEnabled,
+                FlatStorageEnabled = grain.FlatStorageEnabled
+            };
+
+            int count = Math.Max(1, grain.BinPadCount);
+            double pitch = p.BuildingWidth / (count + 1);
+            for (int i = 1; i <= count; i++)
+            {
+                layout.BinPads.Add(new CircularPadData
+                {
+                    Center = new Point2d(i * pitch, p.BuildingLength * 0.7),
+                    Diameter = grain.BinPadDiameter
+                });
+            }
+
+            return layout;
+        }
+
+        internal static MachineryLayoutData CalculateMachineryLayout(BarnGeometry geo, MachineryBuildingParameters machinery)
+        {
+            var p = geo.Params;
+            var layout = new MachineryLayoutData
+            {
+                PreferredEaveHeight = machinery.PreferredEaveHeight,
+                RecommendedDoorHeight = machinery.RecommendedDoorHeight
+            };
+
+            int bays = Math.Max(1, (int)Math.Floor(p.BuildingWidth / machinery.ClearSpanBayWidth));
+            if (bays < 1) bays = 1;
+
+            for (int i = 0; i < bays; i++)
+            {
+                double x = i * machinery.ClearSpanBayWidth;
+                double width = Math.Min(machinery.ClearSpanBayWidth, p.BuildingWidth - x);
+                layout.ClearSpanBays.Add(new RectangleData
+                {
+                    X = x,
+                    Y = p.BuildingLength * 0.1,
+                    Width = width,
+                    Height = p.BuildingLength * 0.8
+                });
+            }
+
+            return layout;
         }
 
         private static StallLayout CalculateStallLayout(BarnGeometry geo, HorseStallParameters stalls)
@@ -465,5 +671,102 @@ namespace PoleBarnGenerator.Models
         public Point2d VisePosition { get; set; }
         public PowerType PowerOutletType { get; set; }
         public bool IsGFCI { get; set; }
+    }
+
+    public class DairyLayoutData
+    {
+        public MilkingParlorType ParlorType { get; set; }
+        public RectangleData MilkingParlor { get; set; }
+        public RectangleData FeedAlley { get; set; }
+        public RectangleData ManureAlley { get; set; }
+        public List<RectangleData> Freestalls { get; set; } = new();
+        public List<LineData> TrafficPaths { get; set; } = new();
+    }
+
+    public class EquipmentStorageLayoutData
+    {
+        public bool IsClearSpan { get; set; }
+        public string SlabSpec { get; set; }
+        public RectangleData ClearanceZone { get; set; }
+        public LineData CraneRailLeft { get; set; }
+        public LineData CraneRailRight { get; set; }
+        public double CraneRailHeight { get; set; }
+        public double CraneCapacityTons { get; set; }
+        public DoorOpening LargeDoor { get; set; }
+    }
+
+    public class DrainageLayoutData
+    {
+        public double FloorSlopePercent { get; set; }
+        public bool FrenchDrainEnabled { get; set; }
+        public List<Point2d> DrainLocations { get; set; } = new();
+    }
+
+    public class CircularPadData
+    {
+        public Point2d Center { get; set; }
+        public double Diameter { get; set; }
+    }
+
+    public class GrainStorageLayoutData
+    {
+        public bool FlatStorageEnabled { get; set; }
+        public bool AerationFloorEnabled { get; set; }
+        public List<CircularPadData> BinPads { get; set; } = new();
+    }
+
+    public class MachineryLayoutData
+    {
+        public List<RectangleData> ClearSpanBays { get; set; } = new();
+        public double PreferredEaveHeight { get; set; }
+        public double RecommendedDoorHeight { get; set; }
+    }
+
+    internal interface IIndustryLayoutStrategy
+    {
+        void Apply(BarnGeometry geo, InteriorGeometry target);
+    }
+
+    internal static class IndustryLayoutStrategyFactory
+    {
+        public static IEnumerable<IIndustryLayoutStrategy> GetStrategies(BarnParameters p)
+        {
+            if (p.DairyBarn?.IsEnabled == true) yield return new DairyLayoutStrategy();
+            if (p.EquipmentStorage?.IsEnabled == true) yield return new EquipmentStorageLayoutStrategy();
+            if (p.GrainStorage?.IsEnabled == true) yield return new GrainStorageLayoutStrategy();
+            if (p.MachineryBuilding?.IsEnabled == true) yield return new MachineryLayoutStrategy();
+        }
+    }
+
+    internal sealed class DairyLayoutStrategy : IIndustryLayoutStrategy
+    {
+        public void Apply(BarnGeometry geo, InteriorGeometry target)
+        {
+            target.DairyLayout = InteriorGeometry.CalculateDairyLayout(geo, geo.Params.DairyBarn);
+        }
+    }
+
+    internal sealed class EquipmentStorageLayoutStrategy : IIndustryLayoutStrategy
+    {
+        public void Apply(BarnGeometry geo, InteriorGeometry target)
+        {
+            target.EquipmentLayout = InteriorGeometry.CalculateEquipmentLayout(geo, geo.Params.EquipmentStorage);
+        }
+    }
+
+    internal sealed class GrainStorageLayoutStrategy : IIndustryLayoutStrategy
+    {
+        public void Apply(BarnGeometry geo, InteriorGeometry target)
+        {
+            target.GrainStorageLayout = InteriorGeometry.CalculateGrainLayout(geo, geo.Params.GrainStorage);
+        }
+    }
+
+    internal sealed class MachineryLayoutStrategy : IIndustryLayoutStrategy
+    {
+        public void Apply(BarnGeometry geo, InteriorGeometry target)
+        {
+            target.MachineryLayout = InteriorGeometry.CalculateMachineryLayout(geo, geo.Params.MachineryBuilding);
+        }
     }
 }

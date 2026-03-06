@@ -335,6 +335,114 @@
                                 </ComboBox>
                             </Grid>
                         </GroupBox>
+
+                        <GroupBox Header="Dairy Barn">
+                            <Grid>
+                                <Grid.ColumnDefinitions>
+                                    <ColumnDefinition Width="180"/>
+                                    <ColumnDefinition Width="220"/>
+                                </Grid.ColumnDefinitions>
+                                <Grid.RowDefinitions>
+                                    <RowDefinition Height="Auto"/>
+                                    <RowDefinition Height="Auto"/>
+                                    <RowDefinition Height="Auto"/>
+                                </Grid.RowDefinitions>
+
+                                <CheckBox Grid.Row="0" Grid.ColumnSpan="2" x:Name="chkDairyEnabled"
+                                          Content="Enable Dairy Barn Module" Margin="2,4"/>
+
+                                <Label Grid.Row="1" Grid.Column="0" Content="Parlor Type:"/>
+                                <ComboBox Grid.Row="1" Grid.Column="1" x:Name="cmbParlorType" Width="170" SelectedIndex="0">
+                                    <ComboBoxItem Content="Herringbone"/>
+                                    <ComboBoxItem Content="Parallel"/>
+                                    <ComboBoxItem Content="Rotary"/>
+                                </ComboBox>
+
+                                <Label Grid.Row="2" Grid.Column="0" Content="Herd Size:"/>
+                                <TextBox Grid.Row="2" Grid.Column="1" x:Name="txtHerdSize" Text="120" Width="80"/>
+                            </Grid>
+                        </GroupBox>
+
+                        <GroupBox Header="Equipment Storage">
+                            <Grid>
+                                <Grid.ColumnDefinitions>
+                                    <ColumnDefinition Width="180"/>
+                                    <ColumnDefinition Width="220"/>
+                                </Grid.ColumnDefinitions>
+                                <Grid.RowDefinitions>
+                                    <RowDefinition Height="Auto"/>
+                                    <RowDefinition Height="Auto"/>
+                                    <RowDefinition Height="Auto"/>
+                                    <RowDefinition Height="Auto"/>
+                                    <RowDefinition Height="Auto"/>
+                                    <RowDefinition Height="Auto"/>
+                                </Grid.RowDefinitions>
+
+                                <CheckBox Grid.Row="0" Grid.ColumnSpan="2" x:Name="chkEquipStorageEnabled"
+                                          Content="Enable Equipment Storage Mode" Margin="2,4"/>
+                                <CheckBox Grid.Row="1" Grid.ColumnSpan="2" x:Name="chkClearSpan"
+                                          Content="Require Clear-Span (No Interior Posts)" Margin="2,4" IsChecked="True"/>
+
+                                <CheckBox Grid.Row="2" Grid.ColumnSpan="2" x:Name="chkCraneRail"
+                                          Content="Enable Crane Rails" Margin="2,4"/>
+                                <Label Grid.Row="3" Grid.Column="0" Content="Rail Height / Capacity:"/>
+                                <StackPanel Grid.Row="3" Grid.Column="1" Orientation="Horizontal">
+                                    <TextBox x:Name="txtCraneRailHeight" Text="16" Width="50"/>
+                                    <Label Content="ft /"/>
+                                    <TextBox x:Name="txtCraneCapacity" Text="5" Width="50"/>
+                                    <Label Content="tons"/>
+                                </StackPanel>
+
+                                <CheckBox Grid.Row="4" Grid.ColumnSpan="2" x:Name="chkLargeDoor"
+                                          Content="Enable Large Door System" Margin="2,4"/>
+                                <StackPanel Grid.Row="5" Grid.Column="1" Orientation="Horizontal">
+                                    <ComboBox x:Name="cmbLargeDoorType" Width="90" SelectedIndex="0">
+                                        <ComboBoxItem Content="Bifold"/>
+                                        <ComboBoxItem Content="Hydraulic"/>
+                                    </ComboBox>
+                                    <TextBox x:Name="txtLargeDoorWidth" Text="30" Width="50"/>
+                                    <Label Content="x"/>
+                                    <TextBox x:Name="txtLargeDoorHeight" Text="16" Width="50"/>
+                                    <Label Content="ft"/>
+                                </StackPanel>
+                                <Label Grid.Row="5" Grid.Column="0" Content="Door Type / Size:"/>
+                            </Grid>
+                        </GroupBox>
+
+                        <GroupBox Header="Agricultural">
+                            <Grid>
+                                <Grid.ColumnDefinitions>
+                                    <ColumnDefinition Width="180"/>
+                                    <ColumnDefinition Width="220"/>
+                                </Grid.ColumnDefinitions>
+                                <Grid.RowDefinitions>
+                                    <RowDefinition Height="Auto"/>
+                                    <RowDefinition Height="Auto"/>
+                                    <RowDefinition Height="Auto"/>
+                                    <RowDefinition Height="Auto"/>
+                                </Grid.RowDefinitions>
+
+                                <CheckBox Grid.Row="0" Grid.ColumnSpan="2" x:Name="chkGrainStorage"
+                                          Content="Enable Grain Storage Layout" Margin="2,4"/>
+                                <StackPanel Grid.Row="1" Grid.Column="1" Orientation="Horizontal">
+                                    <TextBox x:Name="txtBinPadCount" Text="2" Width="50"/>
+                                    <Label Content="pads @"/>
+                                    <TextBox x:Name="txtBinPadDiameter" Text="24" Width="50"/>
+                                    <Label Content="ft dia"/>
+                                </StackPanel>
+                                <Label Grid.Row="1" Grid.Column="0" Content="Bin Pad Layout:"/>
+
+                                <CheckBox Grid.Row="2" Grid.ColumnSpan="2" x:Name="chkMachineryBuilding"
+                                          Content="Enable Machinery Building Mode" Margin="2,4"/>
+                                <StackPanel Grid.Row="3" Grid.Column="1" Orientation="Horizontal">
+                                    <TextBox x:Name="txtMachineryBayWidth" Text="40" Width="50"/>
+                                    <Label Content="ft clear-span, eave"/>
+                                    <TextBox x:Name="txtMachineryEaveHeight" Text="20" Width="50"/>
+                                    <Label Content="ft"/>
+                                </StackPanel>
+                                <Label Grid.Row="3" Grid.Column="0" Content="Machinery Bays:"/>
+                            </Grid>
+                        </GroupBox>
                     </StackPanel>
                 </ScrollViewer>
             </TabItem>

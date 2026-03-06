@@ -308,6 +308,59 @@ namespace PoleBarnGenerator.Models
         }
 
         // ───────────────────────────────────────────────
+        // Industry Specialization
+        // ───────────────────────────────────────────────
+
+        private BuildingSpecialtyType _specialtyType = BuildingSpecialtyType.Standard;
+        public BuildingSpecialtyType SpecialtyType
+        {
+            get => _specialtyType;
+            set { _specialtyType = value; OnPropertyChanged(); }
+        }
+
+        private DairyBarnModuleParameters _dairyBarn = new DairyBarnModuleParameters();
+        public DairyBarnModuleParameters DairyBarn
+        {
+            get => _dairyBarn;
+            set { _dairyBarn = value ?? new DairyBarnModuleParameters(); OnPropertyChanged(); }
+        }
+
+        private EquipmentStorageParameters _equipmentStorage = new EquipmentStorageParameters();
+        public EquipmentStorageParameters EquipmentStorage
+        {
+            get => _equipmentStorage;
+            set { _equipmentStorage = value ?? new EquipmentStorageParameters(); OnPropertyChanged(); }
+        }
+
+        private VentilationParameters _ventilation = new VentilationParameters();
+        public VentilationParameters Ventilation
+        {
+            get => _ventilation;
+            set { _ventilation = value ?? new VentilationParameters(); OnPropertyChanged(); }
+        }
+
+        private DrainageParameters _drainage = new DrainageParameters();
+        public DrainageParameters Drainage
+        {
+            get => _drainage;
+            set { _drainage = value ?? new DrainageParameters(); OnPropertyChanged(); }
+        }
+
+        private GrainStorageParameters _grainStorage = new GrainStorageParameters();
+        public GrainStorageParameters GrainStorage
+        {
+            get => _grainStorage;
+            set { _grainStorage = value ?? new GrainStorageParameters(); OnPropertyChanged(); }
+        }
+
+        private MachineryBuildingParameters _machineryBuilding = new MachineryBuildingParameters();
+        public MachineryBuildingParameters MachineryBuilding
+        {
+            get => _machineryBuilding;
+            set { _machineryBuilding = value ?? new MachineryBuildingParameters(); OnPropertyChanged(); }
+        }
+
+        // ───────────────────────────────────────────────
         // ───────────────────────────────────────────────
         // Structural Engineering
         // ───────────────────────────────────────────────
@@ -507,6 +560,42 @@ namespace PoleBarnGenerator.Models
             {
                 var (wValid, wError) = Workshop.Validate(this);
                 if (!wValid) return (false, wError);
+            }
+
+            if (DairyBarn != null)
+            {
+                var (dairyValid, dairyError) = DairyBarn.Validate(this);
+                if (!dairyValid) return (false, dairyError);
+            }
+
+            if (EquipmentStorage != null)
+            {
+                var (equipValid, equipError) = EquipmentStorage.Validate(this);
+                if (!equipValid) return (false, equipError);
+            }
+
+            if (Ventilation != null)
+            {
+                var (ventValid, ventError) = Ventilation.Validate();
+                if (!ventValid) return (false, ventError);
+            }
+
+            if (Drainage != null)
+            {
+                var (drainValid, drainError) = Drainage.Validate(this);
+                if (!drainValid) return (false, drainError);
+            }
+
+            if (GrainStorage != null)
+            {
+                var (grainValid, grainError) = GrainStorage.Validate(this);
+                if (!grainValid) return (false, grainError);
+            }
+
+            if (MachineryBuilding != null)
+            {
+                var (machValid, machError) = MachineryBuilding.Validate(this);
+                if (!machValid) return (false, machError);
             }
 
             return (true, null);
