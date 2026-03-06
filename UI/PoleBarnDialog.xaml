@@ -207,6 +207,139 @@
             </TabItem>
 
             <!-- ═══ Tab 7: Output ═══ -->
+            <TabItem Header="🧠 Advanced">
+                <ScrollViewer VerticalScrollBarVisibility="Auto">
+                    <StackPanel Margin="4">
+                        <GroupBox Header="Stories / Floors">
+                            <Grid>
+                                <Grid.ColumnDefinitions>
+                                    <ColumnDefinition Width="180"/>
+                                    <ColumnDefinition Width="220"/>
+                                </Grid.ColumnDefinitions>
+                                <Grid.RowDefinitions>
+                                    <RowDefinition Height="Auto"/>
+                                    <RowDefinition Height="Auto"/>
+                                    <RowDefinition Height="Auto"/>
+                                    <RowDefinition Height="Auto"/>
+                                </Grid.RowDefinitions>
+
+                                <Label Grid.Row="0" Grid.Column="0" Content="Number of Floors:"/>
+                                <TextBox Grid.Row="0" Grid.Column="1" x:Name="txtNumFloors" Text="1" Width="70"/>
+
+                                <Label Grid.Row="1" Grid.Column="0" Content="Floor Heights (ft, CSV):"/>
+                                <TextBox Grid.Row="1" Grid.Column="1" x:Name="txtFloorHeights" Text="" Width="180"/>
+
+                                <Label Grid.Row="2" Grid.Column="0" Content="Floor Connection:"/>
+                                <ComboBox Grid.Row="2" Grid.Column="1" x:Name="cmbFloorConnection" Width="180" SelectedIndex="0">
+                                    <ComboBoxItem Content="Continuous Posts"/>
+                                    <ComboBoxItem Content="Spliced Posts"/>
+                                </ComboBox>
+
+                                <Label Grid.Row="3" Grid.Column="0" Content="Floor Beam Size:"/>
+                                <TextBox Grid.Row="3" Grid.Column="1" x:Name="txtFloorBeamSize" Text="2-2x12 LVL" Width="140"/>
+                            </Grid>
+                        </GroupBox>
+
+                        <GroupBox Header="Curved Building">
+                            <Grid>
+                                <Grid.ColumnDefinitions>
+                                    <ColumnDefinition Width="180"/>
+                                    <ColumnDefinition Width="220"/>
+                                </Grid.ColumnDefinitions>
+                                <Grid.RowDefinitions>
+                                    <RowDefinition Height="Auto"/>
+                                    <RowDefinition Height="Auto"/>
+                                    <RowDefinition Height="Auto"/>
+                                    <RowDefinition Height="Auto"/>
+                                </Grid.RowDefinitions>
+
+                                <CheckBox Grid.Row="0" Grid.ColumnSpan="2" x:Name="chkCurvedWalls"
+                                          Content="Enable Curved Walls" Margin="2,4"/>
+
+                                <Label Grid.Row="1" Grid.Column="0" Content="Radius (ft):"/>
+                                <TextBox Grid.Row="1" Grid.Column="1" x:Name="txtCurveRadius" Text="120" Width="80"/>
+
+                                <Label Grid.Row="2" Grid.Column="0" Content="Arc Angle (deg):"/>
+                                <TextBox Grid.Row="2" Grid.Column="1" x:Name="txtCurveAngle" Text="45" Width="80"/>
+
+                                <Label Grid.Row="3" Grid.Column="0" Content="Mode:"/>
+                                <ComboBox Grid.Row="3" Grid.Column="1" x:Name="cmbCurveMode" Width="170" SelectedIndex="0">
+                                    <ComboBoxItem Content="Arc Length Driven"/>
+                                    <ComboBoxItem Content="Chord Driven"/>
+                                </ComboBox>
+                            </Grid>
+                        </GroupBox>
+
+                        <GroupBox Header="Complex Footprint">
+                            <Grid>
+                                <Grid.ColumnDefinitions>
+                                    <ColumnDefinition Width="180"/>
+                                    <ColumnDefinition Width="220"/>
+                                </Grid.ColumnDefinitions>
+                                <Grid.RowDefinitions>
+                                    <RowDefinition Height="Auto"/>
+                                    <RowDefinition Height="Auto"/>
+                                    <RowDefinition Height="Auto"/>
+                                    <RowDefinition Height="Auto"/>
+                                </Grid.RowDefinitions>
+
+                                <Label Grid.Row="0" Grid.Column="0" Content="Footprint Shape:"/>
+                                <ComboBox Grid.Row="0" Grid.Column="1" x:Name="cmbFootprintShape" Width="170" SelectedIndex="0">
+                                    <ComboBoxItem Content="Rectangle"/>
+                                    <ComboBoxItem Content="L-Shape"/>
+                                    <ComboBoxItem Content="T-Shape"/>
+                                    <ComboBoxItem Content="U-Shape"/>
+                                    <ComboBoxItem Content="Custom Polygon"/>
+                                </ComboBox>
+
+                                <Label Grid.Row="1" Grid.Column="0" Content="Inset Width (ft):"/>
+                                <TextBox Grid.Row="1" Grid.Column="1" x:Name="txtFootprintInsetWidth" Text="10" Width="80"/>
+
+                                <Label Grid.Row="2" Grid.Column="0" Content="Inset Depth (ft):"/>
+                                <TextBox Grid.Row="2" Grid.Column="1" x:Name="txtFootprintInsetDepth" Text="10" Width="80"/>
+
+                                <Label Grid.Row="3" Grid.Column="0" Content="Custom Vertices (x:y CSV):"/>
+                                <TextBox Grid.Row="3" Grid.Column="1" x:Name="txtFootprintVertices" Text="" Width="210"/>
+                            </Grid>
+                        </GroupBox>
+
+                        <GroupBox Header="Expansion Joints">
+                            <Grid>
+                                <Grid.ColumnDefinitions>
+                                    <ColumnDefinition Width="180"/>
+                                    <ColumnDefinition Width="220"/>
+                                    <ColumnDefinition Width="130"/>
+                                </Grid.ColumnDefinitions>
+                                <Grid.RowDefinitions>
+                                    <RowDefinition Height="Auto"/>
+                                    <RowDefinition Height="Auto"/>
+                                    <RowDefinition Height="Auto"/>
+                                    <RowDefinition Height="Auto"/>
+                                </Grid.RowDefinitions>
+
+                                <CheckBox Grid.Row="0" Grid.ColumnSpan="3" x:Name="chkExpansionJoints"
+                                          Content="Enable Expansion Joints" Margin="2,4"/>
+
+                                <Label Grid.Row="1" Grid.Column="0" Content="Joint Locations (ft, CSV):"/>
+                                <TextBox Grid.Row="1" Grid.Column="1" x:Name="txtJointLocations" Text="" Width="180"/>
+                                <Button Grid.Row="1" Grid.Column="2" Content="Suggest" Width="80" Click="OnSuggestJoints"/>
+
+                                <Label Grid.Row="2" Grid.Column="0" Content="Gap Width (ft):"/>
+                                <TextBox Grid.Row="2" Grid.Column="1" x:Name="txtJointGap" Text="0.5" Width="80"/>
+
+                                <Label Grid.Row="3" Grid.Column="0" Content="Joint Type:"/>
+                                <ComboBox Grid.Row="3" Grid.Column="1" x:Name="cmbJointType" Width="170" SelectedIndex="0">
+                                    <ComboBoxItem Content="Slip Plate"/>
+                                    <ComboBoxItem Content="Double Post"/>
+                                    <ComboBoxItem Content="Isolation Gap"/>
+                                </ComboBox>
+                            </Grid>
+                        </GroupBox>
+                    </StackPanel>
+                </ScrollViewer>
+            </TabItem>
+
+            <!-- ═══ Tab 8: Output ═══ -->
             <TabItem Header="📄 Output">
                 <ScrollViewer VerticalScrollBarVisibility="Auto">
                     <StackPanel Margin="4">

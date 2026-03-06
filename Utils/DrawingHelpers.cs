@@ -85,6 +85,19 @@ namespace PoleBarnGenerator.Utils
         }
 
         /// <summary>
+        /// Adds an Arc entity from start/end angles (radians).
+        /// </summary>
+        public static Arc AddArc(Transaction tr, BlockTableRecord btr,
+            Point2d center, double radius, double startAngle, double endAngle, string layer)
+        {
+            Arc arc = new Arc(new Point3d(center.X, center.Y, 0), radius, startAngle, endAngle);
+            LayerManager.SetLayer(arc, layer);
+            btr.AppendEntity(arc);
+            tr.AddNewlyCreatedDBObject(arc, true);
+            return arc;
+        }
+
+        /// <summary>
         /// Adds a single-line MText annotation.
         /// </summary>
         public static MText AddText(Transaction tr, BlockTableRecord btr,

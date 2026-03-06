@@ -6,6 +6,7 @@ using PoleBarnGenerator.Utils;
 using System;
 using PoleBarnGenerator.Generators.TrussProfiles;
 using System.Collections.Generic;
+using System.Linq;
 
 namespace PoleBarnGenerator.Generators
 {
@@ -34,14 +35,37 @@ namespace PoleBarnGenerator.Generators
             catch (Autodesk.AutoCAD.Runtime.Exception) { /* already loaded */ }
 
             // ── Slab / Foundation outline ──
-            DrawingHelpers.AddRectangle(tr, btr,
-                DrawingHelpers.Offset2d(0, 0, offset),
-                p.BuildingWidth, p.BuildingLength,
-                LayerManager.Layers.Slab);
-            count++;
+            if (geo.WallSegments.Any(s => s.IsArc))
+            {
+                foreach (var segment in geo.WallSegments)
+                {
+                    if (segment.IsArc)
+                    {
+                        DrawingHelpers.AddArc(tr, btr,
+                            DrawingHelpers.Offset2d(segment.ArcCenter.X, segment.ArcCenter.Y, offset),
+                            segment.ArcRadius, segment.StartAngle, segment.EndAngle,
+                            LayerManager.Layers.Curved);
+                    }
+                    else
+                    {
+                        DrawingHelpers.AddLine(tr, btr,
+                            DrawingHelpers.Offset(segment.Start.X, segment.Start.Y, offset),
+                            DrawingHelpers.Offset(segment.End.X, segment.End.Y, offset),
+                            LayerManager.Layers.Slab);
+                    }
+                    count++;
+                }
+            }
+            else
+            {
+                DrawingHelpers.AddPolyline(tr, btr,
+                    geo.FootprintOutline.Select(pt => DrawingHelpers.Offset2d(pt.X, pt.Y, offset)).ToList(),
+                    LayerManager.Layers.Slab, closed: true);
+                count++;
+            }
 
             // ── Posts ──
-            foreach (var post in geo.Posts)
+            foreach (var post in geo.Posts.Where(ps => ps.IsPlanInstance))
             {
                 double hw = post.PostWidth / 2.0;
                 double hd = post.PostDepth / 2.0;
@@ -60,34 +84,25 @@ namespace PoleBarnGenerator.Generators
                 count++;
             }
 
-            // ── Wall lines (girts shown as wall outlines in plan) ──
-            // Left sidewall
-            DrawingHelpers.AddLine(tr, btr,
-                DrawingHelpers.Offset(0, 0, offset),
-                DrawingHelpers.Offset(0, p.BuildingLength, offset),
-                LayerManager.Layers.Girts);
-            count++;
-
-            // Right sidewall
-            DrawingHelpers.AddLine(tr, btr,
-                DrawingHelpers.Offset(p.BuildingWidth, 0, offset),
-                DrawingHelpers.Offset(p.BuildingWidth, p.BuildingLength, offset),
-                LayerManager.Layers.Girts);
-            count++;
-
-            // Front endwall
-            DrawingHelpers.AddLine(tr, btr,
-                DrawingHelpers.Offset(0, 0, offset),
-                DrawingHelpers.Offset(p.BuildingWidth, 0, offset),
-                LayerManager.Layers.Girts);
-            count++;
-
-            // Back endwall
-            DrawingHelpers.AddLine(tr, btr,
-                DrawingHelpers.Offset(0, p.BuildingLength, offset),
-                DrawingHelpers.Offset(p.BuildingWidth, p.BuildingLength, offset),
-                LayerManager.Layers.Girts);
-            count++;
+            // ── Wall lines ──
+            foreach (var segment in geo.WallSegments)
+            {
+                if (segment.IsArc)
+                {
+                    DrawingHelpers.AddArc(tr, btr,
+                        DrawingHelpers.Offset2d(segment.ArcCenter.X, segment.ArcCenter.Y, offset),
+                        segment.ArcRadius, segment.StartAngle, segment.EndAngle,
+                        LayerManager.Layers.Curved);
+                }
+                else
+                {
+                    DrawingHelpers.AddLine(tr, btr,
+                        DrawingHelpers.Offset(segment.Start.X, segment.Start.Y, offset),
+                        DrawingHelpers.Offset(segment.End.X, segment.End.Y, offset),
+                        LayerManager.Layers.Girts);
+                }
+                count++;
+            }
 
             // ── Ridge line (dashed center line) — varies by truss type ──
             if (p.TrussType != TrussType.MonoSlope)
@@ -126,6 +141,55 @@ namespace PoleBarnGenerator.Generators
             };
             DrawingHelpers.AddPolyline(tr, btr, roofOutline, LayerManager.Layers.Roof, closed: true);
             count++;
+
+            // ── Floor framing (multi-story) ──
+            if (geo.FloorFraming.Count > 0)
+            {
+                foreach (var frame in geo.FloorFraming)
+                {
+                    if (frame.IsArc)
+                    {
+                        DrawingHelpers.AddArc(tr, btr,
+                            DrawingHelpers.Offset2d(frame.ArcCenter.X, frame.ArcCenter.Y, offset),
+                            frame.ArcRadius, frame.StartAngle, frame.EndAngle,
+                            LayerManager.Layers.Floor);
+                    }
+                    else
+                    {
+                        DrawingHelpers.AddLine(tr, btr,
+                            DrawingHelpers.Offset(frame.Start.X, frame.Start.Y, offset),
+                            DrawingHelpers.Offset(frame.End.X, frame.End.Y, offset),
+                            LayerManager.Layers.Floor);
+                    }
+                    count++;
+                }
+            }
+
+            // ── Expansion joints ──
+            foreach (var joint in geo.ExpansionJoints)
+            {
+                DrawingHelpers.AddLine(tr, btr,
+                    DrawingHelpers.Offset(-p.OverhangEave, joint.Location, offset),
+                    DrawingHelpers.Offset(p.BuildingWidth + p.OverhangEave, joint.Location, offset),
+                    LayerManager.Layers.Joint);
+                count++;
+
+                DrawingHelpers.AddText(tr, btr,
+                    DrawingHelpers.Offset(p.BuildingWidth * 0.5, joint.Location + 0.5, offset),
+                    $"EJ {joint.GapWidth:F2}' {joint.JointType}",
+                    0.5, LayerManager.Layers.JointDetail);
+                count++;
+            }
+
+            // ── Roof intersections (valleys/hips for compound footprints) ──
+            foreach (var valley in geo.RoofIntersectionPoints)
+            {
+                DrawingHelpers.AddLine(tr, btr,
+                    DrawingHelpers.Offset(valley.X, valley.Y, offset),
+                    DrawingHelpers.Offset(p.BuildingWidth / 2.0, p.BuildingLength / 2.0, offset),
+                    LayerManager.Layers.RoofHidden);
+                count++;
+            }
 
             // ── Door openings (shown as breaks/rectangles on walls) ──
             foreach (var door in p.Doors)
@@ -227,20 +291,24 @@ namespace PoleBarnGenerator.Generators
             int count = 0;
             var p = geo.Params;
             double dimOffset = 3.0;
+            double minX = geo.FootprintOutline.Min(pt => pt.X);
+            double maxX = geo.FootprintOutline.Max(pt => pt.X);
+            double minY = geo.FootprintOutline.Min(pt => pt.Y);
+            double maxY = geo.FootprintOutline.Max(pt => pt.Y);
 
             // Overall width dimension (bottom)
             DrawingHelpers.AddAlignedDim(tr, btr,
-                DrawingHelpers.Offset(0, 0, offset),
-                DrawingHelpers.Offset(p.BuildingWidth, 0, offset),
-                DrawingHelpers.Offset(p.BuildingWidth / 2, -dimOffset, offset),
+                DrawingHelpers.Offset(minX, minY, offset),
+                DrawingHelpers.Offset(maxX, minY, offset),
+                DrawingHelpers.Offset((minX + maxX) / 2, minY - dimOffset, offset),
                 LayerManager.Layers.Dims);
             count++;
 
             // Overall length dimension (left side)
             DrawingHelpers.AddAlignedDim(tr, btr,
-                DrawingHelpers.Offset(0, 0, offset),
-                DrawingHelpers.Offset(0, p.BuildingLength, offset),
-                DrawingHelpers.Offset(-dimOffset, p.BuildingLength / 2, offset),
+                DrawingHelpers.Offset(minX, minY, offset),
+                DrawingHelpers.Offset(minX, maxY, offset),
+                DrawingHelpers.Offset(minX - dimOffset, (minY + maxY) / 2, offset),
                 LayerManager.Layers.Dims);
             count++;
 

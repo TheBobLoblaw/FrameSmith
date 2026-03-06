@@ -5,6 +5,7 @@ using PoleBarnGenerator.Generators.Renderers;
 using PoleBarnGenerator.Generators.TrussProfiles;
 using PoleBarnGenerator.Utils;
 using System.Collections.Generic;
+using System;
 
 namespace PoleBarnGenerator.Generators
 {
@@ -72,8 +73,33 @@ namespace PoleBarnGenerator.Generators
                 count++;
             }
 
+            // ── Intermediate floor lines (multi-story) ──
+            foreach (double floorLevel in geo.FloorLevels)
+            {
+                DrawingHelpers.AddLine(tr, btr,
+                    DrawingHelpers.Offset(0, floorLevel, offset),
+                    DrawingHelpers.Offset(p.BuildingWidth, floorLevel, offset),
+                    LayerManager.Layers.Floor);
+                count++;
+            }
+
             // ── Roof profile (strategy pattern) ──
             count += geo.TrussProfile.RenderFrontElevation(tr, btr, geo, offset);
+
+            // ── Curved roof profile cue ──
+            if (p.CurvedWall.Enabled)
+            {
+                double roofMid = geo.PeakHeight + Math.Max(0.5, p.CurvedWall.ArcAngleDegrees / 90.0);
+                DrawingHelpers.AddLine(tr, btr,
+                    DrawingHelpers.Offset(0, p.EaveHeight, offset),
+                    DrawingHelpers.Offset(p.BuildingWidth / 2.0, roofMid, offset),
+                    LayerManager.Layers.Curved);
+                DrawingHelpers.AddLine(tr, btr,
+                    DrawingHelpers.Offset(p.BuildingWidth / 2.0, roofMid, offset),
+                    DrawingHelpers.Offset(p.BuildingWidth, p.EaveHeight, offset),
+                    LayerManager.Layers.Curved);
+                count += 2;
+            }
 
             // ── Door openings on endwalls (front & back) ──
             foreach (var door in p.Doors)
@@ -82,10 +108,10 @@ namespace PoleBarnGenerator.Generators
                 {
                     try
                     {
-                    var renderer = RendererFactory.GetDoorRenderer(door.Type);
+                        var renderer = RendererFactory.GetDoorRenderer(door.Type);
+                        count += renderer.RenderElevation(tr, btr, door, p.EaveHeight, offset);
                     }
                     catch (System.Exception) { /* skip failed opening render */ }
-                    count += renderer.RenderElevation(tr, btr, door, p.EaveHeight, offset);
                 }
             }
 
@@ -96,11 +122,47 @@ namespace PoleBarnGenerator.Generators
                 {
                     try
                     {
-                    var renderer = RendererFactory.GetWindowRenderer(window.Type);
+                        var renderer = RendererFactory.GetWindowRenderer(window.Type);
+                        count += renderer.RenderElevation(tr, btr, window, p.EaveHeight, offset);
                     }
                     catch (System.Exception) { /* skip failed opening render */ }
-                    count += renderer.RenderElevation(tr, btr, window, p.EaveHeight, offset);
                 }
+            }
+
+            // ── Expansion joint detail callouts ──
+            if (geo.ExpansionJoints.Count > 0)
+            {
+                double markerX = p.BuildingWidth + 1.0;
+                for (int i = 0; i < geo.ExpansionJoints.Count; i++)
+                {
+                    double y = p.EaveHeight * (0.25 + 0.15 * i);
+                    DrawingHelpers.AddLine(tr, btr,
+                        DrawingHelpers.Offset(markerX - 0.3, y - 0.4, offset),
+                        DrawingHelpers.Offset(markerX + 0.3, y + 0.4, offset),
+                        LayerManager.Layers.Joint);
+                    DrawingHelpers.AddLine(tr, btr,
+                        DrawingHelpers.Offset(markerX - 0.3, y + 0.4, offset),
+                        DrawingHelpers.Offset(markerX + 0.3, y - 0.4, offset),
+                        LayerManager.Layers.Joint);
+                    DrawingHelpers.AddText(tr, btr,
+                        DrawingHelpers.Offset(markerX + 1.4, y, offset),
+                        $"EJ {geo.ExpansionJoints[i].JointType} {geo.ExpansionJoints[i].GapWidth:F2}'",
+                        0.45, LayerManager.Layers.JointDetail);
+                    count += 3;
+                }
+            }
+
+            // ── Floor connection detailing note ──
+            if (p.NumberOfFloors > 1)
+            {
+                string detail = p.FloorConnection == FloorConnectionType.ContinuousPost
+                    ? "POSTS CONTINUOUS THROUGH FLOORS"
+                    : "POSTS SPLICED @ FLOOR LINES";
+                DrawingHelpers.AddText(tr, btr,
+                    DrawingHelpers.Offset(p.BuildingWidth * 0.5, p.EaveHeight + 1.5, offset),
+                    $"{detail} | FLOOR BEAM: {p.FloorBeamSize}",
+                    0.5, LayerManager.Layers.Floor);
+                count++;
             }
 
 

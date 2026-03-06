@@ -1,4 +1,7 @@
 using System;
+using System.Collections.Generic;
+using System.Globalization;
+using System.Linq;
 using System.Windows;
 using System.Windows.Controls;
 using PoleBarnGenerator.Models;
@@ -63,6 +66,46 @@ namespace PoleBarnGenerator.UI
                 _ => TrussType.Common
             };
 
+            // Advanced - multi-story
+            p.NumberOfFloors = (int)ParseDouble(txtNumFloors.Text, 1);
+            p.FloorHeights = ParseDoubleList(txtFloorHeights.Text);
+            p.FloorConnection = cmbFloorConnection.SelectedIndex == 1
+                ? FloorConnectionType.SplicedPost
+                : FloorConnectionType.ContinuousPost;
+            p.FloorBeamSize = txtFloorBeamSize.Text?.Trim();
+
+            // Advanced - curved walls
+            p.CurvedWall.Enabled = chkCurvedWalls.IsChecked == true;
+            p.CurvedWall.Radius = ParseDouble(txtCurveRadius.Text, 120);
+            p.CurvedWall.ArcAngleDegrees = ParseDouble(txtCurveAngle.Text, 45);
+            p.CurvedWall.Mode = cmbCurveMode.SelectedIndex == 1
+                ? CurvedWallMode.ChordDriven
+                : CurvedWallMode.ArcLengthDriven;
+
+            // Advanced - complex footprint
+            p.FootprintShape = cmbFootprintShape.SelectedIndex switch
+            {
+                1 => FootprintShape.LShape,
+                2 => FootprintShape.TShape,
+                3 => FootprintShape.UShape,
+                4 => FootprintShape.CustomPolygon,
+                _ => FootprintShape.Rectangle
+            };
+            p.FootprintInsetWidth = ParseDouble(txtFootprintInsetWidth.Text, 10);
+            p.FootprintInsetDepth = ParseDouble(txtFootprintInsetDepth.Text, 10);
+            p.FootprintVertices = ParseVertices(txtFootprintVertices.Text);
+
+            // Advanced - expansion joints
+            p.ExpansionJoint.Enabled = chkExpansionJoints.IsChecked == true;
+            p.ExpansionJoint.Locations = ParseDoubleList(txtJointLocations.Text);
+            p.ExpansionJoint.GapWidth = ParseDouble(txtJointGap.Text, 0.5);
+            p.ExpansionJoint.JointType = cmbJointType.SelectedIndex switch
+            {
+                1 => ExpansionJointType.DoublePost,
+                2 => ExpansionJointType.IsolationGap,
+                _ => ExpansionJointType.SlipPlate
+            };
+
             // Output options
             p.GeneratePlan = chkPlan.IsChecked == true;
             p.GenerateFront = chkFront.IsChecked == true;
@@ -103,6 +146,7 @@ namespace PoleBarnGenerator.UI
                 $"Eave:      {Parameters.EaveHeight}'   Peak: {geo.PeakHeight:F1}'\n" +
                 $"Pitch:     {Parameters.RoofPitchDisplay}  ({Parameters.RoofAngleDegrees:F1}°)\n" +
                 $"Bays:      {geo.NumBays} @ {geo.ActualBaySpacing:F1}' O.C.\n" +
+                $"Stories:   {Parameters.NumberOfFloors} ({(Parameters.FloorHeights.Count > 0 ? string.Join(\", \", Parameters.FloorHeights.Select(h => $\"{h:F1}'\")) : \"auto\")})\n" +
                 $"Posts:     {geo.Posts.Count}\n" +
                 $"Girt rows: {geo.Girts.Count}\n" +
                 $"Purlins:   {geo.Purlins.Count}\n" +
@@ -111,6 +155,9 @@ namespace PoleBarnGenerator.UI
                 $"Windows:   {Parameters.Windows.Count}\n" +
                 $"Lean-Tos:  {Parameters.LeanTos.FindAll(lt => lt.Enabled).Count}\n" +
                 $"Porches:   {System.Array.FindAll(Parameters.AllPorches, p => p.IsEnabled).Length}\n" +
+                $"Footprint: {Parameters.FootprintShape}\n" +
+                $"Curved:    {(Parameters.CurvedWall.Enabled ? $\"R={Parameters.CurvedWall.Radius:F1}', A={Parameters.CurvedWall.ArcAngleDegrees:F1}°\" : \"No\")}\n" +
+                $"Joints:    {(geo.ExpansionJoints.Count > 0 ? geo.ExpansionJoints.Count.ToString() : \"None\")}\n" +
                 $"Wainscot:  {(Parameters.Wainscot.IsEnabled ? "Yes" : "No")}\n" +
                 $"Cupolas:   {(Parameters.Cupola.IsEnabled ? Parameters.Cupola.Count.ToString() : "No")}\n" +
                 $"Gutters:   {(Parameters.Gutters.IsEnabled ? "Yes" : "No")}";
@@ -155,6 +202,44 @@ namespace PoleBarnGenerator.UI
             txtOverhangEave.Text = p.OverhangEave.ToString();
             txtOverhangGable.Text = p.OverhangGable.ToString();
 
+            txtNumFloors.Text = p.NumberOfFloors.ToString(CultureInfo.InvariantCulture);
+            txtFloorHeights.Text = p.FloorHeights?.Count > 0
+                ? string.Join(", ", p.FloorHeights.Select(v => v.ToString("0.##", CultureInfo.InvariantCulture)))
+                : string.Empty;
+            cmbFloorConnection.SelectedIndex = p.FloorConnection == FloorConnectionType.SplicedPost ? 1 : 0;
+            txtFloorBeamSize.Text = p.FloorBeamSize;
+
+            chkCurvedWalls.IsChecked = p.CurvedWall.Enabled;
+            txtCurveRadius.Text = p.CurvedWall.Radius.ToString("0.##", CultureInfo.InvariantCulture);
+            txtCurveAngle.Text = p.CurvedWall.ArcAngleDegrees.ToString("0.##", CultureInfo.InvariantCulture);
+            cmbCurveMode.SelectedIndex = p.CurvedWall.Mode == CurvedWallMode.ChordDriven ? 1 : 0;
+
+            cmbFootprintShape.SelectedIndex = p.FootprintShape switch
+            {
+                FootprintShape.LShape => 1,
+                FootprintShape.TShape => 2,
+                FootprintShape.UShape => 3,
+                FootprintShape.CustomPolygon => 4,
+                _ => 0
+            };
+            txtFootprintInsetWidth.Text = p.FootprintInsetWidth.ToString("0.##", CultureInfo.InvariantCulture);
+            txtFootprintInsetDepth.Text = p.FootprintInsetDepth.ToString("0.##", CultureInfo.InvariantCulture);
+            txtFootprintVertices.Text = p.FootprintVertices?.Count > 0
+                ? string.Join(", ", p.FootprintVertices.Select(v => $"{v.X:0.##}:{v.Y:0.##}"))
+                : string.Empty;
+
+            chkExpansionJoints.IsChecked = p.ExpansionJoint.Enabled;
+            txtJointLocations.Text = p.ExpansionJoint.Locations?.Count > 0
+                ? string.Join(", ", p.ExpansionJoint.Locations.Select(v => v.ToString("0.##", CultureInfo.InvariantCulture)))
+                : string.Empty;
+            txtJointGap.Text = p.ExpansionJoint.GapWidth.ToString("0.##", CultureInfo.InvariantCulture);
+            cmbJointType.SelectedIndex = p.ExpansionJoint.JointType switch
+            {
+                ExpansionJointType.DoublePost => 1,
+                ExpansionJointType.IsolationGap => 2,
+                _ => 0
+            };
+
             // Update the Parameters instance and rebind opening manager
             Parameters = p;
             openingManager.BindParameters(Parameters);
@@ -181,6 +266,72 @@ namespace PoleBarnGenerator.UI
         private static double ParseDouble(string text, double fallback)
         {
             return double.TryParse(text, out double val) ? val : fallback;
+        }
+
+        private static List<double> ParseDoubleList(string csv)
+        {
+            var values = new List<double>();
+            if (string.IsNullOrWhiteSpace(csv))
+            {
+                return values;
+            }
+
+            foreach (var token in csv.Split(','))
+            {
+                if (double.TryParse(token.Trim(), NumberStyles.Float, CultureInfo.InvariantCulture, out double value))
+                {
+                    values.Add(value);
+                }
+                else if (double.TryParse(token.Trim(), out value))
+                {
+                    values.Add(value);
+                }
+            }
+
+            return values;
+        }
+
+        private static List<FootprintVertex> ParseVertices(string csv)
+        {
+            var vertices = new List<FootprintVertex>();
+            if (string.IsNullOrWhiteSpace(csv))
+            {
+                return vertices;
+            }
+
+            foreach (var entry in csv.Split(','))
+            {
+                var parts = entry.Trim().Split(':');
+                if (parts.Length != 2)
+                {
+                    continue;
+                }
+
+                if (double.TryParse(parts[0], NumberStyles.Float, CultureInfo.InvariantCulture, out double x) &&
+                    double.TryParse(parts[1], NumberStyles.Float, CultureInfo.InvariantCulture, out double y))
+                {
+                    vertices.Add(new FootprintVertex { X = x, Y = y });
+                    continue;
+                }
+
+                if (double.TryParse(parts[0], out x) && double.TryParse(parts[1], out y))
+                {
+                    vertices.Add(new FootprintVertex { X = x, Y = y });
+                }
+            }
+
+            return vertices;
+        }
+
+        private void OnSuggestJoints(object sender, RoutedEventArgs e)
+        {
+            var len = ParseDouble(txtLength.Text, 40);
+            var temp = new BarnParameters { BuildingLength = len };
+            var suggested = temp.GetSuggestedExpansionJointLocations();
+            txtJointLocations.Text = suggested.Count > 0
+                ? string.Join(", ", suggested.Select(v => v.ToString("0.##", CultureInfo.InvariantCulture)))
+                : string.Empty;
+            chkExpansionJoints.IsChecked = suggested.Count > 0;
         }
     }
 }

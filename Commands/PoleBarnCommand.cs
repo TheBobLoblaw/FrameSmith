@@ -59,7 +59,12 @@ namespace PoleBarnGenerator.Commands
             ed.WriteMessage($"\nGenerating {parameters.BuildingWidth}' x {parameters.BuildingLength}' pole barn...");
             ed.WriteMessage($"\n  Eave: {parameters.EaveHeight}', Peak: {geometry.PeakHeight:F1}', Pitch: {parameters.RoofPitchDisplay}");
             ed.WriteMessage($"\n  Bays: {geometry.NumBays} @ {geometry.ActualBaySpacing:F1}' O.C.");
+            ed.WriteMessage($"\n  Floors: {parameters.NumberOfFloors} ({parameters.FloorConnection})");
             ed.WriteMessage($"\n  Posts: {geometry.Posts.Count}, Girt lines: {geometry.Girts.Count}");
+            if (parameters.CurvedWall.Enabled || parameters.FootprintShape != FootprintShape.Rectangle)
+                ed.WriteMessage($"\n  Footprint: {parameters.FootprintShape}, Curved: {(parameters.CurvedWall.Enabled ? "Yes" : "No")}");
+            if (geometry.ExpansionJoints.Count > 0)
+                ed.WriteMessage($"\n  Expansion joints: {geometry.ExpansionJoints.Count}");
             if (parameters.Doors.Count > 0 || parameters.Windows.Count > 0)
                 ed.WriteMessage($"\n  Openings: {parameters.Doors.Count} door(s), {parameters.Windows.Count} window(s)");
             int leanToCount = parameters.LeanTos.FindAll(lt => lt.Enabled).Count;

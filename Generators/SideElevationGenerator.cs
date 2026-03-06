@@ -4,6 +4,7 @@ using PoleBarnGenerator.Models;
 using PoleBarnGenerator.Generators.Renderers;
 using PoleBarnGenerator.Generators.TrussProfiles;
 using PoleBarnGenerator.Utils;
+using System;
 
 namespace PoleBarnGenerator.Generators
 {
@@ -49,8 +50,33 @@ namespace PoleBarnGenerator.Generators
                 count++;
             }
 
+            // ── Intermediate floor lines ──
+            foreach (double floorLevel in geo.FloorLevels)
+            {
+                DrawingHelpers.AddLine(tr, btr,
+                    DrawingHelpers.Offset(0, floorLevel, offset),
+                    DrawingHelpers.Offset(p.BuildingLength, floorLevel, offset),
+                    LayerManager.Layers.Floor);
+                count++;
+            }
+
             // ── Roof line (strategy pattern) ──
             count += geo.TrussProfile.RenderSideElevation(tr, btr, geo, offset);
+
+            // ── Curved roof profile cue ──
+            if (p.CurvedWall.Enabled)
+            {
+                double crest = p.EaveHeight + Math.Max(0.5, p.CurvedWall.ArcAngleDegrees / 120.0);
+                DrawingHelpers.AddLine(tr, btr,
+                    DrawingHelpers.Offset(0, p.EaveHeight, offset),
+                    DrawingHelpers.Offset(p.BuildingLength / 2.0, crest, offset),
+                    LayerManager.Layers.Curved);
+                DrawingHelpers.AddLine(tr, btr,
+                    DrawingHelpers.Offset(p.BuildingLength / 2.0, crest, offset),
+                    DrawingHelpers.Offset(p.BuildingLength, p.EaveHeight, offset),
+                    LayerManager.Layers.Curved);
+                count += 2;
+            }
 
             // ── Door openings on sidewalls ──
             // Shows both Left and Right wall openings in the side elevation
@@ -79,6 +105,32 @@ namespace PoleBarnGenerator.Generators
                     }
                     catch (System.Exception) { /* skip failed opening render */ }
                 }
+            }
+
+            // ── Expansion joints ──
+            foreach (var joint in geo.ExpansionJoints)
+            {
+                DrawingHelpers.AddLine(tr, btr,
+                    DrawingHelpers.Offset(joint.Location, 0, offset),
+                    DrawingHelpers.Offset(joint.Location, p.EaveHeight, offset),
+                    LayerManager.Layers.Joint);
+                DrawingHelpers.AddText(tr, btr,
+                    DrawingHelpers.Offset(joint.Location, p.EaveHeight + 0.75, offset),
+                    $"EJ {joint.GapWidth:F2}'",
+                    0.45, LayerManager.Layers.JointDetail);
+                count += 2;
+            }
+
+            if (p.NumberOfFloors > 1)
+            {
+                string detail = p.FloorConnection == FloorConnectionType.ContinuousPost
+                    ? "CONTINUOUS POSTS"
+                    : "SPLICED POSTS @ FLOORS";
+                DrawingHelpers.AddText(tr, btr,
+                    DrawingHelpers.Offset(p.BuildingLength / 2.0, p.EaveHeight + 1.5, offset),
+                    $"{detail} | BEAM {p.FloorBeamSize}",
+                    0.45, LayerManager.Layers.Floor);
+                count++;
             }
 
 

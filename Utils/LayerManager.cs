@@ -80,6 +80,12 @@ namespace PoleBarnGenerator.Utils
             public const string Wire3DRoof     = "FS-S-3D-ROOF";
             public const string Wire3DSlab     = "FS-S-3D-SLAB";
 
+            // ADVANCED FEATURES (PB- legacy prefix requested)
+            public const string Floor          = "PB-FLOOR";
+            public const string Curved         = "PB-CURVED";
+            public const string Joint          = "PB-JOINT";
+            public const string JointDetail    = "PB-JOINT-DETAIL";
+
             // Legacy aliases
             public const string Rafters        = "FS-S-RAFT";
             public const string Details        = "FS-S-DETAIL";
@@ -162,6 +168,12 @@ namespace PoleBarnGenerator.Utils
             { Layers.Wire3D,        new LayerDef(150, LineWeight.LineWeight025) },
             { Layers.Wire3DRoof,    new LayerDef(3,   LineWeight.LineWeight025) },
             { Layers.Wire3DSlab,    new LayerDef(8,   LineWeight.LineWeight025) },
+
+            // ADVANCED FEATURES
+            { Layers.Floor,         new LayerDef(34,  LineWeight.LineWeight025, "DASHED") },
+            { Layers.Curved,        new LayerDef(151, LineWeight.LineWeight035) },
+            { Layers.Joint,         new LayerDef(10,  LineWeight.LineWeight050, "CENTER") },
+            { Layers.JointDetail,   new LayerDef(10,  LineWeight.LineWeight018) },
 
             // Legacy
             { Layers.Rafters,       new LayerDef(6,   LineWeight.LineWeight025) },

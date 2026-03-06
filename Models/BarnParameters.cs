@@ -1,6 +1,7 @@
 using System;
 using System.Collections.Generic;
 using System.ComponentModel;
+using System.Linq;
 using System.Runtime.CompilerServices;
 using PoleBarnGenerator.Generators.TrussProfiles;
 
@@ -42,7 +43,7 @@ namespace PoleBarnGenerator.Models
         public double EaveHeight
         {
             get => _eaveHeight;
-            set { _eaveHeight = value; OnPropertyChanged(); OnPropertyChanged(nameof(PeakHeight)); }
+            set { _eaveHeight = value; OnPropertyChanged(); OnPropertyChanged(nameof(PeakHeight)); OnPropertyChanged(nameof(DefaultFloorHeight)); }
         }
 
         private double _roofPitchRise = 4.0;
@@ -78,6 +79,41 @@ namespace PoleBarnGenerator.Models
 
         /// <summary>Actual bay spacing after rounding to whole bays</summary>
         public double ActualBaySpacing => BuildingLength / NumberOfBays;
+
+        private int _numberOfFloors = 1;
+        /// <summary>Total number of stories/floors in the structure.</summary>
+        public int NumberOfFloors
+        {
+            get => _numberOfFloors;
+            set { _numberOfFloors = Math.Max(1, value); OnPropertyChanged(); OnPropertyChanged(nameof(DefaultFloorHeight)); }
+        }
+
+        private List<double> _floorHeights = new List<double>();
+        /// <summary>Story heights in feet. If count does not match NumberOfFloors, defaults are used.</summary>
+        public List<double> FloorHeights
+        {
+            get => _floorHeights;
+            set { _floorHeights = value ?? new List<double>(); OnPropertyChanged(); }
+        }
+
+        /// <summary>Default story height when explicit floor heights are not provided.</summary>
+        public double DefaultFloorHeight => NumberOfFloors > 0 ? EaveHeight / NumberOfFloors : EaveHeight;
+
+        private FloorConnectionType _floorConnection = FloorConnectionType.ContinuousPost;
+        /// <summary>Inter-floor connection strategy for posts and beams.</summary>
+        public FloorConnectionType FloorConnection
+        {
+            get => _floorConnection;
+            set { _floorConnection = value; OnPropertyChanged(); }
+        }
+
+        private string _floorBeamSize = "2-2x12 LVL";
+        /// <summary>Nominal floor beam sizing callout for intermediate levels.</summary>
+        public string FloorBeamSize
+        {
+            get => _floorBeamSize;
+            set { _floorBeamSize = string.IsNullOrWhiteSpace(value) ? "2-2x12 LVL" : value.Trim(); OnPropertyChanged(); }
+        }
 
         // ───────────────────────────────────────────────
         // Structural Options
@@ -287,6 +323,56 @@ namespace PoleBarnGenerator.Models
         /// <summary>Whether to run structural analysis and include load tables on drawings</summary>
         public bool IncludeStructuralAnalysis { get; set; } = false;
 
+        // ───────────────────────────────────────────────
+        // Advanced Geometry
+        // ───────────────────────────────────────────────
+
+        private CurvedWallParameters _curvedWall = new CurvedWallParameters();
+        public CurvedWallParameters CurvedWall
+        {
+            get => _curvedWall;
+            set { _curvedWall = value ?? new CurvedWallParameters(); OnPropertyChanged(); }
+        }
+
+        private FootprintShape _footprintShape = FootprintShape.Rectangle;
+        /// <summary>Primary footprint strategy for the plan shape.</summary>
+        public FootprintShape FootprintShape
+        {
+            get => _footprintShape;
+            set { _footprintShape = value; OnPropertyChanged(); }
+        }
+
+        private List<FootprintVertex> _footprintVertices = new List<FootprintVertex>();
+        /// <summary>Custom footprint vertices (plan coordinates in feet).</summary>
+        public List<FootprintVertex> FootprintVertices
+        {
+            get => _footprintVertices;
+            set { _footprintVertices = value ?? new List<FootprintVertex>(); OnPropertyChanged(); }
+        }
+
+        private double _footprintInsetWidth = 10.0;
+        /// <summary>Inset width for generated L/T/U footprints.</summary>
+        public double FootprintInsetWidth
+        {
+            get => _footprintInsetWidth;
+            set { _footprintInsetWidth = Math.Max(1.0, value); OnPropertyChanged(); }
+        }
+
+        private double _footprintInsetDepth = 10.0;
+        /// <summary>Inset depth for generated L/T/U footprints.</summary>
+        public double FootprintInsetDepth
+        {
+            get => _footprintInsetDepth;
+            set { _footprintInsetDepth = Math.Max(1.0, value); OnPropertyChanged(); }
+        }
+
+        private ExpansionJointParameters _expansionJoint = new ExpansionJointParameters();
+        public ExpansionJointParameters ExpansionJoint
+        {
+            get => _expansionJoint;
+            set { _expansionJoint = value ?? new ExpansionJointParameters(); OnPropertyChanged(); }
+        }
+
         // Output Options
         // ───────────────────────────────────────────────
 
@@ -310,6 +396,37 @@ namespace PoleBarnGenerator.Models
             if (BuildingWidth < 10) return (false, "Building width should be at least 10 feet.");
             if (BuildingLength < 10) return (false, "Building length should be at least 10 feet.");
             if (EaveHeight < 6) return (false, "Eave height should be at least 6 feet.");
+            if (NumberOfFloors < 1) return (false, "Number of floors must be at least 1.");
+
+            var floorHeights = GetResolvedFloorHeights();
+            if (floorHeights.Any(h => h <= 0))
+                return (false, "All floor heights must be positive.");
+            if (floorHeights.Sum() > EaveHeight + 0.01)
+                return (false, $"Total floor heights ({floorHeights.Sum():F2}') cannot exceed eave height ({EaveHeight:F2}').");
+
+            if (CurvedWall.Enabled)
+            {
+                if (CurvedWall.Radius <= BuildingWidth / 2.0)
+                    return (false, "Curved wall radius must be greater than half the building width.");
+                if (CurvedWall.ArcAngleDegrees <= 0 || CurvedWall.ArcAngleDegrees >= 180)
+                    return (false, "Curved wall arc angle must be between 0 and 180 degrees.");
+            }
+
+            if (FootprintShape == FootprintShape.CustomPolygon)
+            {
+                if (FootprintVertices == null || FootprintVertices.Count < 3)
+                    return (false, "Custom polygon footprint requires at least 3 vertices.");
+            }
+
+            if (ExpansionJoint.Enabled)
+            {
+                if (ExpansionJoint.GapWidth <= 0)
+                    return (false, "Expansion joint gap width must be positive.");
+                if (ExpansionJoint.Locations.Count == 0 && BuildingLength <= 120.0)
+                    return (false, "At least one expansion joint location is required when expansion joints are enabled.");
+                if (ExpansionJoint.Locations.Any(l => l <= 0 || l >= BuildingLength))
+                    return (false, "Expansion joint locations must fall inside the building length.");
+            }
 
             // Validate individual door properties
             foreach (var door in Doors)
@@ -393,6 +510,39 @@ namespace PoleBarnGenerator.Models
             }
 
             return (true, null);
+        }
+
+        /// <summary>Returns a floor height list that always matches NumberOfFloors.</summary>
+        public List<double> GetResolvedFloorHeights()
+        {
+            if (NumberOfFloors <= 1)
+                return new List<double> { EaveHeight };
+
+            if (FloorHeights != null && FloorHeights.Count == NumberOfFloors && FloorHeights.All(h => h > 0))
+            {
+                if (FloorHeights.Sum() <= EaveHeight + 0.01)
+                    return new List<double>(FloorHeights);
+            }
+
+            double defaultHeight = EaveHeight / NumberOfFloors;
+            return Enumerable.Repeat(defaultHeight, NumberOfFloors).ToList();
+        }
+
+        /// <summary>Auto-suggested expansion joint locations based on building length.</summary>
+        public List<double> GetSuggestedExpansionJointLocations()
+        {
+            var locations = new List<double>();
+            if (BuildingLength <= 120.0)
+                return locations;
+
+            int segments = (int)Math.Ceiling(BuildingLength / 120.0);
+            double segmentLength = BuildingLength / segments;
+            for (int i = 1; i < segments; i++)
+            {
+                locations.Add(i * segmentLength);
+            }
+
+            return locations;
         }
 
         /// <summary>
@@ -540,5 +690,55 @@ namespace PoleBarnGenerator.Models
 
         /// <summary>Grid pattern style</summary>
         public GridPattern GridPattern { get; set; } = GridPattern.None;
+    }
+
+    public enum FloorConnectionType
+    {
+        ContinuousPost,
+        SplicedPost
+    }
+
+    public enum CurvedWallMode
+    {
+        ArcLengthDriven,
+        ChordDriven
+    }
+
+    public enum FootprintShape
+    {
+        Rectangle,
+        LShape,
+        TShape,
+        UShape,
+        CustomPolygon
+    }
+
+    public enum ExpansionJointType
+    {
+        SlipPlate,
+        DoublePost,
+        IsolationGap
+    }
+
+    public class CurvedWallParameters
+    {
+        public bool Enabled { get; set; } = false;
+        public double Radius { get; set; } = 120.0;
+        public double ArcAngleDegrees { get; set; } = 45.0;
+        public CurvedWallMode Mode { get; set; } = CurvedWallMode.ArcLengthDriven;
+    }
+
+    public class FootprintVertex
+    {
+        public double X { get; set; }
+        public double Y { get; set; }
+    }
+
+    public class ExpansionJointParameters
+    {
+        public bool Enabled { get; set; } = false;
+        public List<double> Locations { get; set; } = new List<double>();
+        public double GapWidth { get; set; } = 0.5;
+        public ExpansionJointType JointType { get; set; } = ExpansionJointType.SlipPlate;
     }
 }
