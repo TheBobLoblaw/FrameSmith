@@ -1,5 +1,6 @@
 using System;
 using System.Collections.Generic;
+using PoleBarnGenerator.Models;
 
 namespace PoleBarnGenerator.Models.Loads
 {
@@ -81,7 +82,9 @@ namespace PoleBarnGenerator.Models.Loads
             {
                 double lu = p.BuildingLength; // upwind fetch
                 double hb = pf / (Math.Min(0.13 * pg + 14, 30)); // balanced depth
-                double hc = (p.EaveHeight - (geometry.LeanToGeometries[0] as dynamic)?.EaveHeight ?? p.EaveHeight * 0.7) - hb;
+                LeanToGeometry leanToGeo = geometry.LeanToGeometries[0];
+                double leanToEaveHeight = leanToGeo?.LeanTo?.EaveHeight ?? (p.EaveHeight * 0.7);
+                double hc = (p.EaveHeight - leanToEaveHeight) - hb;
                 if (hc > 0)
                 {
                     double hd_drift = 0.43 * Math.Pow(lu, 1.0 / 3.0) * Math.Pow(pg + 10, 1.0 / 4.0) - 1.5;

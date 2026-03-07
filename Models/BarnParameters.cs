@@ -75,7 +75,7 @@ namespace PoleBarnGenerator.Models
         }
 
         /// <summary>Computed number of bays</summary>
-        public int NumberOfBays => Math.Max(1, (int)Math.Round(BuildingLength / BaySpacing));
+        public int NumberOfBays => BaySpacing <= 0 ? 1 : Math.Max(1, (int)Math.Round(BuildingLength / BaySpacing));
 
         /// <summary>Actual bay spacing after rounding to whole bays</summary>
         public double ActualBaySpacing => BuildingLength / NumberOfBays;

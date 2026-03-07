@@ -24,7 +24,7 @@ namespace PoleBarnGenerator.Generators
             BarnGeometry geo, Vector3d offset)
         {
             int count = 0;
-            var p = geo.Parameters;
+            var p = geo.Params;
 
             double bldgW = p.BuildingWidth;
             double bldgL = p.BuildingLength;
