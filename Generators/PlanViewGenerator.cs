@@ -2,6 +2,7 @@ using System;
 using System.Collections.Generic;
 using System.Linq;
 using Autodesk.AutoCAD.DatabaseServices;
+using Autodesk.AutoCAD.EditorInput;
 using Autodesk.AutoCAD.Geometry;
 using PoleBarnGenerator.Generators.Services;
 using PoleBarnGenerator.Generators.TrussProfiles;
@@ -15,16 +16,22 @@ namespace PoleBarnGenerator.Generators
     /// </summary>
     public static class PlanViewGenerator
     {
-        public static int Generate(Transaction tr, BlockTableRecord btr, BarnGeometry geo, Vector3d offset)
+        public static int Generate(Transaction tr, BlockTableRecord btr, BarnGeometry geo, Vector3d offset, Editor ed, WarningCollector warnings)
         {
             int count = 0;
             var p = geo.Params;
 
             Database db = btr.Database;
             try { db.LoadLineTypeFile("CENTER", "acad.lin"); }
-            catch (Autodesk.AutoCAD.Runtime.Exception) { }
+            catch (Autodesk.AutoCAD.Runtime.Exception ex)
+            {
+                WarningCollector.Report(ed, warnings, "Failed to load CENTER linetype for plan view", ex);
+            }
             try { db.LoadLineTypeFile("DASHED", "acad.lin"); }
-            catch (Autodesk.AutoCAD.Runtime.Exception) { }
+            catch (Autodesk.AutoCAD.Runtime.Exception ex)
+            {
+                WarningCollector.Report(ed, warnings, "Failed to load DASHED linetype for plan view", ex);
+            }
 
             if (geo.WallSegments.Any(s => s.IsArc))
             {
@@ -172,7 +179,7 @@ namespace PoleBarnGenerator.Generators
                 count++;
             }
 
-            count += OpeningDrawingService.DrawPlanOpenings(tr, btr, geo, offset);
+            count += OpeningDrawingService.DrawPlanOpenings(tr, btr, geo, offset, ed, warnings);
 
             if (p.AddDimensions)
             {
@@ -185,7 +192,14 @@ namespace PoleBarnGenerator.Generators
                 {
                     count += LeanToGenerator.GeneratePlan(tr, btr, ltGeo, offset);
                 }
-                catch (Exception) { }
+                catch (Autodesk.AutoCAD.Runtime.Exception ex)
+                {
+                    WarningCollector.Report(ed, warnings, "Lean-to plan generation failed", ex);
+                }
+                catch (Exception ex)
+                {
+                    WarningCollector.Report(ed, warnings, "Lean-to plan generation unexpected failure", ex);
+                }
             }
 
             foreach (var porchGeo in geo.PorchGeometries)
@@ -194,10 +208,17 @@ namespace PoleBarnGenerator.Generators
                 {
                     count += PorchGenerator.GeneratePlan(tr, btr, porchGeo, offset);
                 }
-                catch (Exception) { }
+                catch (Autodesk.AutoCAD.Runtime.Exception ex)
+                {
+                    WarningCollector.Report(ed, warnings, "Porch plan generation failed", ex);
+                }
+                catch (Exception ex)
+                {
+                    WarningCollector.Report(ed, warnings, "Porch plan generation unexpected failure", ex);
+                }
             }
 
-            count += ExteriorDetailDrawingService.AddPlanExteriorDetails(tr, btr, geo, offset);
+            count += ExteriorDetailDrawingService.AddPlanExteriorDetails(tr, btr, geo, offset, ed, warnings);
 
             if (geo.InteriorGeometry != null)
             {
@@ -232,7 +253,14 @@ namespace PoleBarnGenerator.Generators
                     if (interior.MachineryLayout != null)
                         count += InteriorGenerator.GenerateMachineryLayout(tr, btr, interior.MachineryLayout, offset);
                 }
-                catch (Exception) { }
+                catch (Autodesk.AutoCAD.Runtime.Exception ex)
+                {
+                    WarningCollector.Report(ed, warnings, "Interior plan generation failed", ex);
+                }
+                catch (Exception ex)
+                {
+                    WarningCollector.Report(ed, warnings, "Interior plan generation unexpected failure", ex);
+                }
             }
 
             count += GridBubbleGenerator.Generate(tr, btr, geo, offset);

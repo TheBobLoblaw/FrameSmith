@@ -1,5 +1,6 @@
 using System;
 using Autodesk.AutoCAD.DatabaseServices;
+using Autodesk.AutoCAD.EditorInput;
 using Autodesk.AutoCAD.Geometry;
 using PoleBarnGenerator.Generators.Services;
 using PoleBarnGenerator.Models;
@@ -12,7 +13,7 @@ namespace PoleBarnGenerator.Generators
     /// </summary>
     public static class FrontElevationGenerator
     {
-        public static int Generate(Transaction tr, BlockTableRecord btr, BarnGeometry geo, Vector3d offset)
+        public static int Generate(Transaction tr, BlockTableRecord btr, BarnGeometry geo, Vector3d offset, Editor ed, WarningCollector warnings)
         {
             int count = 0;
             var p = geo.Params;
@@ -82,7 +83,7 @@ namespace PoleBarnGenerator.Generators
                 count += 2;
             }
 
-            count += OpeningDrawingService.DrawFrontElevationOpenings(tr, btr, geo, offset);
+            count += OpeningDrawingService.DrawFrontElevationOpenings(tr, btr, geo, offset, ed, warnings);
 
             if (geo.ExpansionJoints.Count > 0)
             {
@@ -124,7 +125,14 @@ namespace PoleBarnGenerator.Generators
                 {
                     count += LeanToGenerator.GenerateFrontElevation(tr, btr, ltGeo, geo, offset);
                 }
-                catch (Exception) { }
+                catch (Autodesk.AutoCAD.Runtime.Exception ex)
+                {
+                    WarningCollector.Report(ed, warnings, "Lean-to front elevation generation failed", ex);
+                }
+                catch (Exception ex)
+                {
+                    WarningCollector.Report(ed, warnings, "Lean-to front elevation generation unexpected failure", ex);
+                }
             }
 
             foreach (var porchGeo in geo.PorchGeometries)
@@ -133,10 +141,17 @@ namespace PoleBarnGenerator.Generators
                 {
                     count += PorchGenerator.GenerateFrontElevation(tr, btr, porchGeo, geo, offset);
                 }
-                catch (Exception) { }
+                catch (Autodesk.AutoCAD.Runtime.Exception ex)
+                {
+                    WarningCollector.Report(ed, warnings, "Porch front elevation generation failed", ex);
+                }
+                catch (Exception ex)
+                {
+                    WarningCollector.Report(ed, warnings, "Porch front elevation generation unexpected failure", ex);
+                }
             }
 
-            count += ExteriorDetailDrawingService.AddFrontElevationExteriorDetails(tr, btr, geo, offset);
+            count += ExteriorDetailDrawingService.AddFrontElevationExteriorDetails(tr, btr, geo, offset, ed, warnings);
 
             if (p.AddDimensions)
             {

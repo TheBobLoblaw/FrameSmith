@@ -19,9 +19,6 @@
   </ItemGroup>
 
   <ItemGroup>
-    <Compile Include="../Models/StructuralCalculations.cs" Link="Production/StructuralCalculations.cs" />
-    <Compile Include="../Utils/OpeningValidator.cs" Link="Production/OpeningValidator.cs" />
-    <Compile Include="../Generators/GridLabelGenerator.cs" Link="Production/GridLabelGenerator.cs" />
-    <Compile Include="../Models/BarnGeometryPostPlacement.cs" Link="Production/BarnGeometryPostPlacement.cs" />
+    <ProjectReference Include="../PoleBarnPlugin.csproj" />
   </ItemGroup>
 </Project>

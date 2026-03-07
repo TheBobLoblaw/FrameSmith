@@ -40,5 +40,9 @@
     </Reference>
   </ItemGroup>
 
+  <ItemGroup>
+    <Compile Remove="Tests/**/*.cs" />
+  </ItemGroup>
+
 
 </Project>
