@@ -7,16 +7,25 @@ namespace PoleBarnGenerator.Generators.Renderers
     /// </summary>
     public static class RendererFactory
     {
+        private static readonly IOpeningRenderer OverheadDoor = new OverheadDoorRenderer();
+        private static readonly IOpeningRenderer WalkDoor = new WalkDoorRenderer();
+        private static readonly IOpeningRenderer SlidingDoor = new SlidingDoorRenderer();
+        private static readonly IOpeningRenderer DutchDoor = new DutchDoorRenderer();
+
+        private static readonly IWindowRenderer FixedWindow = new FixedWindowRenderer();
+        private static readonly IWindowRenderer SingleHungWindow = new SingleHungWindowRenderer();
+        private static readonly IWindowRenderer DoubleHungWindow = new DoubleHungWindowRenderer();
+
         public static IOpeningRenderer GetDoorRenderer(DoorType type)
         {
             switch (type)
             {
-                case DoorType.Overhead: return new OverheadDoorRenderer();
-                case DoorType.Walk:     return new WalkDoorRenderer();
-                case DoorType.Sliding:  return new SlidingDoorRenderer();
-                case DoorType.Dutch:    return new DutchDoorRenderer();
-                case DoorType.Double:   return new WalkDoorRenderer(); // Double uses walk with two leaves
-                default:                return new WalkDoorRenderer();
+                case DoorType.Overhead: return OverheadDoor;
+                case DoorType.Walk: return WalkDoor;
+                case DoorType.Sliding: return SlidingDoor;
+                case DoorType.Dutch: return DutchDoor;
+                case DoorType.Double: return WalkDoor; // Double uses walk with two leaves
+                default: return WalkDoor;
             }
         }
 
@@ -24,9 +33,15 @@ namespace PoleBarnGenerator.Generators.Renderers
         {
             switch (type)
             {
-                case WindowType.SingleHung: return new SingleHungWindowRenderer();
-                // All other types fall back to single-hung for now
-                default: return new SingleHungWindowRenderer();
+                case WindowType.Fixed: return FixedWindow;
+                case WindowType.SingleHung: return SingleHungWindow;
+                case WindowType.DoubleHung: return DoubleHungWindow;
+                case WindowType.Sliding:
+                case WindowType.BarnSash:
+                case WindowType.Awning:
+                case WindowType.Casement:
+                default:
+                    return SingleHungWindow;
             }
         }
     }

@@ -41,7 +41,7 @@ namespace PoleBarnGenerator.Generators
             for (int i = 0; i <= bayCount; i++)
             {
                 double y = i * baySpacing;
-                string label = GetBayLabel(i);
+                string label = GridLabelGenerator.GetBayLabel(i);
                 count += AddGridLine(tr, btr, offset, -GridExtension, y, bldgW + GridExtension, y,
                     label, false);
             }
@@ -90,20 +90,5 @@ namespace PoleBarnGenerator.Generators
             return count;
         }
 
-        private static string GetBayLabel(int index)
-        {
-            // Excel-style alphabetic sequence: A..Z, AA..AZ, BA...
-            int value = index + 1;
-            string label = string.Empty;
-
-            while (value > 0)
-            {
-                value--;
-                label = (char)('A' + (value % 26)) + label;
-                value /= 26;
-            }
-
-            return label;
-        }
     }
 }

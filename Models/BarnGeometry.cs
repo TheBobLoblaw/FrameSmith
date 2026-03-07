@@ -230,7 +230,7 @@ namespace PoleBarnGenerator.Models
             }
 
             // Preserve legacy center post behavior on endwalls for wide rectangular buildings.
-            if (!Params.CurvedWall.Enabled && Params.FootprintShape == FootprintShape.Rectangle && Params.BuildingWidth > 24)
+            if (BarnGeometryPostPlacement.ShouldAddEndwallCenterPosts(Params))
             {
                 AddEndwallCenterPost(0);
                 AddEndwallCenterPost(Params.BuildingLength);

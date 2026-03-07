@@ -80,39 +80,43 @@ namespace PoleBarnGenerator.Models
         /// <summary>Actual bay spacing after rounding to whole bays</summary>
         public double ActualBaySpacing => BuildingLength / NumberOfBays;
 
-        private int _numberOfFloors = 1;
+        private StoryParameters _story = new StoryParameters();
+        /// <summary>Composed story-level parameters for floor layout and post continuity.</summary>
+        public StoryParameters Story
+        {
+            get => _story;
+            set { _story = value ?? new StoryParameters(); OnPropertyChanged(); }
+        }
+
         /// <summary>Total number of stories/floors in the structure.</summary>
         public int NumberOfFloors
         {
-            get => _numberOfFloors;
-            set { _numberOfFloors = Math.Max(1, value); OnPropertyChanged(); OnPropertyChanged(nameof(DefaultFloorHeight)); }
+            get => Story.NumberOfFloors;
+            set { Story.NumberOfFloors = value; OnPropertyChanged(); OnPropertyChanged(nameof(DefaultFloorHeight)); }
         }
 
-        private List<double> _floorHeights = new List<double>();
         /// <summary>Story heights in feet. If count does not match NumberOfFloors, defaults are used.</summary>
         public List<double> FloorHeights
         {
-            get => _floorHeights;
-            set { _floorHeights = value ?? new List<double>(); OnPropertyChanged(); }
+            get => Story.FloorHeights;
+            set { Story.FloorHeights = value ?? new List<double>(); OnPropertyChanged(); }
         }
 
         /// <summary>Default story height when explicit floor heights are not provided.</summary>
         public double DefaultFloorHeight => NumberOfFloors > 0 ? EaveHeight / NumberOfFloors : EaveHeight;
 
-        private FloorConnectionType _floorConnection = FloorConnectionType.ContinuousPost;
         /// <summary>Inter-floor connection strategy for posts and beams.</summary>
         public FloorConnectionType FloorConnection
         {
-            get => _floorConnection;
-            set { _floorConnection = value; OnPropertyChanged(); }
+            get => Story.FloorConnection;
+            set { Story.FloorConnection = value; OnPropertyChanged(); }
         }
 
-        private string _floorBeamSize = "2-2x12 LVL";
         /// <summary>Nominal floor beam sizing callout for intermediate levels.</summary>
         public string FloorBeamSize
         {
-            get => _floorBeamSize;
-            set { _floorBeamSize = string.IsNullOrWhiteSpace(value) ? "2-2x12 LVL" : value.Trim(); OnPropertyChanged(); }
+            get => Story.FloorBeamSize;
+            set { Story.FloorBeamSize = value; OnPropertyChanged(); }
         }
 
         // ───────────────────────────────────────────────
@@ -387,36 +391,39 @@ namespace PoleBarnGenerator.Models
             set { _curvedWall = value ?? new CurvedWallParameters(); OnPropertyChanged(); }
         }
 
-        private FootprintShape _footprintShape = FootprintShape.Rectangle;
+        private FootprintParameters _footprint = new FootprintParameters();
+        public FootprintParameters Footprint
+        {
+            get => _footprint;
+            set { _footprint = value ?? new FootprintParameters(); OnPropertyChanged(); }
+        }
+
         /// <summary>Primary footprint strategy for the plan shape.</summary>
         public FootprintShape FootprintShape
         {
-            get => _footprintShape;
-            set { _footprintShape = value; OnPropertyChanged(); }
+            get => Footprint.Shape;
+            set { Footprint.Shape = value; OnPropertyChanged(); }
         }
 
-        private List<FootprintVertex> _footprintVertices = new List<FootprintVertex>();
         /// <summary>Custom footprint vertices (plan coordinates in feet).</summary>
         public List<FootprintVertex> FootprintVertices
         {
-            get => _footprintVertices;
-            set { _footprintVertices = value ?? new List<FootprintVertex>(); OnPropertyChanged(); }
+            get => Footprint.Vertices;
+            set { Footprint.Vertices = value ?? new List<FootprintVertex>(); OnPropertyChanged(); }
         }
 
-        private double _footprintInsetWidth = 10.0;
         /// <summary>Inset width for generated L/T/U footprints.</summary>
         public double FootprintInsetWidth
         {
-            get => _footprintInsetWidth;
-            set { _footprintInsetWidth = Math.Max(1.0, value); OnPropertyChanged(); }
+            get => Footprint.InsetWidth;
+            set { Footprint.InsetWidth = value; OnPropertyChanged(); }
         }
 
-        private double _footprintInsetDepth = 10.0;
         /// <summary>Inset depth for generated L/T/U footprints.</summary>
         public double FootprintInsetDepth
         {
-            get => _footprintInsetDepth;
-            set { _footprintInsetDepth = Math.Max(1.0, value); OnPropertyChanged(); }
+            get => Footprint.InsetDepth;
+            set { Footprint.InsetDepth = value; OnPropertyChanged(); }
         }
 
         private ExpansionJointParameters _expansionJoint = new ExpansionJointParameters();
@@ -605,17 +612,7 @@ namespace PoleBarnGenerator.Models
         /// <summary>Returns a floor height list that always matches NumberOfFloors.</summary>
         public List<double> GetResolvedFloorHeights()
         {
-            if (NumberOfFloors <= 1)
-                return new List<double> { EaveHeight };
-
-            if (FloorHeights != null && FloorHeights.Count == NumberOfFloors && FloorHeights.All(h => h > 0))
-            {
-                if (FloorHeights.Sum() <= EaveHeight + 0.01)
-                    return new List<double>(FloorHeights);
-            }
-
-            double defaultHeight = EaveHeight / NumberOfFloors;
-            return Enumerable.Repeat(defaultHeight, NumberOfFloors).ToList();
+            return Story.ResolveHeights(EaveHeight);
         }
 
         /// <summary>Auto-suggested expansion joint locations based on building length.</summary>
@@ -747,6 +744,7 @@ namespace PoleBarnGenerator.Models
     {
         Fixed,
         SingleHung,
+        DoubleHung,
         Sliding,
         BarnSash,
         Awning,
@@ -782,53 +780,4 @@ namespace PoleBarnGenerator.Models
         public GridPattern GridPattern { get; set; } = GridPattern.None;
     }
 
-    public enum FloorConnectionType
-    {
-        ContinuousPost,
-        SplicedPost
-    }
-
-    public enum CurvedWallMode
-    {
-        ArcLengthDriven,
-        ChordDriven
-    }
-
-    public enum FootprintShape
-    {
-        Rectangle,
-        LShape,
-        TShape,
-        UShape,
-        CustomPolygon
-    }
-
-    public enum ExpansionJointType
-    {
-        SlipPlate,
-        DoublePost,
-        IsolationGap
-    }
-
-    public class CurvedWallParameters
-    {
-        public bool Enabled { get; set; } = false;
-        public double Radius { get; set; } = 120.0;
-        public double ArcAngleDegrees { get; set; } = 45.0;
-        public CurvedWallMode Mode { get; set; } = CurvedWallMode.ArcLengthDriven;
-    }
-
-    public class FootprintVertex
-    {
-        public double X { get; set; }
-        public double Y { get; set; }
-    }
-
-    public class ExpansionJointParameters
-    {
-        public bool Enabled { get; set; } = false;
-        public List<double> Locations { get; set; } = new List<double>();
-        public double GapWidth { get; set; } = 0.5;
-        public ExpansionJointType JointType { get; set; } = ExpansionJointType.SlipPlate;
-    }
 }

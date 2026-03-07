@@ -1,40 +1,31 @@
-using Autodesk.AutoCAD.DatabaseServices;
-using Autodesk.AutoCAD.Geometry;
-using PoleBarnGenerator.Models;
-using PoleBarnGenerator.Generators.Renderers;
-using PoleBarnGenerator.Utils;
 using System;
-using PoleBarnGenerator.Generators.TrussProfiles;
 using System.Collections.Generic;
 using System.Linq;
+using Autodesk.AutoCAD.DatabaseServices;
+using Autodesk.AutoCAD.Geometry;
+using PoleBarnGenerator.Generators.Services;
+using PoleBarnGenerator.Generators.TrussProfiles;
+using PoleBarnGenerator.Models;
+using PoleBarnGenerator.Utils;
 
 namespace PoleBarnGenerator.Generators
 {
     /// <summary>
-    /// Generates the plan (top-down) view showing:
-    /// - Post locations as filled rectangles
-    /// - Slab/foundation outline
-    /// - Wall girt lines along sidewalls and endwalls
-    /// - Truss ridge line (dashed center line)
-    /// - Door/window openings as breaks in wall lines
-    /// - Bay spacing dimensions
+    /// Generates the plan (top-down) view and coordinates specialized drawing services.
     /// </summary>
     public static class PlanViewGenerator
     {
-        public static int Generate(Transaction tr, BlockTableRecord btr,
-            BarnGeometry geo, Vector3d offset)
+        public static int Generate(Transaction tr, BlockTableRecord btr, BarnGeometry geo, Vector3d offset)
         {
             int count = 0;
             var p = geo.Params;
 
-            // Load linetypes to prevent crash if not already present in drawing
             Database db = btr.Database;
             try { db.LoadLineTypeFile("CENTER", "acad.lin"); }
-            catch (Autodesk.AutoCAD.Runtime.Exception) { /* already loaded */ }
+            catch (Autodesk.AutoCAD.Runtime.Exception) { }
             try { db.LoadLineTypeFile("DASHED", "acad.lin"); }
-            catch (Autodesk.AutoCAD.Runtime.Exception) { /* already loaded */ }
+            catch (Autodesk.AutoCAD.Runtime.Exception) { }
 
-            // ── Slab / Foundation outline ──
             if (geo.WallSegments.Any(s => s.IsArc))
             {
                 foreach (var segment in geo.WallSegments)
@@ -64,7 +55,6 @@ namespace PoleBarnGenerator.Generators
                 count++;
             }
 
-            // ── Posts ──
             foreach (var post in geo.Posts.Where(ps => ps.IsPlanInstance))
             {
                 double hw = post.PostWidth / 2.0;
@@ -76,7 +66,6 @@ namespace PoleBarnGenerator.Generators
                     LayerManager.Layers.Posts);
                 count++;
 
-                // Also draw a rectangle outline around each post
                 DrawingHelpers.AddRectangle(tr, btr,
                     DrawingHelpers.Offset2d(post.X - hw, post.Y - hd, offset),
                     post.PostWidth, post.PostDepth,
@@ -84,7 +73,6 @@ namespace PoleBarnGenerator.Generators
                 count++;
             }
 
-            // ── Wall lines ──
             foreach (var segment in geo.WallSegments)
             {
                 if (segment.IsArc)
@@ -104,7 +92,6 @@ namespace PoleBarnGenerator.Generators
                 count++;
             }
 
-            // ── Ridge line (dashed center line) — varies by truss type ──
             if (p.TrussType != TrussType.MonoSlope)
             {
                 Line ridgeLine = DrawingHelpers.AddLine(tr, btr,
@@ -115,13 +102,11 @@ namespace PoleBarnGenerator.Generators
                 count++;
             }
 
-            // ── Truss-type-specific plan roof outlines ──
             count += geo.TrussProfile.RenderPlanRoofOutline(tr, btr, geo, offset);
 
-            // ── Bay lines (dashed) ──
             foreach (double bayY in geo.BayPositions)
             {
-                if (bayY == 0 || bayY == p.BuildingLength) continue; // skip endwalls
+                if (bayY == 0 || bayY == p.BuildingLength) continue;
 
                 Line bayLine = DrawingHelpers.AddLine(tr, btr,
                     DrawingHelpers.Offset(0, bayY, offset),
@@ -131,7 +116,6 @@ namespace PoleBarnGenerator.Generators
                 count++;
             }
 
-            // ── Roof overhang outline ──
             var roofOutline = new List<Point2d>
             {
                 DrawingHelpers.Offset2d(-p.OverhangEave, -p.OverhangGable, offset),
@@ -142,7 +126,6 @@ namespace PoleBarnGenerator.Generators
             DrawingHelpers.AddPolyline(tr, btr, roofOutline, LayerManager.Layers.Roof, closed: true);
             count++;
 
-            // ── Floor framing (multi-story) ──
             if (geo.FloorFraming.Count > 0)
             {
                 foreach (var frame in geo.FloorFraming)
@@ -165,7 +148,6 @@ namespace PoleBarnGenerator.Generators
                 }
             }
 
-            // ── Expansion joints ──
             foreach (var joint in geo.ExpansionJoints)
             {
                 DrawingHelpers.AddLine(tr, btr,
@@ -181,7 +163,6 @@ namespace PoleBarnGenerator.Generators
                 count++;
             }
 
-            // ── Roof intersections (valleys/hips for compound footprints) ──
             foreach (var valley in geo.RoofIntersectionPoints)
             {
                 DrawingHelpers.AddLine(tr, btr,
@@ -191,66 +172,33 @@ namespace PoleBarnGenerator.Generators
                 count++;
             }
 
-            // ── Door openings (shown as breaks/rectangles on walls) ──
-            foreach (var door in p.Doors)
-            {
-                try
-                {
-                    var wallGeo = new WallGeometry(p, door.Wall);
-                    var renderer = RendererFactory.GetDoorRenderer(door.Type);
-                    count += renderer.RenderPlan(tr, btr, door, wallGeo, offset);
-                }
-                catch (System.Exception) { /* skip failed opening render */ }
-            }
+            count += OpeningDrawingService.DrawPlanOpenings(tr, btr, geo, offset);
 
-            // ── Window openings ──
-            foreach (var window in p.Windows)
-            {
-                try
-                {
-                    var wallGeo = new WallGeometry(p, window.Wall);
-                    var renderer = RendererFactory.GetWindowRenderer(window.Type);
-                    count += renderer.RenderPlan(tr, btr, window, wallGeo, offset);
-                }
-                catch (System.Exception) { /* skip failed opening render */ }
-            }
-
-            // ── Dimensions ──
             if (p.AddDimensions)
             {
-                count += AddPlanDimensions(tr, btr, geo, offset);
+                count += DimensionScaffoldingService.AddPlanDimensions(tr, btr, geo, offset);
             }
 
-
-            // ── Lean-To structures ──
             foreach (var ltGeo in geo.LeanToGeometries)
             {
                 try
                 {
                     count += LeanToGenerator.GeneratePlan(tr, btr, ltGeo, offset);
                 }
-                catch (System.Exception) { /* skip failed lean-to render */ }
+                catch (Exception) { }
             }
 
-            // ── Porch structures ──
             foreach (var porchGeo in geo.PorchGeometries)
             {
                 try
                 {
                     count += PorchGenerator.GeneratePlan(tr, btr, porchGeo, offset);
                 }
-                catch (System.Exception) { /* skip failed porch render */ }
+                catch (Exception) { }
             }
 
-            // ── Exterior details ──
-            try
-            {
-                count += ExteriorDetailGenerator.AddCupolaPlan(tr, btr, geo, p.Cupola, offset);
-                count += ExteriorDetailGenerator.AddGutterPlan(tr, btr, geo, p.Gutters, offset);
-            }
-            catch (System.Exception) { /* skip failed detail render */ }
+            count += ExteriorDetailDrawingService.AddPlanExteriorDetails(tr, btr, geo, offset);
 
-            // ── Interior features ──
             if (geo.InteriorGeometry != null)
             {
                 try
@@ -284,62 +232,14 @@ namespace PoleBarnGenerator.Generators
                     if (interior.MachineryLayout != null)
                         count += InteriorGenerator.GenerateMachineryLayout(tr, btr, interior.MachineryLayout, offset);
                 }
-                catch (System.Exception) { /* skip failed interior render */ }
+                catch (Exception) { }
             }
 
-            // ── Grid system ──
             count += GridBubbleGenerator.Generate(tr, btr, geo, offset);
 
-            // ── View label ──
             count += ViewLabelGenerator.AddViewLabel(tr, btr,
                 "PLAN VIEW", "1/4\" = 1'-0\"",
                 DrawingHelpers.Offset(p.BuildingWidth / 2.0, -5, offset));
-
-            return count;
-        }
-
-
-
-        private static int AddPlanDimensions(Transaction tr, BlockTableRecord btr,
-            BarnGeometry geo, Vector3d offset)
-        {
-            int count = 0;
-            var p = geo.Params;
-            double dimOffset = 3.0;
-            double minX = geo.FootprintOutline.Min(pt => pt.X);
-            double maxX = geo.FootprintOutline.Max(pt => pt.X);
-            double minY = geo.FootprintOutline.Min(pt => pt.Y);
-            double maxY = geo.FootprintOutline.Max(pt => pt.Y);
-
-            // Overall width dimension (bottom)
-            DrawingHelpers.AddAlignedDim(tr, btr,
-                DrawingHelpers.Offset(minX, minY, offset),
-                DrawingHelpers.Offset(maxX, minY, offset),
-                DrawingHelpers.Offset((minX + maxX) / 2, minY - dimOffset, offset),
-                LayerManager.Layers.Dims);
-            count++;
-
-            // Overall length dimension (left side)
-            DrawingHelpers.AddAlignedDim(tr, btr,
-                DrawingHelpers.Offset(minX, minY, offset),
-                DrawingHelpers.Offset(minX, maxY, offset),
-                DrawingHelpers.Offset(minX - dimOffset, (minY + maxY) / 2, offset),
-                LayerManager.Layers.Dims);
-            count++;
-
-            // Bay spacing dims (right side)
-            for (int i = 0; i < geo.BayPositions.Count - 1; i++)
-            {
-                double y1 = geo.BayPositions[i];
-                double y2 = geo.BayPositions[i + 1];
-
-                DrawingHelpers.AddAlignedDim(tr, btr,
-                    DrawingHelpers.Offset(p.BuildingWidth, y1, offset),
-                    DrawingHelpers.Offset(p.BuildingWidth, y2, offset),
-                    DrawingHelpers.Offset(p.BuildingWidth + dimOffset, (y1 + y2) / 2, offset),
-                    LayerManager.Layers.Dims);
-                count++;
-            }
 
             return count;
         }

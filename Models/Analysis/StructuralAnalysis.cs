@@ -126,7 +126,6 @@ namespace PoleBarnGenerator.Models.Analysis
             var (purlinCombo, purlinMaxLoad) = LoadCombinations.FindControlling(combos,
                 purlinDL, 0, Lr * purlinTrib, purlinSL, Math.Abs(windLoads.RoofWindwardPressure) * purlinTrib);
 
-            double purlinTotalPlf = purlinMaxLoad / purlinSpan; // approximate
             double purlinMoment = purlinMaxLoad * purlinSpan / 8.0;
             double purlinShear = purlinMaxLoad / 2.0;
 
