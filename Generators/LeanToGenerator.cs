@@ -87,7 +87,7 @@ namespace PoleBarnGenerator.Generators
                 DrawingHelpers.Offset2d(c.OuterStart.X, c.OuterStart.Y, offset),
             };
             Polyline roofPl = DrawingHelpers.AddPolyline(tr, btr, roofOutline, LayerManager.Layers.Roof, closed: true);
-            try { roofPl.Linetype = "DASHED"; } catch { }
+            TrySetLinetype(roofPl, "DASHED", "Unable to set lean-to roof linetype");
             count++;
 
             // ── Label ──
@@ -322,7 +322,7 @@ namespace PoleBarnGenerator.Generators
                 DrawingHelpers.Offset(start, ltGeo.TieInHeight, offset),
                 DrawingHelpers.Offset(end, ltGeo.TieInHeight, offset),
                 LayerManager.Layers.Roof);
-            try { tieInLine.Linetype = "DASHED"; } catch { }
+            TrySetLinetype(tieInLine, "DASHED", "Unable to set lean-to tie-in linetype");
             count++;
 
             return count;
@@ -489,6 +489,26 @@ namespace PoleBarnGenerator.Generators
             double y2 = c.OuterEnd.Y + frac * (c.AttachEnd.Y - c.OuterEnd.Y);
 
             return (x1, y1, x2, y2);
+        }
+
+        private static void TrySetLinetype(Entity entity, string linetype, string context)
+        {
+            try
+            {
+                entity.Linetype = linetype;
+            }
+            catch (Autodesk.AutoCAD.Runtime.Exception ex)
+            {
+                WarningCollector.ReportCurrent(context, ex);
+            }
+            catch (InvalidOperationException ex)
+            {
+                WarningCollector.ReportCurrent(context, ex);
+            }
+            catch (ArgumentException ex)
+            {
+                WarningCollector.ReportCurrent(context, ex);
+            }
         }
     }
 }

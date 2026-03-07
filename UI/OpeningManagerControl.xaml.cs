@@ -148,7 +148,7 @@ namespace PoleBarnGenerator.UI
         public object Convert(object value, Type targetType, object parameter, CultureInfo culture)
             => value?.ToString() ?? "Valid";
         public object ConvertBack(object value, Type targetType, object parameter, CultureInfo culture)
-            => throw new NotImplementedException();
+            => Binding.DoNothing;
     }
 
     public class DoorTypeIconConverter : IValueConverter
@@ -156,7 +156,7 @@ namespace PoleBarnGenerator.UI
         public object Convert(object value, Type targetType, object parameter, CultureInfo culture)
             => value?.ToString() ?? "";
         public object ConvertBack(object value, Type targetType, object parameter, CultureInfo culture)
-            => throw new NotImplementedException();
+            => Binding.DoNothing;
     }
 
     public class WindowTypeIconConverter : IValueConverter
@@ -164,7 +164,7 @@ namespace PoleBarnGenerator.UI
         public object Convert(object value, Type targetType, object parameter, CultureInfo culture)
             => value?.ToString() ?? "";
         public object ConvertBack(object value, Type targetType, object parameter, CultureInfo culture)
-            => throw new NotImplementedException();
+            => Binding.DoNothing;
     }
 
     public partial class OpeningManagerControl : UserControl

@@ -1,6 +1,7 @@
 using System;
 using System.Windows;
 using System.Windows.Controls;
+using Autodesk.AutoCAD.ApplicationServices;
 using Microsoft.Win32;
 using PoleBarnGenerator.Models;
 using PoleBarnGenerator.Models.Analysis;
@@ -43,7 +44,14 @@ namespace PoleBarnGenerator.UI
             }
             catch (Exception ex)
             {
-                txtResults.Text = $"Analysis Error: {ex.Message}\n\n{ex.StackTrace}";
+                txtResults.Text = "Analysis failed. Review inputs and try again.";
+                MessageBox.Show(
+                    "Structural analysis failed. Please verify your inputs and try again.",
+                    "Analysis Error",
+                    MessageBoxButton.OK,
+                    MessageBoxImage.Error);
+                Application.DocumentManager.MdiActiveDocument?.Editor?
+                    .WriteMessage($"\nStructural analysis error:\n{ex}");
                 btnExportReport.IsEnabled = false;
             }
         }
@@ -75,8 +83,13 @@ namespace PoleBarnGenerator.UI
             }
             catch (Exception ex)
             {
-                MessageBox.Show($"Export Error: {ex.Message}", "Error",
-                    MessageBoxButton.OK, MessageBoxImage.Error);
+                MessageBox.Show(
+                    "Failed to export the calculation package. Please check the selected path and try again.",
+                    "Export Error",
+                    MessageBoxButton.OK,
+                    MessageBoxImage.Error);
+                Application.DocumentManager.MdiActiveDocument?.Editor?
+                    .WriteMessage($"\nStructural export error:\n{ex}");
             }
         }
     }
