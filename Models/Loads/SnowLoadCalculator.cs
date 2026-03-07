@@ -52,8 +52,8 @@ namespace PoleBarnGenerator.Models.Loads
             // Flat roof snow load: ASCE 7-22 Eq. 7.3-1
             double pf = 0.7 * Ce * Ct * Is * pg;
             // Minimum per §7.3.4
-            double pfMin = Is * pg <= 20 ? Is * pg : 20 * Is;
-            pf = Math.Max(pf, pfMin > 0 ? 20 * Is : pf);
+            double pfMin = Math.Min(Is * pg, 20 * Is);
+            pf = Math.Max(pf, pfMin);
             if (pg <= 0) pf = 0;
 
             // Sloped roof factor Cs: ASCE 7-22 §7.4
