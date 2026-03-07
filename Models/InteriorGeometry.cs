@@ -71,7 +71,7 @@ namespace PoleBarnGenerator.Models
             return result;
         }
 
-        internal static DairyLayoutData CalculateDairyLayout(BarnGeometry geo, DairyBarnModuleParameters dairy)
+        internal static DairyLayoutData CalculateDairyLayout(BarnGeometry geo, DairyBarnParameters dairy)
         {
             var p = geo.Params;
             var layout = new DairyLayoutData

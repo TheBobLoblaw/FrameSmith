@@ -15,6 +15,8 @@ namespace PoleBarnGenerator.Generators.Renderers
         private static readonly IWindowRenderer FixedWindow = new FixedWindowRenderer();
         private static readonly IWindowRenderer SingleHungWindow = new SingleHungWindowRenderer();
         private static readonly IWindowRenderer DoubleHungWindow = new DoubleHungWindowRenderer();
+        private static readonly IWindowRenderer SlidingWindow = new SlidingWindowRenderer();
+        private static readonly IWindowRenderer AwningWindow = new AwningWindowRenderer();
 
         public static IOpeningRenderer GetDoorRenderer(DoorType type)
         {
@@ -36,9 +38,9 @@ namespace PoleBarnGenerator.Generators.Renderers
                 case WindowType.Fixed: return FixedWindow;
                 case WindowType.SingleHung: return SingleHungWindow;
                 case WindowType.DoubleHung: return DoubleHungWindow;
-                case WindowType.Sliding:
-                case WindowType.BarnSash:
-                case WindowType.Awning:
+                case WindowType.Sliding: return SlidingWindow;
+                case WindowType.BarnSash: return SlidingWindow;
+                case WindowType.Awning: return AwningWindow;
                 case WindowType.Casement:
                 default:
                     return SingleHungWindow;

@@ -26,28 +26,7 @@ namespace PoleBarnGenerator.Generators
             try { db.LoadLineTypeFile("DASHED", "acad.lin"); }
             catch (Autodesk.AutoCAD.Runtime.Exception) { }
 
-            if (geo.WallSegments.Any(s => s.IsArc))
-            {
-                foreach (var segment in geo.WallSegments)
-                {
-                    if (segment.IsArc)
-                    {
-                        DrawingHelpers.AddArc(tr, btr,
-                            DrawingHelpers.Offset2d(segment.ArcCenter.X, segment.ArcCenter.Y, offset),
-                            segment.ArcRadius, segment.StartAngle, segment.EndAngle,
-                            LayerManager.Layers.Curved);
-                    }
-                    else
-                    {
-                        DrawingHelpers.AddLine(tr, btr,
-                            DrawingHelpers.Offset(segment.Start.X, segment.Start.Y, offset),
-                            DrawingHelpers.Offset(segment.End.X, segment.End.Y, offset),
-                            LayerManager.Layers.Slab);
-                    }
-                    count++;
-                }
-            }
-            else
+            if (!geo.WallSegments.Any(s => s.IsArc))
             {
                 DrawingHelpers.AddPolyline(tr, btr,
                     geo.FootprintOutline.Select(pt => DrawingHelpers.Offset2d(pt.X, pt.Y, offset)).ToList(),
