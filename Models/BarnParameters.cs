@@ -322,11 +322,11 @@ namespace PoleBarnGenerator.Models
             set { _specialtyType = value; OnPropertyChanged(); }
         }
 
-        private DairyBarnModuleParameters _dairyBarn = new DairyBarnModuleParameters();
-        public DairyBarnModuleParameters DairyBarn
+        private DairyBarnParameters _dairyBarn = new DairyBarnParameters();
+        public DairyBarnParameters DairyBarn
         {
             get => _dairyBarn;
-            set { _dairyBarn = value ?? new DairyBarnModuleParameters(); OnPropertyChanged(); }
+            set { _dairyBarn = value ?? new DairyBarnParameters(); OnPropertyChanged(); }
         }
 
         private EquipmentStorageParameters _equipmentStorage = new EquipmentStorageParameters();

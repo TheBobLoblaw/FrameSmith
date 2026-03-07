@@ -1,4 +1,5 @@
 using System;
+using System.Globalization;
 using System.Text;
 using System.Windows;
 using System.Windows.Controls;
@@ -96,7 +97,15 @@ namespace PoleBarnGenerator.UI
                 {
                     structural = StructuralEngine.RunFullAnalysis(geometry, parameters.Structural);
                 }
-                catch { /* proceed without structural */ }
+                catch (Exception ex)
+                {
+                    txtStatus.Text = $"⚠ Structural analysis skipped: {ex.Message}";
+                    MessageBox.Show(
+                        $"Structural analysis failed; continuing with materials-only takeoff.\n\n{ex.Message}",
+                        "Structural Analysis Warning",
+                        MessageBoxButton.OK,
+                        MessageBoxImage.Warning);
+                }
             }
 
             RunTakeoff(geometry, structural);
@@ -119,7 +128,7 @@ namespace PoleBarnGenerator.UI
             };
 
             double taxRate = 0.07;
-            if (double.TryParse(txtTaxRate.Text, out double tr))
+            if (double.TryParse(txtTaxRate.Text, NumberStyles.Float, CultureInfo.InvariantCulture, out double tr))
                 taxRate = tr / 100.0;
 
             _pricing = MaterialPricingEngine.CalculateProjectCost(_takeoff, zip, tier, taxRate);

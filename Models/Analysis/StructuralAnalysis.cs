@@ -77,7 +77,7 @@ namespace PoleBarnGenerator.Models.Analysis
                 postAxialD, 0, postAxialLr, postAxialS, 0);
 
             // Find controlling lateral+gravity
-            var (latCombo, maxLateral) = LoadCombinations.FindControlling(combos,
+            var (latCombo, _) = LoadCombinations.FindControlling(combos,
                 postAxialD, 0, postAxialLr, postAxialS, postLateral * p.EaveHeight / 2.0);
 
             results.PostForces.Add(new MemberForces

@@ -485,9 +485,9 @@ namespace PoleBarnGenerator.UI
             // Read wall
             door.Wall = (WallSide)(cmbDoorWall.SelectedIndex >= 0 ? cmbDoorWall.SelectedIndex : 0);
 
-            if (double.TryParse(txtDoorWidth.Text, out double w)) door.Width = w;
-            if (double.TryParse(txtDoorHeight.Text, out double h)) door.Height = h;
-            if (double.TryParse(txtDoorPosition.Text, out double p)) door.CenterOffset = p;
+            if (double.TryParse(txtDoorWidth.Text, NumberStyles.Float, CultureInfo.InvariantCulture, out double w)) door.Width = w;
+            if (double.TryParse(txtDoorHeight.Text, NumberStyles.Float, CultureInfo.InvariantCulture, out double h)) door.Height = h;
+            if (double.TryParse(txtDoorPosition.Text, NumberStyles.Float, CultureInfo.InvariantCulture, out double p)) door.CenterOffset = p;
 
             door.TrackType = cmbTrackType.SelectedIndex switch
             {
@@ -500,7 +500,7 @@ namespace PoleBarnGenerator.UI
             door.SwingDirection = cmbSwingDir.SelectedIndex == 0 ? SwingDirection.Out : SwingDirection.In;
             door.HandingDirection = cmbHanding.SelectedIndex == 0 ? HandingDirection.Left : HandingDirection.Right;
 
-            if (double.TryParse(txtSplitHeight.Text, out double sh)) door.SplitHeight = sh;
+            if (double.TryParse(txtSplitHeight.Text, NumberStyles.Float, CultureInfo.InvariantCulture, out double sh)) door.SplitHeight = sh;
             door.HasLite = chkHasLite.IsChecked == true;
 
             UpdateDoorTypeOptions(door.Type);
@@ -653,10 +653,10 @@ namespace PoleBarnGenerator.UI
 
             win.Wall = (WallSide)(cmbWindowWall.SelectedIndex >= 0 ? cmbWindowWall.SelectedIndex : 0);
 
-            if (double.TryParse(txtWindowWidth.Text, out double w)) win.Width = w;
-            if (double.TryParse(txtWindowHeight.Text, out double h)) win.Height = h;
-            if (double.TryParse(txtWindowSill.Text, out double s)) win.SillHeight = s;
-            if (double.TryParse(txtWindowPosition.Text, out double p)) win.CenterOffset = p;
+            if (double.TryParse(txtWindowWidth.Text, NumberStyles.Float, CultureInfo.InvariantCulture, out double w)) win.Width = w;
+            if (double.TryParse(txtWindowHeight.Text, NumberStyles.Float, CultureInfo.InvariantCulture, out double h)) win.Height = h;
+            if (double.TryParse(txtWindowSill.Text, NumberStyles.Float, CultureInfo.InvariantCulture, out double s)) win.SillHeight = s;
+            if (double.TryParse(txtWindowPosition.Text, NumberStyles.Float, CultureInfo.InvariantCulture, out double p)) win.CenterOffset = p;
 
             win.HasGrid = chkWindowGrid.IsChecked == true;
             pnlGridPattern.Visibility = win.HasGrid ? Visibility.Visible : Visibility.Collapsed;
