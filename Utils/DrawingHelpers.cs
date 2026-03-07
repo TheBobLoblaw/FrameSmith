@@ -1,5 +1,6 @@
 using Autodesk.AutoCAD.DatabaseServices;
 using Autodesk.AutoCAD.Geometry;
+using System;
 using System.Collections.Generic;
 
 namespace PoleBarnGenerator.Utils
@@ -16,6 +17,11 @@ namespace PoleBarnGenerator.Utils
         public static Line AddLine(Transaction tr, BlockTableRecord btr,
             Point3d start, Point3d end, string layer)
         {
+            if (tr == null) throw new ArgumentNullException(nameof(tr));
+            if (btr == null) throw new ArgumentNullException(nameof(btr));
+            if (layer == null) throw new ArgumentNullException(nameof(layer));
+            if (string.IsNullOrWhiteSpace(layer)) throw new ArgumentException("Layer name cannot be empty.", nameof(layer));
+
             Line line = new Line(start, end);
             LayerManager.SetLayer(line, layer);
             btr.AppendEntity(line);
@@ -29,6 +35,13 @@ namespace PoleBarnGenerator.Utils
         public static Polyline AddRectangle(Transaction tr, BlockTableRecord btr,
             Point2d corner, double width, double height, string layer)
         {
+            if (tr == null) throw new ArgumentNullException(nameof(tr));
+            if (btr == null) throw new ArgumentNullException(nameof(btr));
+            if (layer == null) throw new ArgumentNullException(nameof(layer));
+            if (string.IsNullOrWhiteSpace(layer)) throw new ArgumentException("Layer name cannot be empty.", nameof(layer));
+            if (width < 0) throw new ArgumentException("Width cannot be negative.", nameof(width));
+            if (height < 0) throw new ArgumentException("Height cannot be negative.", nameof(height));
+
             Polyline pl = new Polyline(4);
             pl.AddVertexAt(0, corner, 0, 0, 0);
             pl.AddVertexAt(1, new Point2d(corner.X + width, corner.Y), 0, 0, 0);
@@ -48,6 +61,13 @@ namespace PoleBarnGenerator.Utils
         public static Solid AddFilledRect(Transaction tr, BlockTableRecord btr,
             Point2d center, double width, double height, string layer)
         {
+            if (tr == null) throw new ArgumentNullException(nameof(tr));
+            if (btr == null) throw new ArgumentNullException(nameof(btr));
+            if (layer == null) throw new ArgumentNullException(nameof(layer));
+            if (string.IsNullOrWhiteSpace(layer)) throw new ArgumentException("Layer name cannot be empty.", nameof(layer));
+            if (width < 0) throw new ArgumentException("Width cannot be negative.", nameof(width));
+            if (height < 0) throw new ArgumentException("Height cannot be negative.", nameof(height));
+
             double hw = width / 2.0;
             double hh = height / 2.0;
 
@@ -71,6 +91,14 @@ namespace PoleBarnGenerator.Utils
         public static Polyline AddPolyline(Transaction tr, BlockTableRecord btr,
             List<Point2d> points, string layer, bool closed = false)
         {
+            if (tr == null) throw new ArgumentNullException(nameof(tr));
+            if (btr == null) throw new ArgumentNullException(nameof(btr));
+            if (points == null) throw new ArgumentNullException(nameof(points));
+            if (layer == null) throw new ArgumentNullException(nameof(layer));
+            if (string.IsNullOrWhiteSpace(layer)) throw new ArgumentException("Layer name cannot be empty.", nameof(layer));
+            if (points.Count < 2) throw new ArgumentException("Polyline requires at least two points.", nameof(points));
+            if (closed && points.Count < 3) throw new ArgumentException("Closed polyline requires at least three points.", nameof(points));
+
             Polyline pl = new Polyline(points.Count);
             for (int i = 0; i < points.Count; i++)
             {
@@ -90,6 +118,12 @@ namespace PoleBarnGenerator.Utils
         public static Arc AddArc(Transaction tr, BlockTableRecord btr,
             Point2d center, double radius, double startAngle, double endAngle, string layer)
         {
+            if (tr == null) throw new ArgumentNullException(nameof(tr));
+            if (btr == null) throw new ArgumentNullException(nameof(btr));
+            if (layer == null) throw new ArgumentNullException(nameof(layer));
+            if (string.IsNullOrWhiteSpace(layer)) throw new ArgumentException("Layer name cannot be empty.", nameof(layer));
+            if (radius < 0) throw new ArgumentException("Radius cannot be negative.", nameof(radius));
+
             Arc arc = new Arc(new Point3d(center.X, center.Y, 0), radius, startAngle, endAngle);
             LayerManager.SetLayer(arc, layer);
             btr.AppendEntity(arc);
@@ -103,6 +137,13 @@ namespace PoleBarnGenerator.Utils
         public static MText AddText(Transaction tr, BlockTableRecord btr,
             Point3d position, string content, double textHeight, string layer)
         {
+            if (tr == null) throw new ArgumentNullException(nameof(tr));
+            if (btr == null) throw new ArgumentNullException(nameof(btr));
+            if (content == null) throw new ArgumentNullException(nameof(content));
+            if (layer == null) throw new ArgumentNullException(nameof(layer));
+            if (string.IsNullOrWhiteSpace(layer)) throw new ArgumentException("Layer name cannot be empty.", nameof(layer));
+            if (textHeight < 0) throw new ArgumentException("Text height cannot be negative.", nameof(textHeight));
+
             MText mtext = new MText();
             mtext.Location = position;
             mtext.Contents = content;
@@ -121,6 +162,11 @@ namespace PoleBarnGenerator.Utils
         public static AlignedDimension AddAlignedDim(Transaction tr, BlockTableRecord btr,
             Point3d pt1, Point3d pt2, Point3d dimLinePoint, string layer)
         {
+            if (tr == null) throw new ArgumentNullException(nameof(tr));
+            if (btr == null) throw new ArgumentNullException(nameof(btr));
+            if (layer == null) throw new ArgumentNullException(nameof(layer));
+            if (string.IsNullOrWhiteSpace(layer)) throw new ArgumentException("Layer name cannot be empty.", nameof(layer));
+
             AlignedDimension dim = new AlignedDimension(pt1, pt2, dimLinePoint, "", ObjectId.Null);
 
             LayerManager.SetLayer(dim, layer);
@@ -136,6 +182,11 @@ namespace PoleBarnGenerator.Utils
         public static Line AddLine3D(Transaction tr, BlockTableRecord btr,
             double x1, double y1, double z1, double x2, double y2, double z2, string layer)
         {
+            if (tr == null) throw new ArgumentNullException(nameof(tr));
+            if (btr == null) throw new ArgumentNullException(nameof(btr));
+            if (layer == null) throw new ArgumentNullException(nameof(layer));
+            if (string.IsNullOrWhiteSpace(layer)) throw new ArgumentException("Layer name cannot be empty.", nameof(layer));
+
             return AddLine(tr, btr,
                 new Point3d(x1, y1, z1),
                 new Point3d(x2, y2, z2),

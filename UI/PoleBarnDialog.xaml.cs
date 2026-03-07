@@ -2,6 +2,7 @@ using System;
 using System.Collections.Generic;
 using System.Globalization;
 using System.Linq;
+using System.Text;
 using System.Windows;
 using System.Windows.Controls;
 using PoleBarnGenerator.Models;
@@ -12,6 +13,8 @@ namespace PoleBarnGenerator.UI
     public partial class PoleBarnDialog : Window
     {
         public BarnParameters Parameters { get; private set; }
+        private BarnGeometry _cachedGeometry;
+        private string _cachedGeometryKey;
 
         public PoleBarnDialog()
         {
@@ -173,7 +176,7 @@ namespace PoleBarnGenerator.UI
             }
 
             // Show summary
-            var geo = new BarnGeometry(Parameters);
+            var geo = GetOrCreateGeometry(Parameters);
             txtSummary.Text =
                 $"Building:  {Parameters.BuildingWidth}' W x {Parameters.BuildingLength}' L\n" +
                 $"Eave:      {Parameters.EaveHeight}'   Peak: {geo.PeakHeight:F1}'\n" +
@@ -387,6 +390,67 @@ namespace PoleBarnGenerator.UI
                 ? string.Join(", ", suggested.Select(v => v.ToString("0.##", CultureInfo.InvariantCulture)))
                 : string.Empty;
             chkExpansionJoints.IsChecked = suggested.Count > 0;
+        }
+
+        protected override void OnClosed(EventArgs e)
+        {
+            txtLength.TextChanged -= OnDimensionChanged;
+            txtBaySpacing.TextChanged -= OnDimensionChanged;
+            cmbTrussType.SelectionChanged -= OnTrussTypeChanged;
+            base.OnClosed(e);
+        }
+
+        private BarnGeometry GetOrCreateGeometry(BarnParameters parameters)
+        {
+            string key = BuildGeometryCacheKey(parameters);
+            if (_cachedGeometry != null && string.Equals(_cachedGeometryKey, key, StringComparison.Ordinal))
+            {
+                return _cachedGeometry;
+            }
+
+            _cachedGeometry = new BarnGeometry(parameters);
+            _cachedGeometryKey = key;
+            return _cachedGeometry;
+        }
+
+        private static string BuildGeometryCacheKey(BarnParameters p)
+        {
+            var sb = new StringBuilder();
+            sb.Append("W=").Append(p.BuildingWidth.ToString("R", CultureInfo.InvariantCulture))
+                .Append("|L=").Append(p.BuildingLength.ToString("R", CultureInfo.InvariantCulture))
+                .Append("|E=").Append(p.EaveHeight.ToString("R", CultureInfo.InvariantCulture))
+                .Append("|Pitch=").Append(p.RoofPitchRise.ToString("R", CultureInfo.InvariantCulture))
+                .Append("|Bay=").Append(p.BaySpacing.ToString("R", CultureInfo.InvariantCulture))
+                .Append("|Truss=").Append((int)p.TrussType)
+                .Append("|Floors=").Append(p.NumberOfFloors)
+                .Append("|Footprint=").Append((int)p.FootprintShape)
+                .Append("|InsetW=").Append(p.FootprintInsetWidth.ToString("R", CultureInfo.InvariantCulture))
+                .Append("|InsetD=").Append(p.FootprintInsetDepth.ToString("R", CultureInfo.InvariantCulture))
+                .Append("|Curved=").Append(p.CurvedWall.Enabled ? 1 : 0)
+                .Append("|CurveR=").Append(p.CurvedWall.Radius.ToString("R", CultureInfo.InvariantCulture))
+                .Append("|CurveA=").Append(p.CurvedWall.ArcAngleDegrees.ToString("R", CultureInfo.InvariantCulture))
+                .Append("|CurveM=").Append((int)p.CurvedWall.Mode)
+                .Append("|JointEnabled=").Append(p.ExpansionJoint.Enabled ? 1 : 0)
+                .Append("|JointGap=").Append(p.ExpansionJoint.GapWidth.ToString("R", CultureInfo.InvariantCulture))
+                .Append("|JointType=").Append((int)p.ExpansionJoint.JointType);
+
+            foreach (var h in p.GetResolvedFloorHeights())
+            {
+                sb.Append("|FH=").Append(h.ToString("R", CultureInfo.InvariantCulture));
+            }
+
+            foreach (var v in p.FootprintVertices ?? Enumerable.Empty<FootprintVertex>())
+            {
+                sb.Append("|V=").Append(v.X.ToString("R", CultureInfo.InvariantCulture))
+                    .Append(":").Append(v.Y.ToString("R", CultureInfo.InvariantCulture));
+            }
+
+            foreach (var loc in p.ExpansionJoint.Locations ?? Enumerable.Empty<double>())
+            {
+                sb.Append("|J=").Append(loc.ToString("R", CultureInfo.InvariantCulture));
+            }
+
+            return sb.ToString();
         }
     }
 }

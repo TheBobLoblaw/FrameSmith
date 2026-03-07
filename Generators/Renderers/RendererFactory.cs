@@ -7,16 +7,22 @@ namespace PoleBarnGenerator.Generators.Renderers
     /// </summary>
     public static class RendererFactory
     {
+        private static readonly IOpeningRenderer OverheadDoorRenderer = new OverheadDoorRenderer();
+        private static readonly IOpeningRenderer WalkDoorRenderer = new WalkDoorRenderer();
+        private static readonly IOpeningRenderer SlidingDoorRenderer = new SlidingDoorRenderer();
+        private static readonly IOpeningRenderer DutchDoorRenderer = new DutchDoorRenderer();
+        private static readonly IWindowRenderer SingleHungWindowRenderer = new SingleHungWindowRenderer();
+
         public static IOpeningRenderer GetDoorRenderer(DoorType type)
         {
             switch (type)
             {
-                case DoorType.Overhead: return new OverheadDoorRenderer();
-                case DoorType.Walk:     return new WalkDoorRenderer();
-                case DoorType.Sliding:  return new SlidingDoorRenderer();
-                case DoorType.Dutch:    return new DutchDoorRenderer();
-                case DoorType.Double:   return new WalkDoorRenderer(); // Double uses walk with two leaves
-                default:                return new WalkDoorRenderer();
+                case DoorType.Overhead: return OverheadDoorRenderer;
+                case DoorType.Walk: return WalkDoorRenderer;
+                case DoorType.Sliding: return SlidingDoorRenderer;
+                case DoorType.Dutch: return DutchDoorRenderer;
+                case DoorType.Double: return WalkDoorRenderer; // Double uses walk with two leaves
+                default: return WalkDoorRenderer;
             }
         }
 
@@ -24,9 +30,9 @@ namespace PoleBarnGenerator.Generators.Renderers
         {
             switch (type)
             {
-                case WindowType.SingleHung: return new SingleHungWindowRenderer();
+                case WindowType.SingleHung: return SingleHungWindowRenderer;
                 // All other types fall back to single-hung for now
-                default: return new SingleHungWindowRenderer();
+                default: return SingleHungWindowRenderer;
             }
         }
     }

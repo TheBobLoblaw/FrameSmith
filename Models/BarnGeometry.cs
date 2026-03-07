@@ -414,6 +414,8 @@ namespace PoleBarnGenerator.Models
         private List<Point2d> SampleWallPathPoints()
         {
             var points = new List<Point2d>();
+            var occupiedBuckets = new HashSet<PointBucket>();
+            var bucketPoints = new Dictionary<PointBucket, List<Point2d>>();
             double spacing = Math.Max(0.5, Params.BaySpacing);
 
             foreach (var segment in WallSegments)
@@ -422,8 +424,8 @@ namespace PoleBarnGenerator.Models
                 {
                     if (segment.ArcRadius <= 0)
                     {
-                        AddUniquePoint(points, segment.Start);
-                        AddUniquePoint(points, segment.End);
+                        AddUniquePoint(points, occupiedBuckets, bucketPoints, segment.Start);
+                        AddUniquePoint(points, occupiedBuckets, bucketPoints, segment.End);
                         continue;
                     }
 
@@ -436,7 +438,7 @@ namespace PoleBarnGenerator.Models
                         var point = new Point2d(
                             segment.ArcCenter.X + segment.ArcRadius * Math.Cos(angle),
                             segment.ArcCenter.Y + segment.ArcRadius * Math.Sin(angle));
-                        AddUniquePoint(points, point);
+                        AddUniquePoint(points, occupiedBuckets, bucketPoints, point);
                     }
                 }
                 else
@@ -449,7 +451,7 @@ namespace PoleBarnGenerator.Models
                         var point = new Point2d(
                             segment.Start.X + (segment.End.X - segment.Start.X) * t,
                             segment.Start.Y + (segment.End.Y - segment.Start.Y) * t);
-                        AddUniquePoint(points, point);
+                        AddUniquePoint(points, occupiedBuckets, bucketPoints, point);
                     }
                 }
             }
@@ -457,17 +459,81 @@ namespace PoleBarnGenerator.Models
             return points;
         }
 
-        private static void AddUniquePoint(List<Point2d> points, Point2d point)
+        private static void AddUniquePoint(
+            List<Point2d> points,
+            HashSet<PointBucket> occupiedBuckets,
+            Dictionary<PointBucket, List<Point2d>> bucketPoints,
+            Point2d point)
         {
-            foreach (var existing in points)
+            const double tolerance = 0.05;
+            PointBucket bucket = PointBucket.FromPoint(point, tolerance);
+
+            for (int dx = -1; dx <= 1; dx++)
             {
-                if (existing.GetDistanceTo(point) < 0.05)
+                for (int dy = -1; dy <= 1; dy++)
                 {
-                    return;
+                    var neighbor = new PointBucket(bucket.X + dx, bucket.Y + dy);
+                    if (!occupiedBuckets.Contains(neighbor) || !bucketPoints.TryGetValue(neighbor, out var candidates))
+                    {
+                        continue;
+                    }
+
+                    foreach (var existing in candidates)
+                    {
+                        if (existing.GetDistanceTo(point) < tolerance)
+                        {
+                            return;
+                        }
+                    }
                 }
             }
 
+            if (!bucketPoints.TryGetValue(bucket, out var currentBucket))
+            {
+                currentBucket = new List<Point2d>();
+                bucketPoints[bucket] = currentBucket;
+                occupiedBuckets.Add(bucket);
+            }
+
+            currentBucket.Add(point);
             points.Add(point);
+        }
+
+        private struct PointBucket : IEquatable<PointBucket>
+        {
+            public int X { get; }
+            public int Y { get; }
+
+            public PointBucket(int x, int y)
+            {
+                X = x;
+                Y = y;
+            }
+
+            public static PointBucket FromPoint(Point2d point, double cellSize)
+            {
+                return new PointBucket(
+                    (int)Math.Floor(point.X / cellSize),
+                    (int)Math.Floor(point.Y / cellSize));
+            }
+
+            public bool Equals(PointBucket other)
+            {
+                return X == other.X && Y == other.Y;
+            }
+
+            public override bool Equals(object obj)
+            {
+                return obj is PointBucket other && Equals(other);
+            }
+
+            public override int GetHashCode()
+            {
+                unchecked
+                {
+                    return (X * 397) ^ Y;
+                }
+            }
         }
 
         private WallSide ResolveWall(Point2d pt)

@@ -120,20 +120,37 @@ namespace PoleBarnGenerator.Generators
 
             foreach (var item in takeoff.Lumber.AllItems)
             {
-                sb.AppendLine($"\"{item.Category}\",\"{item.Description}\",\"{item.Size}\",\"{item.Grade}\"," +
+                sb.AppendLine($"{ToSafeCsvText(item.Category)},{ToSafeCsvText(item.Description)},{ToSafeCsvText(item.Size)},{ToSafeCsvText(item.Grade)}," +
                     $"{item.Length},{item.Quantity},{item.LinearFeet:F1},{item.BoardFeet:F1}," +
-                    $"\"{item.Usage}\",{item.UnitPrice:F2},{item.TotalPrice:F2}");
+                    $"{ToSafeCsvText(item.Usage)},{item.UnitPrice:F2},{item.TotalPrice:F2}");
             }
 
             sb.AppendLine();
             sb.AppendLine("Category,Part Number,Description,Specification,Quantity,Unit Cost,Total Cost,Usage");
             foreach (var item in takeoff.Hardware.AllItems)
             {
-                sb.AppendLine($"\"{item.Category}\",\"{item.PartNumber}\",\"{item.Description}\"," +
-                    $"\"{item.Specification}\",{item.Quantity},{item.UnitCost:F2},{item.TotalCost:F2},\"{item.Usage}\"");
+                sb.AppendLine($"{ToSafeCsvText(item.Category)},{ToSafeCsvText(item.PartNumber)},{ToSafeCsvText(item.Description)}," +
+                    $"{ToSafeCsvText(item.Specification)},{item.Quantity},{item.UnitCost:F2},{item.TotalCost:F2},{ToSafeCsvText(item.Usage)}");
             }
 
             return sb.ToString();
+        }
+
+        private static string ToSafeCsvText(string value)
+        {
+            string safe = value ?? string.Empty;
+            string trimmed = safe.TrimStart();
+            if (trimmed.Length > 0)
+            {
+                char lead = trimmed[0];
+                if (lead == '=' || lead == '+' || lead == '-' || lead == '@')
+                {
+                    safe = "'" + safe;
+                }
+            }
+
+            safe = safe.Replace("\"", "\"\"");
+            return $"\"{safe}\"";
         }
 
         /// <summary>
