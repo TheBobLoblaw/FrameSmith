@@ -17,7 +17,9 @@ namespace PoleBarnGenerator.Models.Materials
             var takeoff = new FoundationTakeoff();
             var footing = structural?.FoundationDesign;
 
-            int postCount = geometry.Posts.Count;
+            int postCount = geometry.Posts.Any(post => post.IsPlanInstance)
+                ? geometry.Posts.Count(post => post.IsPlanInstance)
+                : geometry.Posts.Count;
 
             // Default values if no structural design
             double footingDia = footing?.FootingDiameter ?? 18.0; // inches

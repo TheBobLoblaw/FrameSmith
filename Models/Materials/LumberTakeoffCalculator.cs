@@ -48,31 +48,51 @@ namespace PoleBarnGenerator.Models.Materials
                 postSize = $"{s.NominalWidth}x{s.NominalDepth}";
             }
 
-            int postCount = geometry.Posts.Count;
-            double postLength = p.EaveHeight;
-            // Add embedment depth if foundation designed
-            if (structural?.FoundationDesign != null)
-                postLength += structural.FoundationDesign.PostEmbedment / 12.0;
-
-            // Round up to standard length
-            double stockLength = RoundToStockLength(postLength);
-
             double nomW = ParseNominalWidth(postSize);
             double nomD = ParseNominalDepth(postSize);
-            double bdFtEach = nomW * nomD * stockLength / 12.0;
+            double embedment = structural?.FoundationDesign?.PostEmbedment / 12.0 ?? 0.0;
 
-            takeoff.Posts.Add(new LumberItem
+            var groundPosts = geometry.Posts.Any(post => post.IsPlanInstance)
+                ? geometry.Posts.Where(post => post.IsPlanInstance)
+                : geometry.Posts;
+
+            var upperSpliceSegments = geometry.Posts.Where(post => !post.IsPlanInstance);
+
+            AddPostGroups(takeoff, groundPosts, postSize, grade, nomW, nomD, embedment, "Ground-level embedded posts");
+            AddPostGroups(takeoff, upperSpliceSegments, postSize, grade, nomW, nomD, 0.0, "Upper splice post segments");
+        }
+
+        private static void AddPostGroups(LumberTakeoff takeoff,
+            IEnumerable<PostLocation> posts,
+            string postSize,
+            string grade,
+            double nominalWidth,
+            double nominalDepth,
+            double extraLength,
+            string usage)
+        {
+            foreach (var group in posts
+                .Select(post => RoundToStockLength(Math.Max(0, post.Height + extraLength)))
+                .GroupBy(length => length)
+                .OrderBy(group => group.Key))
             {
-                Description = $"{postSize}×{stockLength:F0}' {grade}",
-                Size = postSize,
-                Grade = grade,
-                Length = stockLength,
-                Quantity = postCount,
-                LinearFeet = postCount * stockLength,
-                BoardFeet = postCount * bdFtEach,
-                Category = LumberCategory.Posts,
-                Usage = "Building posts (embedded)"
-            });
+                double stockLength = group.Key;
+                int quantity = group.Count();
+                double bdFtEach = nominalWidth * nominalDepth * stockLength / 12.0;
+
+                takeoff.Posts.Add(new LumberItem
+                {
+                    Description = $"{postSize}×{stockLength:F0}' {grade}",
+                    Size = postSize,
+                    Grade = grade,
+                    Length = stockLength,
+                    Quantity = quantity,
+                    LinearFeet = quantity * stockLength,
+                    BoardFeet = quantity * bdFtEach,
+                    Category = LumberCategory.Posts,
+                    Usage = usage
+                });
+            }
         }
 
         private static void CalculateGirts(LumberTakeoff takeoff, BarnGeometry geometry,

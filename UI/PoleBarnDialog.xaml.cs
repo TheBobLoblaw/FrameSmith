@@ -450,6 +450,137 @@ namespace PoleBarnGenerator.UI
                 sb.Append("|J=").Append(loc.ToString("R", CultureInfo.InvariantCulture));
             }
 
+            foreach (var door in p.Doors ?? Enumerable.Empty<DoorOpening>())
+            {
+                sb.Append("|Door=")
+                    .Append((int)door.Wall).Append(':')
+                    .Append((int)door.Type).Append(':')
+                    .Append(door.Width.ToString("R", CultureInfo.InvariantCulture)).Append(':')
+                    .Append(door.Height.ToString("R", CultureInfo.InvariantCulture)).Append(':')
+                    .Append(door.CenterOffset.ToString("R", CultureInfo.InvariantCulture));
+            }
+
+            foreach (var window in p.Windows ?? Enumerable.Empty<WindowOpening>())
+            {
+                sb.Append("|Window=")
+                    .Append((int)window.Wall).Append(':')
+                    .Append((int)window.Type).Append(':')
+                    .Append(window.Width.ToString("R", CultureInfo.InvariantCulture)).Append(':')
+                    .Append(window.Height.ToString("R", CultureInfo.InvariantCulture)).Append(':')
+                    .Append(window.SillHeight.ToString("R", CultureInfo.InvariantCulture)).Append(':')
+                    .Append(window.CenterOffset.ToString("R", CultureInfo.InvariantCulture));
+            }
+
+            foreach (var leanTo in p.LeanTos ?? Enumerable.Empty<LeanToParameters>())
+            {
+                sb.Append("|LeanTo=")
+                    .Append(leanTo.Enabled ? 1 : 0).Append(':')
+                    .Append((int)leanTo.AttachmentWall).Append(':')
+                    .Append(leanTo.Width.ToString("R", CultureInfo.InvariantCulture)).Append(':')
+                    .Append(leanTo.StartPosition.ToString("R", CultureInfo.InvariantCulture)).Append(':')
+                    .Append(leanTo.EndPosition.ToString("R", CultureInfo.InvariantCulture)).Append(':')
+                    .Append(leanTo.EaveHeight.ToString("R", CultureInfo.InvariantCulture)).Append(':')
+                    .Append(leanTo.RoofPitch.ToString("R", CultureInfo.InvariantCulture)).Append(':')
+                    .Append((int)leanTo.Type).Append(':')
+                    .Append(string.Join(",", leanTo.EnclosedWalls.Select(v => v ? "1" : "0")));
+            }
+
+            foreach (var porch in p.AllPorches ?? Array.Empty<PorchParameters>())
+            {
+                sb.Append("|Porch=")
+                    .Append(porch.IsEnabled ? 1 : 0).Append(':')
+                    .Append((int)porch.AttachmentWall).Append(':')
+                    .Append(porch.Depth.ToString("R", CultureInfo.InvariantCulture)).Append(':')
+                    .Append(porch.StartPosition.ToString("R", CultureInfo.InvariantCulture)).Append(':')
+                    .Append(porch.EndPosition.ToString("R", CultureInfo.InvariantCulture)).Append(':')
+                    .Append((int)porch.RoofType).Append(':')
+                    .Append(porch.RoofPitch.ToString("R", CultureInfo.InvariantCulture)).Append(':')
+                    .Append(porch.ColumnSpacing.ToString("R", CultureInfo.InvariantCulture)).Append(':')
+                    .Append((int)porch.ColumnType).Append(':')
+                    .Append(porch.HasRailing ? 1 : 0).Append(':')
+                    .Append(porch.RailingHeight.ToString("R", CultureInfo.InvariantCulture)).Append(':')
+                    .Append(porch.HasCeiling ? 1 : 0);
+            }
+
+            var stalls = p.HorseStalls;
+            if (stalls != null)
+            {
+                sb.Append("|Stalls=")
+                    .Append(stalls.IsEnabled ? 1 : 0).Append(':')
+                    .Append(stalls.NumberOfStalls).Append(':')
+                    .Append((int)stalls.StandardSize).Append(':')
+                    .Append(stalls.AisleWidth.ToString("R", CultureInfo.InvariantCulture)).Append(':')
+                    .Append((int)stalls.StallSide);
+            }
+
+            var loft = p.Loft;
+            if (loft != null)
+            {
+                sb.Append("|Loft=")
+                    .Append(loft.IsEnabled ? 1 : 0).Append(':')
+                    .Append(string.Join(",", loft.SpanBays ?? Enumerable.Empty<int>())).Append(':')
+                    .Append((int)loft.Depth).Append(':')
+                    .Append(loft.FloorHeight.ToString("R", CultureInfo.InvariantCulture)).Append(':')
+                    .Append(loft.RailingHeight.ToString("R", CultureInfo.InvariantCulture)).Append(':')
+                    .Append((int)loft.AccessType).Append(':')
+                    .Append(loft.AccessLocation.X.ToString("R", CultureInfo.InvariantCulture)).Append(':')
+                    .Append(loft.AccessLocation.Y.ToString("R", CultureInfo.InvariantCulture)).Append(':')
+                    .Append(loft.HasFloorJoists ? 1 : 0).Append(':')
+                    .Append(loft.JoistSpacing.ToString("R", CultureInfo.InvariantCulture)).Append(':')
+                    .Append(loft.HasLighting ? 1 : 0);
+            }
+
+            var partitions = p.Partitions;
+            if (partitions != null)
+            {
+                sb.Append("|Partitions=").Append(partitions.IsEnabled ? 1 : 0);
+                foreach (var partition in partitions.Partitions ?? Enumerable.Empty<InteriorPartition>())
+                {
+                    sb.Append(':').Append(partition.Name ?? string.Empty)
+                        .Append('@').Append(partition.StartPoint.X.ToString("R", CultureInfo.InvariantCulture))
+                        .Append(',').Append(partition.StartPoint.Y.ToString("R", CultureInfo.InvariantCulture))
+                        .Append('-').Append(partition.EndPoint.X.ToString("R", CultureInfo.InvariantCulture))
+                        .Append(',').Append(partition.EndPoint.Y.ToString("R", CultureInfo.InvariantCulture))
+                        .Append('-').Append(partition.Height.ToString("R", CultureInfo.InvariantCulture))
+                        .Append('-').Append((int)partition.Type)
+                        .Append('-').Append(partition.HasDoor ? 1 : 0)
+                        .Append('-').Append(partition.IsLoadBearing ? 1 : 0);
+                }
+            }
+
+            var workshop = p.Workshop;
+            if (workshop != null)
+            {
+                sb.Append("|Workshop=")
+                    .Append(workshop.IsEnabled ? 1 : 0).Append(':')
+                    .Append(workshop.HasWorkbench ? 1 : 0).Append(':')
+                    .Append(workshop.WorkbenchLocation.Length.ToString("R", CultureInfo.InvariantCulture)).Append(':')
+                    .Append(workshop.WorkbenchLocation.Depth.ToString("R", CultureInfo.InvariantCulture)).Append(':')
+                    .Append(workshop.HasCompressorArea ? 1 : 0).Append(':')
+                    .Append(workshop.CompressorLocation.X.ToString("R", CultureInfo.InvariantCulture)).Append(':')
+                    .Append(workshop.CompressorLocation.Y.ToString("R", CultureInfo.InvariantCulture)).Append(':')
+                    .Append(workshop.HasToolStorage ? 1 : 0).Append(':')
+                    .Append(workshop.HasFloorDrain ? 1 : 0).Append(':')
+                    .Append(workshop.HasOverheadCrane ? 1 : 0).Append(':')
+                    .Append(workshop.CraneCapacity.ToString("R", CultureInfo.InvariantCulture));
+            }
+
+            var drainage = p.Drainage;
+            if (drainage != null)
+            {
+                sb.Append("|Drainage=")
+                    .Append(drainage.IsEnabled ? 1 : 0).Append(':')
+                    .Append(drainage.FloorSlopePercent.ToString("R", CultureInfo.InvariantCulture)).Append(':')
+                    .Append(drainage.FrenchDrainEnabled ? 1 : 0);
+                foreach (var pt in drainage.DrainLocations ?? Enumerable.Empty<Autodesk.AutoCAD.Geometry.Point2d>())
+                {
+                    sb.Append(':')
+                        .Append(pt.X.ToString("R", CultureInfo.InvariantCulture))
+                        .Append(',')
+                        .Append(pt.Y.ToString("R", CultureInfo.InvariantCulture));
+                }
+            }
+
             return sb.ToString();
         }
     }
