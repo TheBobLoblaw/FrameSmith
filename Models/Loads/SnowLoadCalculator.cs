@@ -36,7 +36,8 @@ namespace PoleBarnGenerator.Models.Loads
     }
 
     /// <summary>
-    /// ASCE 7-22 Chapter 7 snow load calculations.
+    /// Preliminary/simplified ASCE 7-22 Chapter 7 snow load calculations for early-stage sizing.
+    /// These outputs are not a substitute for project-specific engineered snow design.
     /// </summary>
     public static class SnowLoadCalculator
     {
@@ -60,7 +61,7 @@ namespace PoleBarnGenerator.Models.Loads
             double Cs = GetSlopeReductionFactor(roofAngle, snow.Surface, snow.Thermal);
             double ps = Cs * pf;
 
-            // Unbalanced snow (ASCE 7-22 §7.6) — simplified for gable
+            // Unbalanced snow (ASCE 7-22 §7.6) — simplified gable-roof approximation.
             double unbalanced = 0;
             if (roofAngle >= 2.39 && roofAngle <= 70) // 0.5/12 to ~70 degrees
             {
@@ -76,7 +77,7 @@ namespace PoleBarnGenerator.Models.Loads
             if (snow.RainOnSnowZone && pg <= 20 && roofAngle < GetRainOnSnowMaxSlope())
                 rainOnSnow = 5.0; // 5 psf surcharge
 
-            // Drift load for multi-level roofs (lean-tos)
+            // Drift load for multi-level roofs (lean-tos) — simplified screening estimate.
             double driftLoad = 0;
             if (geometry.LeanToGeometries != null && geometry.LeanToGeometries.Count > 0)
             {

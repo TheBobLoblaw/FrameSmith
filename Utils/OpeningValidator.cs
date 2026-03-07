@@ -24,9 +24,13 @@ namespace PoleBarnGenerator.Utils
         /// Validates all openings in the barn parameters for conflicts and issues.
         /// </summary>
         /// <param name="parameters">The barn parameters to validate</param>
+        /// <param name="geometry">Computed geometry containing the authoritative post locations</param>
         /// <returns>List of human-readable error messages (empty if no issues)</returns>
-        public static List<string> ValidateOpenings(BarnParameters parameters)
+        public static List<string> ValidateOpenings(BarnParameters parameters, BarnGeometry geometry)
         {
+            if (parameters == null) throw new ArgumentNullException(nameof(parameters));
+            if (geometry == null) throw new ArgumentNullException(nameof(geometry));
+
             var errors = new List<string>();
             const int MaxErrors = 20; // Cap error count for performance
 
@@ -123,7 +127,7 @@ namespace PoleBarnGenerator.Utils
                 }
 
                 // Check post interference
-                var postPositions = GetPostPositions(wall, parameters);
+                var postPositions = GetPostPositions(wall, parameters, geometry);
                 double postHalfWidth = (parameters.PostWidthInches / 12.0) / 2.0;
 
                 foreach (var opening in openings)
@@ -145,30 +149,36 @@ namespace PoleBarnGenerator.Utils
 
         /// <summary>
         /// Gets the center positions of structural posts along a wall in feet.
+        /// Uses BarnGeometry.Posts as the source of truth.
         /// </summary>
-        private static List<double> GetPostPositions(WallSide wall, BarnParameters parameters)
+        private static List<double> GetPostPositions(WallSide wall, BarnParameters parameters, BarnGeometry geometry)
         {
-            var positions = new List<double>();
+            var positions = geometry.Posts
+                .Where(p => p.IsPlanInstance && p.Wall == wall)
+                .Select(p => wall == WallSide.Front || wall == WallSide.Back ? p.X : p.Y)
+                .OrderBy(v => v)
+                .Distinct()
+                .ToList();
+
+            // Defensive fallback for incomplete geometry cases.
+            // Keep threshold aligned with BarnGeometry center-post behavior (24 ft).
+            const double LegacyEndwallCenterPostThreshold = 24.0;
+            if (positions.Count > 0) return positions;
 
             if (wall == WallSide.Front || wall == WallSide.Back)
             {
-                // Endwalls: posts at corners (0, width) and potentially intermediate
-                // For endwalls, posts are at X=0 and X=BuildingWidth at minimum
+                // Endwalls: posts at corners and optional center post.
                 positions.Add(0);
                 positions.Add(parameters.BuildingWidth);
-                // Center post if wide enough (typically at ridge for endwalls)
-                if (parameters.BuildingWidth > 20)
+                if (parameters.BuildingWidth > LegacyEndwallCenterPostThreshold)
                     positions.Add(parameters.BuildingWidth / 2.0);
             }
             else
             {
-                // Sidewalls: posts at each bay spacing
                 double spacing = parameters.ActualBaySpacing;
                 int bays = parameters.NumberOfBays;
                 for (int i = 0; i <= bays; i++)
-                {
                     positions.Add(i * spacing);
-                }
             }
 
             return positions;

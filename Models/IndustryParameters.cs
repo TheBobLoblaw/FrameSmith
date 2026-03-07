@@ -1,5 +1,6 @@
 using System;
 using System.Collections.Generic;
+using System.Linq;
 using Autodesk.AutoCAD.Geometry;
 
 namespace PoleBarnGenerator.Models
@@ -78,9 +79,60 @@ namespace PoleBarnGenerator.Models
                 TrussType = source.TrussType,
                 OverhangEave = source.OverhangEave,
                 OverhangGable = source.OverhangGable,
-                Doors = source.Doors,
-                Windows = source.Windows,
-                Dairy = source.DairyBarn
+                Doors = source.Doors?.Select(CloneDoor).ToList() ?? new List<DoorOpening>(),
+                Windows = source.Windows?.Select(CloneWindow).ToList() ?? new List<WindowOpening>(),
+                Dairy = CloneDairy(source.DairyBarn)
+            };
+        }
+
+        private static DoorOpening CloneDoor(DoorOpening door)
+        {
+            if (door == null) return null;
+            return new DoorOpening
+            {
+                Wall = door.Wall,
+                Type = door.Type,
+                Width = door.Width,
+                Height = door.Height,
+                CenterOffset = door.CenterOffset,
+                SwingDirection = door.SwingDirection,
+                HandingDirection = door.HandingDirection,
+                TrackType = door.TrackType,
+                HasLite = door.HasLite,
+                SplitHeight = door.SplitHeight
+            };
+        }
+
+        private static WindowOpening CloneWindow(WindowOpening window)
+        {
+            if (window == null) return null;
+            return new WindowOpening
+            {
+                Wall = window.Wall,
+                Width = window.Width,
+                Height = window.Height,
+                SillHeight = window.SillHeight,
+                CenterOffset = window.CenterOffset,
+                Type = window.Type,
+                HasGrid = window.HasGrid,
+                GridPattern = window.GridPattern
+            };
+        }
+
+        private static DairyBarnModuleParameters CloneDairy(DairyBarnModuleParameters dairy)
+        {
+            if (dairy == null) return new DairyBarnModuleParameters { IsEnabled = true };
+            return new DairyBarnModuleParameters
+            {
+                IsEnabled = dairy.IsEnabled,
+                ParlorType = dairy.ParlorType,
+                HerdSize = dairy.HerdSize,
+                FeedAlleyWidth = dairy.FeedAlleyWidth,
+                BunkLineOffset = dairy.BunkLineOffset,
+                ManureAlleyWidth = dairy.ManureAlleyWidth,
+                FreestallWidth = dairy.FreestallWidth,
+                FreestallLength = dairy.FreestallLength,
+                ShowCowTrafficFlow = dairy.ShowCowTrafficFlow
             };
         }
     }

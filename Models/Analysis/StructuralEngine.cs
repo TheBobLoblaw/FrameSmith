@@ -49,8 +49,9 @@ namespace PoleBarnGenerator.Models.Analysis
     }
 
     /// <summary>
-    /// Master structural engineering engine. Runs all calculations in sequence:
-    /// loads → analysis → member design → foundation → code check.
+    /// Master structural engineering engine for preliminary/screening design.
+    /// Runs calculations in sequence: loads → analysis → member design → foundation → code check.
+    /// Final construction design still requires project-specific engineered calculations.
     /// </summary>
     public static class StructuralEngine
     {

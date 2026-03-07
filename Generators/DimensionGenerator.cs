@@ -1,4 +1,3 @@
-using Autodesk.AutoCAD.Colors;
 using Autodesk.AutoCAD.DatabaseServices;
 using Autodesk.AutoCAD.Geometry;
 using PoleBarnGenerator.Models;
@@ -234,49 +233,12 @@ namespace PoleBarnGenerator.Generators
         // ─────────────────────────────────────────────
 
         /// <summary>
-        /// Ensures a "FS-DIM" dimension style exists. If the drawing already has one,
-        /// it's reused. Otherwise creates a default with architectural formatting.
-        /// Must be called within an active Transaction.
+        /// Ensures a "FS-DIM" dimension style exists using StyleManager as the single
+        /// authoritative source for style definitions.
         /// </summary>
         public static ObjectId EnsureDimensionStyle(Transaction tr, Database db)
         {
-            DimStyleTable dst = tr.GetObject(db.DimStyleTableId, OpenMode.ForRead) as DimStyleTable;
-
-            const string styleName = "FS-DIM";
-
-            if (dst.Has(styleName))
-            {
-                return dst[styleName];
-            }
-
-            // Create new dim style
-            dst.UpgradeOpen();
-            DimStyleTableRecord dstr = new DimStyleTableRecord
-            {
-                Name = styleName
-            };
-
-            // Architectural units (feet-inches)
-            dstr.Dimlunit = 4;      // Architectural units
-            dstr.Dimlfac = 1.0;     // Length factor
-            dstr.Dimscale = 1.0;    // Overall scale (user adjustable)
-            dstr.Dimtxt = 0.75;     // Text height
-            dstr.Dimasz = 0.5;      // Arrow size
-            dstr.Dimexo = 0.25;     // Extension line offset from origin
-            dstr.Dimexe = 0.5;      // Extension line extension beyond dim line
-            dstr.Dimgap = 0.25;     // Gap between dim line and text
-            dstr.Dimtad = 1;        // Text above dimension line
-            dstr.Dimtih = false;    // Text aligned with dim line (not forced horizontal inside)
-            dstr.Dimtoh = false;    // Text aligned with dim line (not forced horizontal outside)
-            dstr.Dimdec = 2;        // Decimal places for non-architectural
-            dstr.Dimclrd = Color.FromColorIndex(ColorMethod.ByLayer, 0);
-            dstr.Dimclre = Color.FromColorIndex(ColorMethod.ByLayer, 0);
-            dstr.Dimclrt = Color.FromColorIndex(ColorMethod.ByLayer, 0);
-
-            ObjectId styleId = dst.Add(dstr);
-            tr.AddNewlyCreatedDBObject(dstr, true);
-
-            return styleId;
+            return StyleManager.GetDimensionStyleId(tr, db);
         }
 
         /// <summary>

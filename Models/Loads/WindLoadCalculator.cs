@@ -18,6 +18,7 @@ namespace PoleBarnGenerator.Models.Loads
 
     public class WindLoadResult
     {
+        public double BasicWindSpeed { get; set; }
         public double VelocityPressure { get; set; }
         public double WindwardWallPressure { get; set; }
         public double LeewardWallPressure { get; set; }
@@ -40,7 +41,8 @@ namespace PoleBarnGenerator.Models.Loads
     }
 
     /// <summary>
-    /// ASCE 7-22 Chapter 27/28 wind load calculations for enclosed low-rise buildings.
+    /// Preliminary/simplified ASCE 7-22 Chapter 27/28 wind load screening for enclosed low-rise buildings.
+    /// Results are for early-stage design only and must be engineered for construction documents.
     /// </summary>
     public static class WindLoadCalculator
     {
@@ -54,10 +56,11 @@ namespace PoleBarnGenerator.Models.Loads
             double Kz = GetKz(meanRoofHt, wind.Exposure);
             double Kzt = wind.TopographicFactor;
             double Kd = wind.DirectionalityFactor;
+            double Iw = GetImportanceFactorValue(wind.ImportanceFactor);
             double Ke = 1.0;
 
             // ASCE 7-22 Eq. 26.10-1
-            double qh = 0.00256 * Kz * Kzt * Kd * Ke * V * V;
+            double qh = 0.00256 * Kz * Kzt * Kd * Ke * Iw * V * V;
             double G = 0.85;
             double roofAngle = p.RoofAngleDegrees;
             double L_over_B = p.BuildingLength / p.BuildingWidth;
@@ -81,6 +84,7 @@ namespace PoleBarnGenerator.Models.Loads
 
             return new WindLoadResult
             {
+                BasicWindSpeed = V,
                 VelocityPressure = Math.Round(qh, 2),
                 WindwardWallPressure = Math.Round(pWindward, 2),
                 LeewardWallPressure = Math.Round(pLeeward, 2),
@@ -96,12 +100,25 @@ namespace PoleBarnGenerator.Models.Loads
                     "ASCE 7-22 §27.3 - Directional Procedure (MWFRS)",
                     "ASCE 7-22 §30.3 - Components & Cladding",
                     $"Exposure Category {wind.Exposure}",
-                    $"V = {V} mph, Kz = {Kz:F3}, Kzt = {Kzt:F2}, Kd = {Kd:F2}"
+                    $"V = {V} mph, I = {Iw:F2}, Kz = {Kz:F3}, Kzt = {Kzt:F2}, Kd = {Kd:F2}"
                 },
                 Summary = $"Wind: V={V} mph, Exp {wind.Exposure}, qh={qh:F1} psf | " +
                           $"Walls: WW={pWindward:F1}, LW={pLeeward:F1}, SW={pSidewall:F1} psf | " +
                           $"Roof: WW={pRoofWW:F1}, LW={pRoofLW:F1}, Uplift={pUplift:F1} psf"
             };
+        }
+
+        private static double GetImportanceFactorValue(WindImportanceFactor importance)
+        {
+            switch (importance)
+            {
+                case WindImportanceFactor.I: return 0.87;
+                case WindImportanceFactor.III:
+                case WindImportanceFactor.IV:
+                    return 1.15;
+                default:
+                    return 1.0;
+            }
         }
 
         private static double GetKz(double z, ExposureCategory exposure)
