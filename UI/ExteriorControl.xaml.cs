@@ -1,4 +1,5 @@
 using System;
+using System.Globalization;
 using System.Windows;
 using System.Windows.Controls;
 using PoleBarnGenerator.Models;
@@ -123,7 +124,9 @@ namespace PoleBarnGenerator.UI
 
         private static double ParseDouble(string text, double fallback)
         {
-            return double.TryParse(text, out double val) ? val : fallback;
+            return double.TryParse(text, NumberStyles.Float, CultureInfo.InvariantCulture, out double val)
+                ? val
+                : fallback;
         }
     }
 }

@@ -5,9 +5,8 @@ using System.Text;
 namespace PoleBarnGenerator.Resources
 {
     /// <summary>
-    /// Generates FrameSmith.ctb plot style table for professional output.
-    /// Maps ACI colors to appropriate pen weights and plot colors.
-    /// All colors plot as black except hatch (50% gray screening).
+    /// Generates documentation and setup instructions for the project plot style mapping.
+    /// This class does not generate a real AutoCAD .ctb file (proprietary binary format).
     /// </summary>
     public static class PlotStyleManager
     {
@@ -60,12 +59,10 @@ namespace PoleBarnGenerator.Resources
         };
 
         /// <summary>
-        /// Generates a CTB plot style table file.
-        /// CTB files are proprietary binary format — this generates a text-based
-        /// version that AutoCAD can import, or serves as documentation.
-        /// In practice, the CTB should be distributed as a resource file.
+        /// Builds human-readable plot style documentation/instructions for manual CTB setup.
+        /// No CTB binary file is created by this method.
         /// </summary>
-        public static string GeneratePlotStyleDocumentation()
+        public static string GeneratePlotStyleSetupInstructions()
         {
             var sb = new StringBuilder();
             sb.AppendLine("FrameSmith Plot Style Table (FS-Standard.ctb)");
@@ -93,11 +90,12 @@ namespace PoleBarnGenerator.Resources
         }
 
         /// <summary>
-        /// Writes a PCP/PC3 compatible plot configuration reference file.
+        /// Writes human-readable plot style setup instructions to disk.
+        /// This output is documentation only and is not a valid .ctb file.
         /// </summary>
-        public static void WriteDocumentation(string filePath)
+        public static void WritePlotStyleSetupInstructions(string filePath)
         {
-            File.WriteAllText(filePath, GeneratePlotStyleDocumentation());
+            File.WriteAllText(filePath, GeneratePlotStyleSetupInstructions());
         }
     }
 }
