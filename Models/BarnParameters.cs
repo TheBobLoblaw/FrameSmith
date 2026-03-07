@@ -457,6 +457,7 @@ namespace PoleBarnGenerator.Models
             if (BuildingLength < 10) return (false, "Building length should be at least 10 feet.");
             if (EaveHeight < 6) return (false, "Eave height should be at least 6 feet.");
             if (NumberOfFloors < 1) return (false, "Number of floors must be at least 1.");
+            if (Cupola?.Count < 0) return (false, "Cupola count cannot be negative.");
 
             var floorHeights = GetResolvedFloorHeights();
             if (floorHeights.Any(h => h <= 0))

@@ -1,3 +1,4 @@
+using System;
 using PoleBarnGenerator.Models;
 
 namespace PoleBarnGenerator.Generators.TrussProfiles
@@ -17,7 +18,7 @@ namespace PoleBarnGenerator.Generators.TrussProfiles
                 TrussType.Scissor => new ScissorTrussProfile(),
                 TrussType.Monitor => new MonitorTrussProfile(),
                 TrussType.Attic => new AtticTrussProfile(),
-                _ => new CommonTrussProfile()
+                _ => throw new ArgumentOutOfRangeException(nameof(type), type, "Unsupported truss type.")
             };
         }
     }
