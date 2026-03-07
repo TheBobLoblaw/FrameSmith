@@ -32,7 +32,7 @@ namespace PoleBarnGenerator.Generators
                     DrawingHelpers.Offset2d(aisle.X, aisle.Y, offset),
                     aisle.Width, aisle.Height,
                     LayerManager.Layers.Stalls);
-                try { aisleRect.Linetype = "DASHED"; } catch { }
+                TrySetLinetype(aisleRect, "DASHED", "Unable to set aisle linetype");
                 count++;
 
                 // Aisle centerline
@@ -41,7 +41,7 @@ namespace PoleBarnGenerator.Generators
                     DrawingHelpers.Offset(centerX, aisle.Y, offset),
                     DrawingHelpers.Offset(centerX, aisle.Y + aisle.Height, offset),
                     LayerManager.Layers.Stalls);
-                try { centerLine.Linetype = "CENTER"; } catch { }
+                TrySetLinetype(centerLine, "CENTER", "Unable to set aisle centerline linetype");
                 count++;
 
                 // Aisle width dimension
@@ -197,7 +197,7 @@ namespace PoleBarnGenerator.Generators
                     DrawingHelpers.Offset(joist.StartX, joist.StartY, offset),
                     DrawingHelpers.Offset(joist.EndX, joist.EndY, offset),
                     LayerManager.Layers.Loft);
-                try { joistLine.Linetype = "DASHED"; } catch { }
+                TrySetLinetype(joistLine, "DASHED", "Unable to set loft joist linetype");
                 count++;
             }
 
@@ -292,7 +292,10 @@ namespace PoleBarnGenerator.Generators
                     DrawingHelpers.Offset(partition.StartPoint.X, partition.StartPoint.Y, offset),
                     DrawingHelpers.Offset(partition.EndPoint.X, partition.EndPoint.Y, offset),
                     LayerManager.Layers.Partitions);
-                try { if (linetype != "ByLayer") line.Linetype = linetype; } catch { }
+                if (linetype != "ByLayer")
+                {
+                    TrySetLinetype(line, linetype, "Unable to set partition linetype");
+                }
                 count++;
 
                 // Double line for frame walls and concrete block (show wall thickness)
@@ -434,7 +437,7 @@ namespace PoleBarnGenerator.Generators
                 var manure = DrawingHelpers.AddRectangle(tr, btr,
                     DrawingHelpers.Offset2d(layout.ManureAlley.X, layout.ManureAlley.Y, offset),
                     layout.ManureAlley.Width, layout.ManureAlley.Height, LayerManager.Layers.Dairy);
-                try { manure.Linetype = "DASHED"; } catch { }
+                TrySetLinetype(manure, "DASHED", "Unable to set dairy manure lane linetype");
                 DrawingHelpers.AddText(tr, btr,
                     DrawingHelpers.Offset(layout.ManureAlley.X + layout.ManureAlley.Width / 2.0, layout.ManureAlley.Y + layout.ManureAlley.Height / 2.0, offset),
                     "MANURE ALLEY / GUTTER", 0.4, LayerManager.Layers.Dairy);
@@ -466,7 +469,7 @@ namespace PoleBarnGenerator.Generators
                     DrawingHelpers.Offset(path.StartX, path.StartY, offset),
                     DrawingHelpers.Offset(path.EndX, path.EndY, offset),
                     LayerManager.Layers.Dairy);
-                try { flow.Linetype = "CENTER"; } catch { }
+                TrySetLinetype(flow, "CENTER", "Unable to set equipment flow linetype");
                 count++;
             }
 
@@ -484,7 +487,7 @@ namespace PoleBarnGenerator.Generators
                 var zone = DrawingHelpers.AddRectangle(tr, btr,
                     DrawingHelpers.Offset2d(layout.ClearanceZone.X, layout.ClearanceZone.Y, offset),
                     layout.ClearanceZone.Width, layout.ClearanceZone.Height, LayerManager.Layers.Equip);
-                try { zone.Linetype = "DASHED"; } catch { }
+                TrySetLinetype(zone, "DASHED", "Unable to set machinery zone linetype");
                 DrawingHelpers.AddText(tr, btr,
                     DrawingHelpers.Offset(layout.ClearanceZone.X + layout.ClearanceZone.Width / 2.0, layout.ClearanceZone.Y + layout.ClearanceZone.Height / 2.0, offset),
                     "EQUIPMENT CLEARANCE ZONE", 0.4, LayerManager.Layers.Equip);
@@ -497,7 +500,7 @@ namespace PoleBarnGenerator.Generators
                     DrawingHelpers.Offset(layout.CraneRailLeft.StartX, layout.CraneRailLeft.StartY, offset),
                     DrawingHelpers.Offset(layout.CraneRailLeft.EndX, layout.CraneRailLeft.EndY, offset),
                     LayerManager.Layers.Crane);
-                try { left.Linetype = "DASHED"; } catch { }
+                TrySetLinetype(left, "DASHED", "Unable to set drainage lane linetype");
                 count++;
             }
 
@@ -507,7 +510,7 @@ namespace PoleBarnGenerator.Generators
                     DrawingHelpers.Offset(layout.CraneRailRight.StartX, layout.CraneRailRight.StartY, offset),
                     DrawingHelpers.Offset(layout.CraneRailRight.EndX, layout.CraneRailRight.EndY, offset),
                     LayerManager.Layers.Crane);
-                try { right.Linetype = "DASHED"; } catch { }
+                TrySetLinetype(right, "DASHED", "Unable to set drainage lane linetype");
                 DrawingHelpers.AddText(tr, btr,
                     DrawingHelpers.Offset(layout.CraneRailRight.StartX - 2.0, 1.0, offset),
                     $"CRANE RAIL {layout.CraneCapacityTons:F1}T @ {layout.CraneRailHeight:F1}'", 0.4, LayerManager.Layers.Crane);
@@ -556,7 +559,7 @@ namespace PoleBarnGenerator.Generators
                     DrawingHelpers.Offset(0.5, 0.5, offset),
                     DrawingHelpers.Offset(0.5, 10.0, offset),
                     LayerManager.Layers.Drain);
-                try { french.Linetype = "DASHED"; } catch { }
+                TrySetLinetype(french, "DASHED", "Unable to set french drain linetype");
                 DrawingHelpers.AddText(tr, btr,
                     DrawingHelpers.Offset(1.2, 9.5, offset),
                     "FRENCH DRAIN", 0.3, LayerManager.Layers.Drain);
@@ -778,14 +781,14 @@ namespace PoleBarnGenerator.Generators
                 DrawingHelpers.Offset(o.X, o.Y, offset),
                 DrawingHelpers.Offset(o.X, o.Y + o.Height, offset),
                 LayerManager.Layers.Workshop);
-            try { leftRail.Linetype = "DASHED"; } catch { }
+            TrySetLinetype(leftRail, "DASHED", "Unable to set overhead crane rail linetype");
             count++;
 
             var rightRail = DrawingHelpers.AddLine(tr, btr,
                 DrawingHelpers.Offset(o.X + o.Width, o.Y, offset),
                 DrawingHelpers.Offset(o.X + o.Width, o.Y + o.Height, offset),
                 LayerManager.Layers.Workshop);
-            try { rightRail.Linetype = "DASHED"; } catch { }
+            TrySetLinetype(rightRail, "DASHED", "Unable to set overhead crane rail linetype");
             count++;
 
             // Bridge beam (center, perpendicular)
@@ -838,6 +841,26 @@ namespace PoleBarnGenerator.Generators
             DrawingHelpers.AddText(tr, btr,
                 DrawingHelpers.Offset(x, y - 0.7, offset),
                 "FD", 0.25, LayerManager.Layers.Anno);
+        }
+
+        private static void TrySetLinetype(Entity entity, string linetype, string context)
+        {
+            try
+            {
+                entity.Linetype = linetype;
+            }
+            catch (Autodesk.AutoCAD.Runtime.Exception ex)
+            {
+                WarningCollector.ReportCurrent(context, ex);
+            }
+            catch (InvalidOperationException ex)
+            {
+                WarningCollector.ReportCurrent(context, ex);
+            }
+            catch (ArgumentException ex)
+            {
+                WarningCollector.ReportCurrent(context, ex);
+            }
         }
     }
 }

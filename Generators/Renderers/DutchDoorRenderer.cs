@@ -58,7 +58,7 @@ namespace PoleBarnGenerator.Generators.Renderers
 
             Arc arcLower = new Arc(center3d, radius, startAng, endAng);
             LayerManager.SetLayer(arcLower, LayerManager.Layers.Doors);
-            try { arcLower.Linetype = "DASHED"; } catch { }
+            TrySetLinetype(arcLower, "DASHED", "Unable to set dutch door lower arc linetype");
             btr.AppendEntity(arcLower);
             tr.AddNewlyCreatedDBObject(arcLower, true);
             count++;
@@ -67,7 +67,7 @@ namespace PoleBarnGenerator.Generators.Renderers
             double upperRadius = radius * 0.85;
             Arc arcUpper = new Arc(center3d, upperRadius, startAng, endAng);
             LayerManager.SetLayer(arcUpper, LayerManager.Layers.Doors);
-            try { arcUpper.Linetype = "DASHED"; } catch { }
+            TrySetLinetype(arcUpper, "DASHED", "Unable to set dutch door upper arc linetype");
             arcUpper.LineWeight = LineWeight.LineWeight013;
             btr.AppendEntity(arcUpper);
             tr.AddNewlyCreatedDBObject(arcUpper, true);
@@ -174,5 +174,25 @@ namespace PoleBarnGenerator.Generators.Renderers
             => new Point2d(x + off.X, y + off.Y);
         private static Point3d P3(double x, double y, Vector3d off)
             => new Point3d(x + off.X, y + off.Y, 0);
+
+        private static void TrySetLinetype(Entity entity, string linetype, string context)
+        {
+            try
+            {
+                entity.Linetype = linetype;
+            }
+            catch (Autodesk.AutoCAD.Runtime.Exception ex)
+            {
+                WarningCollector.ReportCurrent(context, ex);
+            }
+            catch (InvalidOperationException ex)
+            {
+                WarningCollector.ReportCurrent(context, ex);
+            }
+            catch (ArgumentException ex)
+            {
+                WarningCollector.ReportCurrent(context, ex);
+            }
+        }
     }
 }

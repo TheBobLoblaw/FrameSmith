@@ -49,7 +49,7 @@ namespace PoleBarnGenerator.Generators.Renderers
                 Off(wall.ToPlan(trackStart, depth / 2 + 0.15), offset),
                 Off(wall.ToPlan(trackEnd, depth / 2 + 0.15), offset),
                 LayerManager.Layers.Doors);
-            try { trackLine.Linetype = "CENTER"; } catch { }
+            TrySetLinetype(trackLine, "CENTER", "Unable to set sliding door track linetype");
             count++;
 
             // Slide direction arrow (triangle pointing right from opening)
@@ -74,7 +74,7 @@ namespace PoleBarnGenerator.Generators.Renderers
                 Pt(wall.ToPlan(right + door.Width - 0.1, depth / 2 + 0.05), offset),
             };
             var panel = DrawingHelpers.AddPolyline(tr, btr, panelPts, LayerManager.Layers.Doors, closed: true);
-            try { panel.Linetype = "DASHED"; } catch { }
+            TrySetLinetype(panel, "DASHED", "Unable to set sliding door panel linetype");
             count++;
 
             return count;
@@ -105,7 +105,7 @@ namespace PoleBarnGenerator.Generators.Renderers
                 P3(left - TrackExtension, trackY, offset),
                 P3(right + door.Width + TrackExtension, trackY, offset),
                 LayerManager.Layers.Doors);
-            try { track.Linetype = "CENTER"; } catch { }
+            TrySetLinetype(track, "CENTER", "Unable to set sliding door elevation track linetype");
             count++;
 
             // Vertical panel divisions (typically 2-4 panels)
@@ -160,5 +160,25 @@ namespace PoleBarnGenerator.Generators.Renderers
             => new Point2d(x + off.X, y + off.Y);
         private static Point3d P3(double x, double y, Vector3d off)
             => new Point3d(x + off.X, y + off.Y, 0);
+
+        private static void TrySetLinetype(Entity entity, string linetype, string context)
+        {
+            try
+            {
+                entity.Linetype = linetype;
+            }
+            catch (Autodesk.AutoCAD.Runtime.Exception ex)
+            {
+                WarningCollector.ReportCurrent(context, ex);
+            }
+            catch (InvalidOperationException ex)
+            {
+                WarningCollector.ReportCurrent(context, ex);
+            }
+            catch (ArgumentException ex)
+            {
+                WarningCollector.ReportCurrent(context, ex);
+            }
+        }
     }
 }

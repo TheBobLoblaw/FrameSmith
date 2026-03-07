@@ -170,7 +170,22 @@ namespace PoleBarnGenerator.Generators.Renderers
 
         private static void SetLinetype(Entity ent, string lt)
         {
-            try { ent.Linetype = lt; } catch { /* linetype not loaded */ }
+            try
+            {
+                ent.Linetype = lt;
+            }
+            catch (Autodesk.AutoCAD.Runtime.Exception ex)
+            {
+                WarningCollector.ReportCurrent($"Unable to set overhead door linetype '{lt}'", ex);
+            }
+            catch (InvalidOperationException ex)
+            {
+                WarningCollector.ReportCurrent($"Unable to set overhead door linetype '{lt}'", ex);
+            }
+            catch (ArgumentException ex)
+            {
+                WarningCollector.ReportCurrent($"Unable to set overhead door linetype '{lt}'", ex);
+            }
         }
     }
 }

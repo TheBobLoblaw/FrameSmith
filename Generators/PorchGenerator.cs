@@ -71,14 +71,14 @@ namespace PoleBarnGenerator.Generators
                         DrawingHelpers.Offset(seg.X1, seg.Y1, offset),
                         DrawingHelpers.Offset(seg.X2, seg.Y2, offset),
                         PorchLayer);
-                    try { rail.Linetype = "DASHED"; } catch { }
+                    TrySetLinetype(rail, "DASHED", "Unable to set porch railing linetype");
                     count++;
                 }
             }
 
             // ── Porch roof outline (dashed) ──
             Polyline roofPl = DrawingHelpers.AddPolyline(tr, btr, footprint, LayerManager.Layers.Roof, closed: true);
-            try { roofPl.Linetype = "DASHED"; } catch { }
+            TrySetLinetype(roofPl, "DASHED", "Unable to set porch roof linetype");
             count++;
 
             // ── Label ──
@@ -91,6 +91,26 @@ namespace PoleBarnGenerator.Generators
             count++;
 
             return count;
+        }
+
+        private static void TrySetLinetype(Entity entity, string linetype, string context)
+        {
+            try
+            {
+                entity.Linetype = linetype;
+            }
+            catch (Autodesk.AutoCAD.Runtime.Exception ex)
+            {
+                WarningCollector.ReportCurrent(context, ex);
+            }
+            catch (InvalidOperationException ex)
+            {
+                WarningCollector.ReportCurrent(context, ex);
+            }
+            catch (ArgumentException ex)
+            {
+                WarningCollector.ReportCurrent(context, ex);
+            }
         }
 
         // ═══════════════════════════════════════════════

@@ -28,6 +28,7 @@ namespace PoleBarnGenerator.Commands
             Document doc = Application.DocumentManager.MdiActiveDocument;
             Database db = doc.Database;
             Editor ed = doc.Editor;
+            WarningCollector warnings = new WarningCollector();
 
             ed.WriteMessage("\n=== Pole Barn Generator ===\n");
 
@@ -71,94 +72,144 @@ namespace PoleBarnGenerator.Commands
             if (leanToCount > 0)
                 ed.WriteMessage($"\n  Lean-Tos: {leanToCount}");
 
-            // Run generation in a single transaction
-            using (Transaction tr = db.TransactionManager.StartTransaction())
+            using (WarningCollector.BeginSession(warnings))
             {
-                BlockTable bt = tr.GetObject(db.BlockTableId, OpenMode.ForRead) as BlockTable;
-                BlockTableRecord btr = tr.GetObject(bt[BlockTableRecord.ModelSpace], OpenMode.ForWrite) as BlockTableRecord;
-
-                // Create all layers
-                // Professional drawing setup
-                LayerManager.EnsureLayers(tr, db);
-                LinetypeManager.SetLinetypeScale(db);
-                StyleManager.CreateTextStyles(tr, db);
-                StyleManager.CreateDimensionStyle(tr, db);
-
-                // View placement offsets (side by side in model space)
-                double gap = 20.0; // feet between views
-                double planWidth = parameters.BuildingWidth + 10;
-                double elevWidth = parameters.BuildingWidth + 10;
-
-                Vector3d planOffset = new Vector3d(0, 0, 0);
-                Vector3d frontOffset = new Vector3d(planWidth + gap, 0, 0);
-                Vector3d sideOffset = new Vector3d(planWidth + elevWidth + gap * 2, 0, 0);
-
-                int entityCount = 0;
-
-                // Set dimension style before generating any views with dimensions
-                DimensionGenerator.SetCurrentDimStyle(tr, db);
-
-                // Generate each view with error handling
-                if (parameters.GeneratePlan)
+                // Run generation in a single transaction
+                using (Transaction tr = db.TransactionManager.StartTransaction())
                 {
-                    try
+                    BlockTable bt = tr.GetObject(db.BlockTableId, OpenMode.ForRead) as BlockTable;
+                    BlockTableRecord btr = tr.GetObject(bt[BlockTableRecord.ModelSpace], OpenMode.ForWrite) as BlockTableRecord;
+
+                    // Create all layers
+                    // Professional drawing setup
+                    LayerManager.EnsureLayers(tr, db);
+                    LinetypeManager.SetLinetypeScale(db);
+                    StyleManager.CreateTextStyles(tr, db);
+                    StyleManager.CreateDimensionStyle(tr, db);
+
+                    // View placement offsets (side by side in model space)
+                    double gap = 20.0; // feet between views
+                    double planWidth = parameters.BuildingWidth + 10;
+                    double elevWidth = parameters.BuildingWidth + 10;
+
+                    Vector3d planOffset = new Vector3d(0, 0, 0);
+                    Vector3d frontOffset = new Vector3d(planWidth + gap, 0, 0);
+                    Vector3d sideOffset = new Vector3d(planWidth + elevWidth + gap * 2, 0, 0);
+
+                    int entityCount = 0;
+
+                    // Set dimension style before generating any views with dimensions
+                    DimensionGenerator.SetCurrentDimStyle(tr, db);
+
+                    // Generate each view with error handling
+                    if (parameters.GeneratePlan)
                     {
-                        ed.WriteMessage("\n  Drawing plan view...");
-                        entityCount += PlanViewGenerator.Generate(tr, btr, geometry, planOffset);
+                        try
+                        {
+                            ed.WriteMessage("\n  Drawing plan view...");
+                            entityCount += PlanViewGenerator.Generate(tr, btr, geometry, planOffset, ed, warnings);
+                        }
+                        catch (Autodesk.AutoCAD.Runtime.Exception ex)
+                        {
+                            WarningCollector.Report(ed, warnings, "Plan view generation failed", ex);
+                        }
+                        catch (InvalidOperationException ex)
+                        {
+                            WarningCollector.Report(ed, warnings, "Plan view generation operation failed", ex);
+                        }
+                        catch (ArgumentException ex)
+                        {
+                            WarningCollector.Report(ed, warnings, "Plan view generation input invalid", ex);
+                        }
+                        catch (System.Exception ex)
+                        {
+                            WarningCollector.Report(ed, warnings, "Plan view generation unexpected failure", ex);
+                        }
                     }
-                    catch (System.Exception ex)
+
+                    if (parameters.GenerateFront)
                     {
-                        ed.WriteMessage($"\n  ERROR generating plan view: {ex.Message}");
+                        try
+                        {
+                            ed.WriteMessage("\n  Drawing front elevation...");
+                            entityCount += FrontElevationGenerator.Generate(tr, btr, geometry, frontOffset, ed, warnings);
+                        }
+                        catch (Autodesk.AutoCAD.Runtime.Exception ex)
+                        {
+                            WarningCollector.Report(ed, warnings, "Front elevation generation failed", ex);
+                        }
+                        catch (InvalidOperationException ex)
+                        {
+                            WarningCollector.Report(ed, warnings, "Front elevation generation operation failed", ex);
+                        }
+                        catch (ArgumentException ex)
+                        {
+                            WarningCollector.Report(ed, warnings, "Front elevation generation input invalid", ex);
+                        }
+                        catch (System.Exception ex)
+                        {
+                            WarningCollector.Report(ed, warnings, "Front elevation generation unexpected failure", ex);
+                        }
                     }
+
+                    if (parameters.GenerateSide)
+                    {
+                        try
+                        {
+                            ed.WriteMessage("\n  Drawing side elevation...");
+                            entityCount += SideElevationGenerator.Generate(tr, btr, geometry, sideOffset, ed, warnings);
+                        }
+                        catch (Autodesk.AutoCAD.Runtime.Exception ex)
+                        {
+                            WarningCollector.Report(ed, warnings, "Side elevation generation failed", ex);
+                        }
+                        catch (InvalidOperationException ex)
+                        {
+                            WarningCollector.Report(ed, warnings, "Side elevation generation operation failed", ex);
+                        }
+                        catch (ArgumentException ex)
+                        {
+                            WarningCollector.Report(ed, warnings, "Side elevation generation input invalid", ex);
+                        }
+                        catch (System.Exception ex)
+                        {
+                            WarningCollector.Report(ed, warnings, "Side elevation generation unexpected failure", ex);
+                        }
+                    }
+
+                    if (parameters.Generate3D)
+                    {
+                        try
+                        {
+                            ed.WriteMessage("\n  Building 3D wireframe...");
+                            entityCount += Wireframe3DGenerator.Generate(tr, btr, geometry, ed, warnings);
+                        }
+                        catch (Autodesk.AutoCAD.Runtime.Exception ex)
+                        {
+                            WarningCollector.Report(ed, warnings, "3D wireframe generation failed", ex);
+                        }
+                        catch (InvalidOperationException ex)
+                        {
+                            WarningCollector.Report(ed, warnings, "3D wireframe generation operation failed", ex);
+                        }
+                        catch (ArgumentException ex)
+                        {
+                            WarningCollector.Report(ed, warnings, "3D wireframe generation input invalid", ex);
+                        }
+                        catch (System.Exception ex)
+                        {
+                            WarningCollector.Report(ed, warnings, "3D wireframe generation unexpected failure", ex);
+                        }
+                    }
+
+                    tr.Commit();
+
+                    PrintGenerationSummary(ed, entityCount, warnings);
                 }
-
-                if (parameters.GenerateFront)
-                {
-                    try
-                    {
-                        ed.WriteMessage("\n  Drawing front elevation...");
-                        entityCount += FrontElevationGenerator.Generate(tr, btr, geometry, frontOffset);
-                    }
-                    catch (System.Exception ex)
-                    {
-                        ed.WriteMessage($"\n  ERROR generating front elevation: {ex.Message}");
-                    }
-                }
-
-                if (parameters.GenerateSide)
-                {
-                    try
-                    {
-                        ed.WriteMessage("\n  Drawing side elevation...");
-                        entityCount += SideElevationGenerator.Generate(tr, btr, geometry, sideOffset);
-                    }
-                    catch (System.Exception ex)
-                    {
-                        ed.WriteMessage($"\n  ERROR generating side elevation: {ex.Message}");
-                    }
-                }
-
-                if (parameters.Generate3D)
-                {
-                    try
-                    {
-                        ed.WriteMessage("\n  Building 3D wireframe...");
-                        entityCount += Wireframe3DGenerator.Generate(tr, btr, geometry);
-                    }
-                    catch (System.Exception ex)
-                    {
-                        ed.WriteMessage($"\n  ERROR generating 3D wireframe: {ex.Message}");
-                    }
-                }
-
-                tr.Commit();
-
-                ed.WriteMessage($"\n\nPole barn generated: {entityCount} entities created.");
-                ed.WriteMessage("\n=== Complete ===\n");
             }
 
             // Zoom to extents
-            ed.Command("_.ZOOM", "_E");
+            doc.SendStringToExecute("_.ZOOM _E ", true, false, false);
         }
 
         /// <summary>
@@ -181,47 +232,82 @@ namespace PoleBarnGenerator.Commands
         {
             Document doc = Application.DocumentManager.MdiActiveDocument;
             Editor ed = doc.Editor;
+            WarningCollector warnings = new WarningCollector();
 
             ed.WriteMessage($"\nGenerating preset pole barn: {presetName}\n");
 
             BarnParameters parameters = BarnParameters.CreatePreset(presetName);
             BarnGeometry geometry = new BarnGeometry(parameters);
 
-            using (Transaction tr = doc.Database.TransactionManager.StartTransaction())
+            using (WarningCollector.BeginSession(warnings))
             {
-                BlockTable bt = tr.GetObject(doc.Database.BlockTableId, OpenMode.ForRead) as BlockTable;
-                BlockTableRecord btr = tr.GetObject(bt[BlockTableRecord.ModelSpace], OpenMode.ForWrite) as BlockTableRecord;
-
-                // Professional drawing setup
-                LayerManager.EnsureLayers(tr, doc.Database);
-                LinetypeManager.SetLinetypeScale(doc.Database);
-                StyleManager.CreateTextStyles(tr, doc.Database);
-                StyleManager.CreateDimensionStyle(tr, doc.Database);
-
-                double gap = 20.0;
-                double planWidth = parameters.BuildingWidth + 10;
-                double elevWidth = parameters.BuildingWidth + 10;
-
-                // Set dimension style before generating
-                DimensionGenerator.SetCurrentDimStyle(tr, doc.Database);
-
-                try
+                using (Transaction tr = doc.Database.TransactionManager.StartTransaction())
                 {
-                    PlanViewGenerator.Generate(tr, btr, geometry, new Vector3d(0, 0, 0));
-                    FrontElevationGenerator.Generate(tr, btr, geometry, new Vector3d(planWidth + gap, 0, 0));
-                    SideElevationGenerator.Generate(tr, btr, geometry, new Vector3d(planWidth + elevWidth + gap * 2, 0, 0));
-                    Wireframe3DGenerator.Generate(tr, btr, geometry);
-                }
-                catch (System.Exception ex)
-                {
-                    ed.WriteMessage($"\nERROR during generation: {ex.Message}");
-                }
+                    BlockTable bt = tr.GetObject(doc.Database.BlockTableId, OpenMode.ForRead) as BlockTable;
+                    BlockTableRecord btr = tr.GetObject(bt[BlockTableRecord.ModelSpace], OpenMode.ForWrite) as BlockTableRecord;
 
-                tr.Commit();
+                    // Professional drawing setup
+                    LayerManager.EnsureLayers(tr, doc.Database);
+                    LinetypeManager.SetLinetypeScale(doc.Database);
+                    StyleManager.CreateTextStyles(tr, doc.Database);
+                    StyleManager.CreateDimensionStyle(tr, doc.Database);
+
+                    double gap = 20.0;
+                    double planWidth = parameters.BuildingWidth + 10;
+                    double elevWidth = parameters.BuildingWidth + 10;
+
+                    // Set dimension style before generating
+                    DimensionGenerator.SetCurrentDimStyle(tr, doc.Database);
+                    int entityCount = 0;
+
+                    try
+                    {
+                        entityCount += PlanViewGenerator.Generate(tr, btr, geometry, new Vector3d(0, 0, 0), ed, warnings);
+                        entityCount += FrontElevationGenerator.Generate(tr, btr, geometry, new Vector3d(planWidth + gap, 0, 0), ed, warnings);
+                        entityCount += SideElevationGenerator.Generate(tr, btr, geometry, new Vector3d(planWidth + elevWidth + gap * 2, 0, 0), ed, warnings);
+                        entityCount += Wireframe3DGenerator.Generate(tr, btr, geometry, ed, warnings);
+                    }
+                    catch (Autodesk.AutoCAD.Runtime.Exception ex)
+                    {
+                        WarningCollector.Report(ed, warnings, "Preset generation failed", ex);
+                    }
+                    catch (InvalidOperationException ex)
+                    {
+                        WarningCollector.Report(ed, warnings, "Preset generation operation failed", ex);
+                    }
+                    catch (ArgumentException ex)
+                    {
+                        WarningCollector.Report(ed, warnings, "Preset generation input invalid", ex);
+                    }
+                    catch (System.Exception ex)
+                    {
+                        WarningCollector.Report(ed, warnings, "Preset generation unexpected failure", ex);
+                    }
+
+                    tr.Commit();
+                    PrintGenerationSummary(ed, entityCount, warnings);
+                }
             }
 
-            ed.Command("_.ZOOM", "_E");
+            doc.SendStringToExecute("_.ZOOM _E ", true, false, false);
             ed.WriteMessage($"\n{presetName} pole barn generated.\n");
+        }
+
+        private static void PrintGenerationSummary(Editor ed, int entityCount, WarningCollector warnings)
+        {
+            ed.WriteMessage("\n\n=== Generation Summary ===");
+            ed.WriteMessage($"\nEntities created: {entityCount}");
+            ed.WriteMessage($"\nWarnings: {warnings.Count}");
+
+            if (warnings.Count > 0)
+            {
+                for (int i = 0; i < warnings.Count; i++)
+                {
+                    ed.WriteMessage($"\n  {i + 1}. {warnings.Warnings[i]}");
+                }
+            }
+
+            ed.WriteMessage("\n=== Complete ===\n");
         }
     }
 }

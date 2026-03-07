@@ -95,7 +95,7 @@ namespace PoleBarnGenerator.Generators.Renderers
             // Ensure we draw the shorter arc (quarter circle)
             Arc arc = new Arc(center3d, radius, startAngle, endAngle);
             LayerManager.SetLayer(arc, LayerManager.Layers.Doors);
-            try { arc.Linetype = "DASHED"; } catch { }
+            TrySetLinetype(arc, "DASHED", "Unable to set walk door swing arc linetype");
             arc.LineWeight = LineWeight.LineWeight013;
             btr.AppendEntity(arc);
             tr.AddNewlyCreatedDBObject(arc, true);
@@ -192,5 +192,25 @@ namespace PoleBarnGenerator.Generators.Renderers
             => new Point2d(x + off.X, y + off.Y);
         private static Point3d P3(double x, double y, Vector3d off)
             => new Point3d(x + off.X, y + off.Y, 0);
+
+        private static void TrySetLinetype(Entity entity, string linetype, string context)
+        {
+            try
+            {
+                entity.Linetype = linetype;
+            }
+            catch (Autodesk.AutoCAD.Runtime.Exception ex)
+            {
+                WarningCollector.ReportCurrent(context, ex);
+            }
+            catch (InvalidOperationException ex)
+            {
+                WarningCollector.ReportCurrent(context, ex);
+            }
+            catch (ArgumentException ex)
+            {
+                WarningCollector.ReportCurrent(context, ex);
+            }
+        }
     }
 }
