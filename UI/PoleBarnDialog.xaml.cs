@@ -31,8 +31,8 @@ namespace PoleBarnGenerator.UI
 
         private void OnDimensionChanged(object sender, TextChangedEventArgs e)
         {
-            if (double.TryParse(txtLength.Text, out double len) &&
-                double.TryParse(txtBaySpacing.Text, out double spacing) &&
+            if (double.TryParse(txtLength.Text, NumberStyles.Float, CultureInfo.InvariantCulture, out double len) &&
+                double.TryParse(txtBaySpacing.Text, NumberStyles.Float, CultureInfo.InvariantCulture, out double spacing) &&
                 spacing > 0)
             {
                 int bays = Math.Max(1, (int)Math.Round(len / spacing));
@@ -328,7 +328,9 @@ namespace PoleBarnGenerator.UI
 
         private static double ParseDouble(string text, double fallback)
         {
-            return double.TryParse(text, out double val) ? val : fallback;
+            return double.TryParse(text, NumberStyles.Float, CultureInfo.InvariantCulture, out double val)
+                ? val
+                : fallback;
         }
 
         private static List<double> ParseDoubleList(string csv)
@@ -342,10 +344,6 @@ namespace PoleBarnGenerator.UI
             foreach (var token in csv.Split(','))
             {
                 if (double.TryParse(token.Trim(), NumberStyles.Float, CultureInfo.InvariantCulture, out double value))
-                {
-                    values.Add(value);
-                }
-                else if (double.TryParse(token.Trim(), out value))
                 {
                     values.Add(value);
                 }
@@ -372,12 +370,6 @@ namespace PoleBarnGenerator.UI
 
                 if (double.TryParse(parts[0], NumberStyles.Float, CultureInfo.InvariantCulture, out double x) &&
                     double.TryParse(parts[1], NumberStyles.Float, CultureInfo.InvariantCulture, out double y))
-                {
-                    vertices.Add(new FootprintVertex { X = x, Y = y });
-                    continue;
-                }
-
-                if (double.TryParse(parts[0], out x) && double.TryParse(parts[1], out y))
                 {
                     vertices.Add(new FootprintVertex { X = x, Y = y });
                 }

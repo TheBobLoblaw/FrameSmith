@@ -9,7 +9,7 @@ namespace PoleBarnGenerator.Generators
 {
     /// <summary>
     /// Generates dimension annotations for plan and elevation views.
-    /// All dimensions are placed on the FS-S-DIM layer.
+    /// All dimensions are placed on the PB-DIM layer.
     /// </summary>
     public static class DimensionGenerator
     {

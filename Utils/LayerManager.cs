@@ -5,8 +5,8 @@ using System.Collections.Generic;
 namespace PoleBarnGenerator.Utils
 {
     /// <summary>
-    /// Creates and manages all FS-S- prefixed layers following AIA/NCS standards.
-    /// Layer naming: FS-S-MAJORGROUP-MINORGROUP
+    /// Creates and manages all PB- prefixed layers following AIA/NCS standards.
+    /// Layer naming: PB-MAJORGROUP-MINORGROUP
     /// Line weight hierarchy:
     ///   Heavy  (0.50mm): Walls, posts, slab
     ///   Medium (0.35mm): Doors, windows, visible structure
@@ -19,66 +19,66 @@ namespace PoleBarnGenerator.Utils
         public static class Layers
         {
             // STRUCTURAL
-            public const string Posts          = "FS-S-POST";
-            public const string PostsFill      = "FS-S-POST-FILL";
-            public const string Girts          = "FS-S-GIRT";
-            public const string Trusses        = "FS-S-TRSS";
-            public const string TrussesHidden  = "FS-S-TRSS-HIDDEN";
-            public const string Purlins        = "FS-S-PURL";
-            public const string Ridge          = "FS-S-RIDG";
-            public const string Bracing        = "FS-S-BRAC";
-            public const string Headers        = "FS-S-HEADER";
-            public const string Plates         = "FS-S-PLATE";
+            public const string Posts          = "PB-POST";
+            public const string PostsFill      = "PB-POST-FILL";
+            public const string Girts          = "PB-GIRT";
+            public const string Trusses        = "PB-TRSS";
+            public const string TrussesHidden  = "PB-TRSS-HIDDEN";
+            public const string Purlins        = "PB-PURL";
+            public const string Ridge          = "PB-RIDG";
+            public const string Bracing        = "PB-BRAC";
+            public const string Headers        = "PB-HEADER";
+            public const string Plates         = "PB-PLATE";
 
             // ENVELOPE
-            public const string Walls          = "FS-S-WALL";
-            public const string WallsBelow     = "FS-S-WALL-BELOW";
-            public const string Roof           = "FS-S-ROOF";
-            public const string RoofHidden     = "FS-S-ROOF-HIDDEN";
-            public const string RoofOverhang   = "FS-S-ROOF-OVRHG";
-            public const string Slab           = "FS-S-SLAB";
-            public const string SlabHatch      = "FS-S-SLAB-HATCH";
-            public const string Wainscot       = "FS-S-WAINSCOT";
+            public const string Walls          = "PB-WALL";
+            public const string WallsBelow     = "PB-WALL-BELOW";
+            public const string Roof           = "PB-ROOF";
+            public const string RoofHidden     = "PB-ROOF-HIDDEN";
+            public const string RoofOverhang   = "PB-ROOF-OVRHG";
+            public const string Slab           = "PB-SLAB";
+            public const string SlabHatch      = "PB-SLAB-HATCH";
+            public const string Wainscot       = "PB-WAINSCOT";
 
             // OPENINGS
-            public const string Doors          = "FS-S-DOOR";
-            public const string DoorSwing      = "FS-S-DOOR-SWING";
-            public const string DoorTrack      = "FS-S-DOOR-TRACK";
-            public const string DoorPanel      = "FS-S-DOOR-PANEL";
-            public const string Windows        = "FS-S-WIND";
-            public const string WindowGlass    = "FS-S-WIND-GLASS";
+            public const string Doors          = "PB-DOOR";
+            public const string DoorSwing      = "PB-DOOR-SWING";
+            public const string DoorTrack      = "PB-DOOR-TRACK";
+            public const string DoorPanel      = "PB-DOOR-PANEL";
+            public const string Windows        = "PB-WIND";
+            public const string WindowGlass    = "PB-WIND-GLASS";
 
             // LEAN-TO / PORCH
-            public const string LeanTo         = "FS-S-LEAN";
-            public const string LeanToRoof     = "FS-S-LEAN-ROOF";
-            public const string Porches        = "FS-S-PORCH";
-            public const string PorchRail      = "FS-S-PORCH-RAIL";
+            public const string LeanTo         = "PB-LEAN";
+            public const string LeanToRoof     = "PB-LEAN-ROOF";
+            public const string Porches        = "PB-PORCH";
+            public const string PorchRail      = "PB-PORCH-RAIL";
 
             // INTERIOR
-            public const string Stalls         = "FS-S-STALL";
-            public const string Partitions     = "FS-S-PART";
-            public const string Loft           = "FS-S-LOFT";
-            public const string LoftEdge       = "FS-S-LOFT-EDGE";
-            public const string Workshop       = "FS-S-WORKSHOP";
+            public const string Stalls         = "PB-STALL";
+            public const string Partitions     = "PB-PART";
+            public const string Loft           = "PB-LOFT";
+            public const string LoftEdge       = "PB-LOFT-EDGE";
+            public const string Workshop       = "PB-WORKSHOP";
 
             // REFERENCE
-            public const string Grid           = "FS-S-GRID";
-            public const string GridBubbles    = "FS-S-GRID-BUBS";
-            public const string GridText       = "FS-S-GRID-TEXT";
-            public const string CenterLines    = "FS-S-CNTR";
+            public const string Grid           = "PB-GRID";
+            public const string GridBubbles    = "PB-GRID-BUBS";
+            public const string GridText       = "PB-GRID-TEXT";
+            public const string CenterLines    = "PB-CNTR";
 
             // ANNOTATION
-            public const string Dims           = "FS-S-DIM";
-            public const string Anno           = "FS-S-TEXT";
-            public const string TextTitle      = "FS-S-TEXT-TITLE";
-            public const string Symbols        = "FS-S-SYMB";
-            public const string Leaders        = "FS-S-ANNO-LEADER";
-            public const string Callouts       = "FS-S-CALLOUT";
+            public const string Dims           = "PB-DIM";
+            public const string Anno           = "PB-TEXT";
+            public const string TextTitle      = "PB-TEXT-TITLE";
+            public const string Symbols        = "PB-SYMB";
+            public const string Leaders        = "PB-ANNO-LEADER";
+            public const string Callouts       = "PB-CALLOUT";
 
             // 3D WIREFRAME
-            public const string Wire3D         = "FS-S-3D-STRUCT";
-            public const string Wire3DRoof     = "FS-S-3D-ROOF";
-            public const string Wire3DSlab     = "FS-S-3D-SLAB";
+            public const string Wire3D         = "PB-3D-STRUCT";
+            public const string Wire3DRoof     = "PB-3D-ROOF";
+            public const string Wire3DSlab     = "PB-3D-SLAB";
 
             // ADVANCED FEATURES (PB- legacy prefix requested)
             public const string Floor          = "PB-FLOOR";
@@ -93,8 +93,8 @@ namespace PoleBarnGenerator.Utils
             public const string Equip          = "PB-EQUIP";
 
             // Legacy aliases
-            public const string Rafters        = "FS-S-RAFT";
-            public const string Details        = "FS-S-DETAIL";
+            public const string Rafters        = "PB-RAFT";
+            public const string Details        = "PB-DETAIL";
         }
 
         private struct LayerDef
@@ -193,10 +193,10 @@ namespace PoleBarnGenerator.Utils
         };
 
         /// <summary>
-        /// Ensures all FS-S- layers exist with correct color, lineweight, and linetype.
+        /// Ensures all PB- layers exist with correct color, lineweight, and linetype.
         /// Must be called within an active Transaction.
         /// </summary>
-        public static void EnsureLayers(Transaction tr, Database db)
+        public static void EnsureLayers(Transaction tr, Database db, bool enforceStandards = false)
         {
             // Load required linetypes first
             LinetypeManager.LoadRequiredLinetypes(db);
@@ -231,14 +231,17 @@ namespace PoleBarnGenerator.Utils
                 }
                 else
                 {
-                    // Update existing layer to match professional specs
-                    LayerTableRecord ltr = tr.GetObject(lt[layerName], OpenMode.ForWrite) as LayerTableRecord;
-                    ltr.Color = Color.FromColorIndex(ColorMethod.ByAci, def.Color);
-                    ltr.LineWeight = def.Weight;
-
-                    if (def.Linetype != "Continuous" && ltt.Has(def.Linetype))
+                    if (enforceStandards)
                     {
-                        ltr.LinetypeObjectId = ltt[def.Linetype];
+                        // Update existing layer to match professional specs
+                        LayerTableRecord ltr = tr.GetObject(lt[layerName], OpenMode.ForWrite) as LayerTableRecord;
+                        ltr.Color = Color.FromColorIndex(ColorMethod.ByAci, def.Color);
+                        ltr.LineWeight = def.Weight;
+
+                        if (def.Linetype != "Continuous" && ltt.Has(def.Linetype))
+                        {
+                            ltr.LinetypeObjectId = ltt[def.Linetype];
+                        }
                     }
                 }
             }

@@ -216,7 +216,7 @@ namespace PoleBarnGenerator.Commands
         /// Quick command that skips the dialog and uses a preset.
         /// Usage: POLEBARN30X40
         /// </summary>
-        [CommandMethod("POLEBARN3040", CommandFlags.Modal)]
+        [CommandMethod("POLEBARN30X40", CommandFlags.Modal)]
         public void RunPoleBarn30x40()
         {
             GenerateFromPreset("30x40");
