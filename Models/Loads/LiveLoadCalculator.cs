@@ -21,7 +21,8 @@ namespace PoleBarnGenerator.Models.Loads
     }
 
     /// <summary>
-    /// IBC 2021 / ASCE 7-22 Chapter 4 live load calculations.
+    /// Preliminary/simplified IBC 2021 / ASCE 7-22 Chapter 4 live load calculations.
+    /// Intended for early design checks; final design requires full engineered load criteria.
     /// </summary>
     public static class LiveLoadCalculator
     {

@@ -41,8 +41,9 @@ namespace PoleBarnGenerator.Models.Analysis
     }
 
     /// <summary>
-    /// Simplified structural analysis for post-frame buildings.
-    /// Distributes loads through the structural system and determines member forces.
+    /// Preliminary/simplified structural analysis for post-frame buildings.
+    /// Distributes loads using screening-level assumptions and determines approximate member forces.
+    /// Not a replacement for a full engineered analysis model.
     /// </summary>
     public static class StructuralAnalysis
     {
@@ -163,7 +164,7 @@ namespace PoleBarnGenerator.Models.Analysis
 
             // ─── Building drift ───
             double drift = W_wall * 0.6 * Math.Pow(p.EaveHeight, 4) * 12 /
-                           (8 * 1600000 * 500); // simplified, approximate
+                           (8 * 1600000 * 500); // preliminary stiffness approximation
             results.MaxDrift = Math.Round(drift, 3);
 
             results.ControllingLoadCombo = latCombo.Name;

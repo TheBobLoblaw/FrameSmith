@@ -536,7 +536,8 @@ namespace PoleBarnGenerator.Models
                     return (false, $"Multiple lean-tos on the {lt.AttachmentWall} wall are not allowed.");
             }
 
-            var conflicts = Utils.OpeningValidator.ValidateOpenings(this);
+            var geometry = new BarnGeometry(this);
+            var conflicts = Utils.OpeningValidator.ValidateOpenings(this, geometry);
             if (conflicts.Count > 0)
                 return (false, conflicts[0]);
 

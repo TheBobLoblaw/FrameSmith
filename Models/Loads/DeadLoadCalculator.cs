@@ -43,8 +43,8 @@ namespace PoleBarnGenerator.Models.Loads
     }
 
     /// <summary>
-    /// Dead load calculation per ASCE 7-22 Chapter 3.
-    /// Material weights from standard references.
+    /// Preliminary/simplified dead load calculation per ASCE 7-22 Chapter 3.
+    /// Uses representative material weights for early design only; not final takeoff/design values.
     /// </summary>
     public static class DeadLoadCalculator
     {
@@ -98,7 +98,7 @@ namespace PoleBarnGenerator.Models.Loads
             double postArea = (p.PostWidthInches * p.PostDepthInches) / 144.0; // sq ft
             double postWeight = postArea * p.EaveHeight * 35.0; // lbs
 
-            // Truss linear weight estimate (based on span)
+            // Truss linear weight estimate (based on span) using a simplified rule-of-thumb.
             double trussPlf = 3.0 + p.BuildingWidth * 0.15; // rough: 3 plf base + 0.15 per foot span
 
             return new DeadLoadResult

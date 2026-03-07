@@ -22,7 +22,8 @@ namespace PoleBarnGenerator.Models.Analysis
     }
 
     /// <summary>
-    /// ASCE 7-22 §2.3.1 (LRFD) and §2.4.1 (ASD) load combinations.
+    /// ASCE 7-22 §2.3.1 (LRFD) and §2.4.1 (ASD) load combinations used by the
+    /// preliminary analysis engine.
     /// </summary>
     public static class LoadCombinations
     {

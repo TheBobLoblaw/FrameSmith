@@ -20,6 +20,14 @@ namespace PoleBarnGenerator.Utils
         /// </summary>
         public static void CreateDimensionStyle(Transaction tr, Database db)
         {
+            _ = GetDimensionStyleId(tr, db);
+        }
+
+        /// <summary>
+        /// Creates or updates FS-DIM, then returns its ObjectId.
+        /// </summary>
+        public static ObjectId GetDimensionStyleId(Transaction tr, Database db)
+        {
             DimStyleTable dst = tr.GetObject(db.DimStyleTableId, OpenMode.ForRead) as DimStyleTable;
 
             DimStyleTableRecord dimStyle;
@@ -80,6 +88,8 @@ namespace PoleBarnGenerator.Utils
                 dst.Add(dimStyle);
                 tr.AddNewlyCreatedDBObject(dimStyle, true);
             }
+
+            return dimStyle.ObjectId;
         }
 
         /// <summary>

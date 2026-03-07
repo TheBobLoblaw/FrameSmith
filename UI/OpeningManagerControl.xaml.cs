@@ -230,7 +230,16 @@ namespace PoleBarnGenerator.UI
             if (_parameters == null) return;
 
             SyncToModel();
-            var errors = OpeningValidator.ValidateOpenings(_parameters);
+            List<string> errors;
+            try
+            {
+                var geometry = new BarnGeometry(_parameters);
+                errors = OpeningValidator.ValidateOpenings(_parameters, geometry);
+            }
+            catch (Exception ex)
+            {
+                errors = new List<string> { $"Unable to validate openings with current geometry: {ex.Message}" };
+            }
 
             // Reset all statuses
             foreach (var vm in _doorVMs) { vm.ValidationStatus = "Valid"; vm.ValidationMessage = ""; }
