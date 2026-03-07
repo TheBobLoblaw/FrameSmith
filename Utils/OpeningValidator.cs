@@ -31,10 +31,96 @@ namespace PoleBarnGenerator.Utils
             if (parameters == null) throw new ArgumentNullException(nameof(parameters));
             if (geometry == null) throw new ArgumentNullException(nameof(geometry));
 
-            var errors = new List<string>();
-            const int MaxErrors = 20; // Cap error count for performance
+            var postsByWall = new Dictionary<WallSide, List<double>>
+            {
+                [WallSide.Front] = GetPostPositions(WallSide.Front, parameters, geometry),
+                [WallSide.Back] = GetPostPositions(WallSide.Back, parameters, geometry),
+                [WallSide.Left] = GetPostPositions(WallSide.Left, parameters, geometry),
+                [WallSide.Right] = GetPostPositions(WallSide.Right, parameters, geometry)
+            };
 
-            // Build a unified list of openings with their wall positions
+            return ValidateOpenings(parameters, postsByWall);
+        }
+
+        /// <summary>
+        /// Validates openings using precomputed post positions per wall.
+        /// </summary>
+        public static List<string> ValidateOpenings(BarnParameters parameters, IReadOnlyDictionary<WallSide, List<double>> postPositionsByWall)
+        {
+            if (parameters == null) throw new ArgumentNullException(nameof(parameters));
+            if (postPositionsByWall == null) throw new ArgumentNullException(nameof(postPositionsByWall));
+
+            var errors = new List<string>();
+            const int MaxErrors = 20;
+
+            var allOpenings = BuildOpeningRects(parameters);
+            var wallGroups = allOpenings.GroupBy(o => o.Wall);
+
+            foreach (var group in wallGroups)
+            {
+                var wall = group.Key;
+                double wallLength = (wall == WallSide.Front || wall == WallSide.Back)
+                    ? parameters.BuildingWidth
+                    : parameters.BuildingLength;
+                var openings = group.OrderBy(o => o.LeftEdge).ToList();
+
+                foreach (var opening in openings)
+                {
+                    if (opening.LeftEdge < MinEdgeClearance)
+                        errors.Add($"{opening.Label} on {wall} wall: left edge is only {opening.LeftEdge:F1}' from wall corner (min {MinEdgeClearance}').");
+
+                    if (opening.RightEdge > wallLength - MinEdgeClearance)
+                        errors.Add($"{opening.Label} on {wall} wall: right edge extends to {opening.RightEdge:F1}' (wall is {wallLength}', min clearance {MinEdgeClearance}').");
+
+                    if (errors.Count >= MaxErrors) break;
+
+                    if (opening.IsDoor && opening.DoorType == DoorType.Sliding)
+                    {
+                        double slideSpace = opening.Width;
+                        bool canSlideRight = opening.RightEdge + slideSpace <= wallLength - MinEdgeClearance;
+                        bool canSlideLeft = opening.LeftEdge - slideSpace >= MinEdgeClearance;
+
+                        if (!canSlideRight && !canSlideLeft)
+                            errors.Add($"{opening.Label} on {wall} wall: insufficient wall space for sliding clearance (needs {slideSpace}' clear on at least one side).");
+                    }
+                }
+
+                for (int i = 0; i < openings.Count && errors.Count < MaxErrors; i++)
+                {
+                    for (int j = i + 1; j < openings.Count && errors.Count < MaxErrors; j++)
+                    {
+                        var a = openings[i];
+                        var b = openings[j];
+                        bool hOverlap = a.RightEdge + MinOpeningSpacing > b.LeftEdge
+                                     && a.LeftEdge < b.RightEdge + MinOpeningSpacing;
+                        bool vOverlap = a.TopEdge > b.BottomEdge && a.BottomEdge < b.TopEdge;
+
+                        if (hOverlap && vOverlap)
+                            errors.Add($"{a.Label} and {b.Label} on {wall} wall overlap or are too close (min spacing {MinOpeningSpacing}').");
+                    }
+                }
+
+                postPositionsByWall.TryGetValue(wall, out var postPositions);
+                postPositions ??= new List<double>();
+                double postHalfWidth = (parameters.PostWidthInches / 12.0) / 2.0;
+
+                foreach (var opening in openings)
+                {
+                    foreach (double postCenter in postPositions)
+                    {
+                        double postLeft = postCenter - postHalfWidth;
+                        double postRight = postCenter + postHalfWidth;
+                        if (opening.LeftEdge < postRight && opening.RightEdge > postLeft)
+                            errors.Add($"{opening.Label} on {wall} wall conflicts with structural post at {postCenter:F1}'.");
+                    }
+                }
+            }
+
+            return errors;
+        }
+
+        private static List<OpeningRect> BuildOpeningRects(BarnParameters parameters)
+        {
             var allOpenings = new List<OpeningRect>();
 
             for (int i = 0; i < parameters.Doors.Count; i++)
@@ -69,82 +155,7 @@ namespace PoleBarnGenerator.Utils
                 });
             }
 
-            // Group by wall
-            var wallGroups = allOpenings.GroupBy(o => o.Wall);
-
-            foreach (var group in wallGroups)
-            {
-                var wall = group.Key;
-                double wallLength = (wall == WallSide.Front || wall == WallSide.Back)
-                    ? parameters.BuildingWidth
-                    : parameters.BuildingLength;
-
-                var openings = group.OrderBy(o => o.LeftEdge).ToList();
-
-                foreach (var opening in openings)
-                {
-                    // Check wall edge clearances
-                    if (opening.LeftEdge < MinEdgeClearance)
-                        errors.Add($"{opening.Label} on {wall} wall: left edge is only {opening.LeftEdge:F1}' from wall corner (min {MinEdgeClearance}').");
-
-                    if (opening.RightEdge > wallLength - MinEdgeClearance)
-                        errors.Add($"{opening.Label} on {wall} wall: right edge extends to {opening.RightEdge:F1}' (wall is {wallLength}', min clearance {MinEdgeClearance}').");
-
-                    if (errors.Count >= MaxErrors) break;
-
-                    // Check sliding door clearances — need wall space equal to door width for slide
-                    if (opening.IsDoor && opening.DoorType == DoorType.Sliding)
-                    {
-                        double slideSpace = opening.Width;
-                        // Check if there's room to slide right
-                        bool canSlideRight = opening.RightEdge + slideSpace <= wallLength - MinEdgeClearance;
-                        // Check if there's room to slide left
-                        bool canSlideLeft = opening.LeftEdge - slideSpace >= MinEdgeClearance;
-
-                        if (!canSlideRight && !canSlideLeft)
-                            errors.Add($"{opening.Label} on {wall} wall: insufficient wall space for sliding clearance (needs {slideSpace}' clear on at least one side).");
-                    }
-                }
-
-                // Check for overlaps between openings on the same wall
-                for (int i = 0; i < openings.Count && errors.Count < MaxErrors; i++)
-                {
-                    for (int j = i + 1; j < openings.Count && errors.Count < MaxErrors; j++)
-                    {
-                        var a = openings[i];
-                        var b = openings[j];
-
-                        // Horizontal overlap check
-                        bool hOverlap = a.RightEdge + MinOpeningSpacing > b.LeftEdge
-                                     && a.LeftEdge < b.RightEdge + MinOpeningSpacing;
-
-                        // Vertical overlap check (openings can be at different heights)
-                        bool vOverlap = a.TopEdge > b.BottomEdge && a.BottomEdge < b.TopEdge;
-
-                        if (hOverlap && vOverlap)
-                            errors.Add($"{a.Label} and {b.Label} on {wall} wall overlap or are too close (min spacing {MinOpeningSpacing}').");
-                    }
-                }
-
-                // Check post interference
-                var postPositions = GetPostPositions(wall, parameters, geometry);
-                double postHalfWidth = (parameters.PostWidthInches / 12.0) / 2.0;
-
-                foreach (var opening in openings)
-                {
-                    foreach (double postCenter in postPositions)
-                    {
-                        double postLeft = postCenter - postHalfWidth;
-                        double postRight = postCenter + postHalfWidth;
-
-                        // Check if opening overlaps with post
-                        if (opening.LeftEdge < postRight && opening.RightEdge > postLeft)
-                            errors.Add($"{opening.Label} on {wall} wall conflicts with structural post at {postCenter:F1}'.");
-                    }
-                }
-            }
-
-            return errors;
+            return allOpenings;
         }
 
         /// <summary>
@@ -161,8 +172,6 @@ namespace PoleBarnGenerator.Utils
                 .ToList();
 
             // Defensive fallback for incomplete geometry cases.
-            // Keep threshold aligned with BarnGeometry center-post behavior (24 ft).
-            const double LegacyEndwallCenterPostThreshold = 24.0;
             if (positions.Count > 0) return positions;
 
             if (wall == WallSide.Front || wall == WallSide.Back)
@@ -170,7 +179,7 @@ namespace PoleBarnGenerator.Utils
                 // Endwalls: posts at corners and optional center post.
                 positions.Add(0);
                 positions.Add(parameters.BuildingWidth);
-                if (parameters.BuildingWidth > LegacyEndwallCenterPostThreshold)
+                if (parameters.BuildingWidth > BarnGeometryPostPlacement.EndwallCenterPostThresholdFeet)
                     positions.Add(parameters.BuildingWidth / 2.0);
             }
             else
