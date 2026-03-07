@@ -327,19 +327,21 @@ namespace PoleBarnGenerator.Generators
             if (porch.HasRailing)
             {
                 double rh = porch.RailingHeight;
+                var drawnRails = new HashSet<string>();
                 foreach (var seg in porchGeo.RailingSegments)
                 {
+                    string keyA = $"{seg.X1:F6},{seg.Y1:F6}|{seg.X2:F6},{seg.Y2:F6}";
+                    string keyB = $"{seg.X2:F6},{seg.Y2:F6}|{seg.X1:F6},{seg.Y1:F6}";
+                    if (!drawnRails.Add(keyA) && !drawnRails.Add(keyB))
+                    {
+                        continue;
+                    }
+
                     DrawingHelpers.AddLine3D(tr, btr,
                         seg.X1, seg.Y1, rh,
                         seg.X2, seg.Y2, rh,
                         PorchLayer);
                     count++;
-
-                    // Top rail
-                    DrawingHelpers.AddLine3D(tr, btr,
-                        seg.X1, seg.Y1, rh,
-                        seg.X2, seg.Y2, rh,
-                        PorchLayer);
                 }
 
                 // Railing posts (vertical lines at column locations on outer edge)

@@ -80,7 +80,11 @@ namespace PoleBarnGenerator.Models.StructuralCalculations
             if (spanWidthFeet <= 10)
                 return MakeSawn(2, 12);
             if (spanWidthFeet <= 12)
-                return MakeSawn(2, 12);
+            {
+                return loadType == LoadType.Floor
+                    ? MakeLVL(3.5, 11.875)
+                    : MakeSawn(3, 12); // triple 2x12
+            }
             if (spanWidthFeet <= 14)
             {
                 // Doubled 2x12 or single LVL

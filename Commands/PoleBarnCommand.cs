@@ -26,6 +26,12 @@ namespace PoleBarnGenerator.Commands
         public void RunPoleBarn()
         {
             Document doc = Application.DocumentManager.MdiActiveDocument;
+            if (doc == null)
+            {
+                Application.ShowAlertDialog("No active document. Open a drawing and run POLEBARN again.");
+                return;
+            }
+
             Database db = doc.Database;
             Editor ed = doc.Editor;
 
@@ -75,7 +81,18 @@ namespace PoleBarnGenerator.Commands
             using (Transaction tr = db.TransactionManager.StartTransaction())
             {
                 BlockTable bt = tr.GetObject(db.BlockTableId, OpenMode.ForRead) as BlockTable;
+                if (bt == null)
+                {
+                    ed.WriteMessage("\nERROR: Could not access block table.");
+                    return;
+                }
+
                 BlockTableRecord btr = tr.GetObject(bt[BlockTableRecord.ModelSpace], OpenMode.ForWrite) as BlockTableRecord;
+                if (btr == null)
+                {
+                    ed.WriteMessage("\nERROR: Could not access model space block table record.");
+                    return;
+                }
 
                 // Create all layers
                 // Professional drawing setup
@@ -180,6 +197,12 @@ namespace PoleBarnGenerator.Commands
         private void GenerateFromPreset(string presetName)
         {
             Document doc = Application.DocumentManager.MdiActiveDocument;
+            if (doc == null)
+            {
+                Application.ShowAlertDialog("No active document. Open a drawing and run the preset command again.");
+                return;
+            }
+
             Editor ed = doc.Editor;
 
             ed.WriteMessage($"\nGenerating preset pole barn: {presetName}\n");
@@ -190,7 +213,18 @@ namespace PoleBarnGenerator.Commands
             using (Transaction tr = doc.Database.TransactionManager.StartTransaction())
             {
                 BlockTable bt = tr.GetObject(doc.Database.BlockTableId, OpenMode.ForRead) as BlockTable;
+                if (bt == null)
+                {
+                    ed.WriteMessage("\nERROR: Could not access block table.");
+                    return;
+                }
+
                 BlockTableRecord btr = tr.GetObject(bt[BlockTableRecord.ModelSpace], OpenMode.ForWrite) as BlockTableRecord;
+                if (btr == null)
+                {
+                    ed.WriteMessage("\nERROR: Could not access model space block table record.");
+                    return;
+                }
 
                 // Professional drawing setup
                 LayerManager.EnsureLayers(tr, doc.Database);

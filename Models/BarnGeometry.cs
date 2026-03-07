@@ -41,6 +41,7 @@ namespace PoleBarnGenerator.Models
         public BarnGeometry(BarnParameters parameters)
         {
             Params = parameters;
+            TrussProfile = TrussFactory.GetTrussProfile(Params.TrussType);
             Compute();
         }
 
@@ -335,7 +336,7 @@ namespace PoleBarnGenerator.Models
         private void ComputeTrusses()
         {
             Trusses = new List<TrussProfile>();
-            TrussProfile = TrussFactory.GetTrussProfile(Params.TrussType);
+            TrussProfile ??= TrussFactory.GetTrussProfile(Params.TrussType);
 
             foreach (double bayY in BayPositions)
             {
@@ -419,6 +420,13 @@ namespace PoleBarnGenerator.Models
             {
                 if (segment.IsArc)
                 {
+                    if (segment.ArcRadius <= 0)
+                    {
+                        AddUniquePoint(points, segment.Start);
+                        AddUniquePoint(points, segment.End);
+                        continue;
+                    }
+
                     double sweep = segment.EndAngle - segment.StartAngle;
                     int divisions = Math.Max(1, (int)Math.Floor(Math.Abs(sweep) * segment.ArcRadius / spacing));
                     for (int i = 0; i <= divisions; i++)

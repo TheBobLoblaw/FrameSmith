@@ -1,5 +1,4 @@
 using PoleBarnGenerator.Models;
-using System;
 
 namespace PoleBarnGenerator.Generators.TrussProfiles
 {
@@ -18,7 +17,7 @@ namespace PoleBarnGenerator.Generators.TrussProfiles
                 TrussType.Scissor => new ScissorTrussProfile(),
                 TrussType.Monitor => new MonitorTrussProfile(),
                 TrussType.Attic => new AtticTrussProfile(),
-                _ => throw new ArgumentException($"Unknown truss type: {type}")
+                _ => new CommonTrussProfile()
             };
         }
     }

@@ -161,10 +161,17 @@ namespace PoleBarnGenerator.Generators
             count++;
 
             // Outer eave line (horizontal)
-            DrawingHelpers.AddLine(tr, btr,
-                DrawingHelpers.Offset(outerX, lt.EaveHeight, offset),
-                DrawingHelpers.Offset(outerX, lt.EaveHeight, offset), // fascia point
-                LayerManager.Layers.Roof);
+            double fasciaLength = 0.5;
+            double fasciaStartX = lt.AttachmentWall == WallSide.Left ? outerX - fasciaLength : outerX;
+            double fasciaEndX = lt.AttachmentWall == WallSide.Left ? outerX : outerX + fasciaLength;
+            if (Math.Abs(fasciaEndX - fasciaStartX) > 1e-9)
+            {
+                DrawingHelpers.AddLine(tr, btr,
+                    DrawingHelpers.Offset(fasciaStartX, lt.EaveHeight, offset),
+                    DrawingHelpers.Offset(fasciaEndX, lt.EaveHeight, offset),
+                    LayerManager.Layers.Roof);
+                count++;
+            }
 
             // Girts on enclosed walls
             if (lt.Type == LeanToType.FullyEnclosed || lt.EnclosedWalls[0])
