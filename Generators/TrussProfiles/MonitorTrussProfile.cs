@@ -281,7 +281,10 @@ namespace PoleBarnGenerator.Generators.TrussProfiles
 
             Database db = btr.Database;
             try { db.LoadLineTypeFile("DASHED", "acad.lin"); }
-            catch (Autodesk.AutoCAD.Runtime.Exception) { }
+            catch (Autodesk.AutoCAD.Runtime.Exception ex)
+            {
+                WarningCollector.ReportCurrent("Failed to load DASHED linetype for monitor truss profile", ex);
+            }
 
             // Monitor outline in plan view (dashed rectangle)
             Line l1 = DrawingHelpers.AddLine(tr, btr,

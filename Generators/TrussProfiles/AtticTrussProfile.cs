@@ -110,7 +110,10 @@ namespace PoleBarnGenerator.Generators.TrussProfiles
             // Interior attic framing (dashed lines)
             Database db = btr.Database;
             try { db.LoadLineTypeFile("DASHED", "acad.lin"); }
-            catch (Autodesk.AutoCAD.Runtime.Exception) { }
+            catch (Autodesk.AutoCAD.Runtime.Exception ex)
+            {
+                WarningCollector.ReportCurrent("Failed to load DASHED linetype for attic truss profile", ex);
+            }
 
             // Attic floor (same as bottom chord)
             Line floor = DrawingHelpers.AddLine(tr, btr,

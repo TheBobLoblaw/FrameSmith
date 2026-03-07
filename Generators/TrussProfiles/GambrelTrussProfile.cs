@@ -222,7 +222,10 @@ namespace PoleBarnGenerator.Generators.TrussProfiles
             // Break lines visible in plan view (dashed lines parallel to ridge)
             Database db = btr.Database;
             try { db.LoadLineTypeFile("DASHED", "acad.lin"); }
-            catch (Autodesk.AutoCAD.Runtime.Exception) { }
+            catch (Autodesk.AutoCAD.Runtime.Exception ex)
+            {
+                WarningCollector.ReportCurrent("Failed to load DASHED linetype for gambrel truss profile", ex);
+            }
 
             // Left break line
             Line leftBreak = DrawingHelpers.AddLine(tr, btr,

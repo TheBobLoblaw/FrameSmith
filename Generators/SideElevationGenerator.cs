@@ -1,5 +1,6 @@
 using System;
 using Autodesk.AutoCAD.DatabaseServices;
+using Autodesk.AutoCAD.EditorInput;
 using Autodesk.AutoCAD.Geometry;
 using PoleBarnGenerator.Generators.Services;
 using PoleBarnGenerator.Models;
@@ -12,7 +13,7 @@ namespace PoleBarnGenerator.Generators
     /// </summary>
     public static class SideElevationGenerator
     {
-        public static int Generate(Transaction tr, BlockTableRecord btr, BarnGeometry geo, Vector3d offset)
+        public static int Generate(Transaction tr, BlockTableRecord btr, BarnGeometry geo, Vector3d offset, Editor ed, WarningCollector warnings)
         {
             int count = 0;
             var p = geo.Params;
@@ -66,7 +67,7 @@ namespace PoleBarnGenerator.Generators
                 count += 2;
             }
 
-            count += OpeningDrawingService.DrawSideElevationOpenings(tr, btr, geo, offset);
+            count += OpeningDrawingService.DrawSideElevationOpenings(tr, btr, geo, offset, ed, warnings);
 
             foreach (var joint in geo.ExpansionJoints)
             {
@@ -100,7 +101,14 @@ namespace PoleBarnGenerator.Generators
                     count += LeanToGenerator.GenerateSideElevation(tr, btr, ltGeo, geo, offset);
                     count += LeanToGenerator.GenerateSideElevationSidewall(tr, btr, ltGeo, geo, offset);
                 }
-                catch (Exception) { }
+                catch (Autodesk.AutoCAD.Runtime.Exception ex)
+                {
+                    WarningCollector.Report(ed, warnings, "Lean-to side elevation generation failed", ex);
+                }
+                catch (Exception ex)
+                {
+                    WarningCollector.Report(ed, warnings, "Lean-to side elevation generation unexpected failure", ex);
+                }
             }
 
             foreach (var porchGeo in geo.PorchGeometries)
@@ -110,10 +118,17 @@ namespace PoleBarnGenerator.Generators
                     count += PorchGenerator.GenerateSideElevation(tr, btr, porchGeo, geo, offset);
                     count += PorchGenerator.GenerateSideElevationSidewall(tr, btr, porchGeo, geo, offset);
                 }
-                catch (Exception) { }
+                catch (Autodesk.AutoCAD.Runtime.Exception ex)
+                {
+                    WarningCollector.Report(ed, warnings, "Porch side elevation generation failed", ex);
+                }
+                catch (Exception ex)
+                {
+                    WarningCollector.Report(ed, warnings, "Porch side elevation generation unexpected failure", ex);
+                }
             }
 
-            count += ExteriorDetailDrawingService.AddSideElevationExteriorDetails(tr, btr, geo, offset);
+            count += ExteriorDetailDrawingService.AddSideElevationExteriorDetails(tr, btr, geo, offset, ed, warnings);
 
             if (p.AddDimensions)
             {

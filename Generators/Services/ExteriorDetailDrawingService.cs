@@ -1,5 +1,6 @@
 using System;
 using Autodesk.AutoCAD.DatabaseServices;
+using Autodesk.AutoCAD.EditorInput;
 using Autodesk.AutoCAD.Geometry;
 using PoleBarnGenerator.Models;
 using PoleBarnGenerator.Utils;
@@ -11,7 +12,7 @@ namespace PoleBarnGenerator.Generators.Services
     /// </summary>
     public static class ExteriorDetailDrawingService
     {
-        public static int AddPlanExteriorDetails(Transaction tr, BlockTableRecord btr, BarnGeometry geo, Vector3d offset)
+        public static int AddPlanExteriorDetails(Transaction tr, BlockTableRecord btr, BarnGeometry geo, Vector3d offset, Editor ed, WarningCollector warnings)
         {
             var p = geo.Params;
             int count = 0;
@@ -21,15 +22,19 @@ namespace PoleBarnGenerator.Generators.Services
                 count += ExteriorDetailGenerator.AddCupolaPlan(tr, btr, geo, p.Cupola, offset);
                 count += ExteriorDetailGenerator.AddGutterPlan(tr, btr, geo, p.Gutters, offset);
             }
-            catch (Exception)
+            catch (Autodesk.AutoCAD.Runtime.Exception ex)
             {
-                // Skip failed detail render.
+                WarningCollector.Report(ed, warnings, "Plan exterior detail generation failed", ex);
+            }
+            catch (Exception ex)
+            {
+                WarningCollector.Report(ed, warnings, "Plan exterior detail generation unexpected failure", ex);
             }
 
             return count;
         }
 
-        public static int AddFrontElevationExteriorDetails(Transaction tr, BlockTableRecord btr, BarnGeometry geo, Vector3d offset)
+        public static int AddFrontElevationExteriorDetails(Transaction tr, BlockTableRecord btr, BarnGeometry geo, Vector3d offset, Editor ed, WarningCollector warnings)
         {
             var p = geo.Params;
             int count = 0;
@@ -42,15 +47,19 @@ namespace PoleBarnGenerator.Generators.Services
                 count += AddFrontVentilationOpenings(tr, btr, geo, offset);
                 count += AddFrontEquipmentDetails(tr, btr, geo, offset);
             }
-            catch (Exception)
+            catch (Autodesk.AutoCAD.Runtime.Exception ex)
             {
-                // Skip failed detail render.
+                WarningCollector.Report(ed, warnings, "Front elevation exterior detail generation failed", ex);
+            }
+            catch (Exception ex)
+            {
+                WarningCollector.Report(ed, warnings, "Front elevation exterior detail generation unexpected failure", ex);
             }
 
             return count;
         }
 
-        public static int AddSideElevationExteriorDetails(Transaction tr, BlockTableRecord btr, BarnGeometry geo, Vector3d offset)
+        public static int AddSideElevationExteriorDetails(Transaction tr, BlockTableRecord btr, BarnGeometry geo, Vector3d offset, Editor ed, WarningCollector warnings)
         {
             var p = geo.Params;
             int count = 0;
@@ -61,9 +70,13 @@ namespace PoleBarnGenerator.Generators.Services
                 count += AddSideVentilationOpenings(tr, btr, geo, offset);
                 count += AddSideEquipmentDetails(tr, btr, geo, offset);
             }
-            catch (Exception)
+            catch (Autodesk.AutoCAD.Runtime.Exception ex)
             {
-                // Skip failed detail render.
+                WarningCollector.Report(ed, warnings, "Side elevation exterior detail generation failed", ex);
+            }
+            catch (Exception ex)
+            {
+                WarningCollector.Report(ed, warnings, "Side elevation exterior detail generation unexpected failure", ex);
             }
 
             return count;

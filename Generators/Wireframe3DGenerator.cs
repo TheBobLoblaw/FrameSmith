@@ -1,4 +1,5 @@
 using Autodesk.AutoCAD.DatabaseServices;
+using Autodesk.AutoCAD.EditorInput;
 using Autodesk.AutoCAD.Geometry;
 using PoleBarnGenerator.Models;
 using PoleBarnGenerator.Generators.TrussProfiles;
@@ -18,7 +19,7 @@ namespace PoleBarnGenerator.Generators
     /// </summary>
     public static class Wireframe3DGenerator
     {
-        public static int Generate(Transaction tr, BlockTableRecord btr, BarnGeometry geo)
+        public static int Generate(Transaction tr, BlockTableRecord btr, BarnGeometry geo, Editor ed, WarningCollector warnings)
         {
             int count = 0;
             var p = geo.Params;
@@ -156,7 +157,14 @@ namespace PoleBarnGenerator.Generators
                 {
                     count += LeanToGenerator.Generate3D(tr, btr, ltGeo);
                 }
-                catch (System.Exception) { /* skip failed lean-to render */ }
+                catch (Autodesk.AutoCAD.Runtime.Exception ex)
+                {
+                    WarningCollector.Report(ed, warnings, "Lean-to 3D generation failed", ex);
+                }
+                catch (Exception ex)
+                {
+                    WarningCollector.Report(ed, warnings, "Lean-to 3D generation unexpected failure", ex);
+                }
             }
 
             // ── Porch 3D wireframes ──
@@ -166,7 +174,14 @@ namespace PoleBarnGenerator.Generators
                 {
                     count += PorchGenerator.Generate3D(tr, btr, porchGeo);
                 }
-                catch (System.Exception) { /* skip failed porch render */ }
+                catch (Autodesk.AutoCAD.Runtime.Exception ex)
+                {
+                    WarningCollector.Report(ed, warnings, "Porch 3D generation failed", ex);
+                }
+                catch (Exception ex)
+                {
+                    WarningCollector.Report(ed, warnings, "Porch 3D generation unexpected failure", ex);
+                }
             }
 
             // ── Exterior details 3D ──
@@ -175,7 +190,14 @@ namespace PoleBarnGenerator.Generators
                 count += ExteriorDetailGenerator.AddWainscot3D(tr, btr, geo, p.Wainscot);
                 count += ExteriorDetailGenerator.AddCupola3D(tr, btr, geo, p.Cupola);
             }
-            catch (System.Exception) { /* skip failed detail render */ }
+            catch (Autodesk.AutoCAD.Runtime.Exception ex)
+            {
+                WarningCollector.Report(ed, warnings, "Exterior detail 3D generation failed", ex);
+            }
+            catch (Exception ex)
+            {
+                WarningCollector.Report(ed, warnings, "Exterior detail 3D generation unexpected failure", ex);
+            }
 
             // ── Expansion joint separations ──
             foreach (var joint in geo.ExpansionJoints)

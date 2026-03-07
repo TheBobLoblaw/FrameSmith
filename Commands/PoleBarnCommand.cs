@@ -26,6 +26,12 @@ namespace PoleBarnGenerator.Commands
         public void RunPoleBarn()
         {
             Document doc = Application.DocumentManager.MdiActiveDocument;
+            if (doc == null)
+            {
+                Application.ShowAlertDialog("Error: No active document. Open a drawing and try again.");
+                return;
+            }
+
             Database db = doc.Database;
             Editor ed = doc.Editor;
             WarningCollector warnings = new WarningCollector();
@@ -78,7 +84,18 @@ namespace PoleBarnGenerator.Commands
                 using (Transaction tr = db.TransactionManager.StartTransaction())
                 {
                     BlockTable bt = tr.GetObject(db.BlockTableId, OpenMode.ForRead) as BlockTable;
+                    if (bt == null)
+                    {
+                        ed.WriteMessage("\nError: Failed to open block table.\n");
+                        return;
+                    }
+
                     BlockTableRecord btr = tr.GetObject(bt[BlockTableRecord.ModelSpace], OpenMode.ForWrite) as BlockTableRecord;
+                    if (btr == null)
+                    {
+                        ed.WriteMessage("\nError: Failed to open model space block table record.\n");
+                        return;
+                    }
 
                     // Create all layers
                     // Professional drawing setup
@@ -231,6 +248,12 @@ namespace PoleBarnGenerator.Commands
         private void GenerateFromPreset(string presetName)
         {
             Document doc = Application.DocumentManager.MdiActiveDocument;
+            if (doc == null)
+            {
+                Application.ShowAlertDialog("Error: No active document. Open a drawing and try again.");
+                return;
+            }
+
             Editor ed = doc.Editor;
             WarningCollector warnings = new WarningCollector();
 
@@ -244,7 +267,18 @@ namespace PoleBarnGenerator.Commands
                 using (Transaction tr = doc.Database.TransactionManager.StartTransaction())
                 {
                     BlockTable bt = tr.GetObject(doc.Database.BlockTableId, OpenMode.ForRead) as BlockTable;
+                    if (bt == null)
+                    {
+                        ed.WriteMessage("\nError: Failed to open block table.\n");
+                        return;
+                    }
+
                     BlockTableRecord btr = tr.GetObject(bt[BlockTableRecord.ModelSpace], OpenMode.ForWrite) as BlockTableRecord;
+                    if (btr == null)
+                    {
+                        ed.WriteMessage("\nError: Failed to open model space block table record.\n");
+                        return;
+                    }
 
                     // Professional drawing setup
                     LayerManager.EnsureLayers(tr, doc.Database);

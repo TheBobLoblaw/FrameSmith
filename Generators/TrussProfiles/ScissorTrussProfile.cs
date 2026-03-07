@@ -76,7 +76,10 @@ namespace PoleBarnGenerator.Generators.TrussProfiles
             // Bottom chord — slopes upward to center (vaulted ceiling line, dashed)
             Database db = btr.Database;
             try { db.LoadLineTypeFile("DASHED", "acad.lin"); }
-            catch (Autodesk.AutoCAD.Runtime.Exception) { }
+            catch (Autodesk.AutoCAD.Runtime.Exception ex)
+            {
+                WarningCollector.ReportCurrent("Failed to load DASHED linetype for scissor truss profile", ex);
+            }
 
             Line leftBottom = DrawingHelpers.AddLine(tr, btr,
                 DrawingHelpers.Offset(0, p.EaveHeight, offset),
