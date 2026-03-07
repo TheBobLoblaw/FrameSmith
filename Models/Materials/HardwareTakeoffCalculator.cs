@@ -18,7 +18,9 @@ namespace PoleBarnGenerator.Models.Materials
 
             // ─── Structural Bolts: post-to-truss connections ───
             int trussCount = p.NumberOfBays + 1;
-            int postCount = geometry.Posts.Count;
+            int postCount = geometry.Posts.Any(post => post.IsPlanInstance)
+                ? geometry.Posts.Count(post => post.IsPlanInstance)
+                : geometry.Posts.Count;
 
             hw.StructuralBolts.Add(new HardwareItem
             {

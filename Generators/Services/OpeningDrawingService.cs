@@ -64,7 +64,7 @@ namespace PoleBarnGenerator.Generators.Services
 
             foreach (var door in p.Doors)
             {
-                if (door.Wall != WallSide.Front && door.Wall != WallSide.Back)
+                if (door.Wall != WallSide.Front)
                 {
                     continue;
                 }
@@ -86,7 +86,7 @@ namespace PoleBarnGenerator.Generators.Services
 
             foreach (var window in p.Windows)
             {
-                if (window.Wall != WallSide.Front && window.Wall != WallSide.Back)
+                if (window.Wall != WallSide.Front)
                 {
                     continue;
                 }
@@ -116,7 +116,7 @@ namespace PoleBarnGenerator.Generators.Services
 
             foreach (var door in p.Doors)
             {
-                if (door.Wall != WallSide.Left && door.Wall != WallSide.Right)
+                if (door.Wall != WallSide.Left)
                 {
                     continue;
                 }
@@ -138,7 +138,7 @@ namespace PoleBarnGenerator.Generators.Services
 
             foreach (var window in p.Windows)
             {
-                if (window.Wall != WallSide.Left && window.Wall != WallSide.Right)
+                if (window.Wall != WallSide.Left)
                 {
                     continue;
                 }

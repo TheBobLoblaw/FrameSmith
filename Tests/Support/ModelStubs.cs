@@ -1,6 +1,6 @@
 using System.Collections.Generic;
 
-namespace PoleBarnGenerator.Models
+namespace FrameSmith.Tests.Stubs
 {
     public enum WallSide { Front, Back, Left, Right }
 
