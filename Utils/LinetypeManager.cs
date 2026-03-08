@@ -60,7 +60,7 @@ namespace PoleBarnGenerator.Utils
         public static void SetLinetypeScale(Database db, double scale = 48.0)
         {
             db.Ltscale = scale;
-            db.Psltscale = 1; // Paper space linetype scaling enabled
+            db.Psltscale = true; // Paper space linetype scaling enabled
         }
     }
 }

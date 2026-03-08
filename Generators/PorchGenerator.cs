@@ -1,6 +1,7 @@
 using Autodesk.AutoCAD.DatabaseServices;
 using Autodesk.AutoCAD.Geometry;
 using PoleBarnGenerator.Models;
+using PorchColumnType = PoleBarnGenerator.Models.ColumnType;
 using PoleBarnGenerator.Utils;
 using System;
 using System.Collections.Generic;
@@ -38,10 +39,10 @@ namespace PoleBarnGenerator.Generators
             count++;
 
             // ── Columns ──
-            double colSize = porch.ColumnType == ColumnType.Round ? 0.5 : 0.5; // 6" columns
+            double colSize = porch.ColumnType == PorchColumnType.Round ? 0.5 : 0.5; // 6" columns
             foreach (var col in porchGeo.ColumnLocations)
             {
-                if (porch.ColumnType == ColumnType.Round)
+                if (porch.ColumnType == PorchColumnType.Round)
                 {
                     // Draw circle for round columns
                     Circle circle = new Circle(

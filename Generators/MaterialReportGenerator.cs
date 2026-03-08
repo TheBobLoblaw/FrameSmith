@@ -120,7 +120,7 @@ namespace PoleBarnGenerator.Generators
 
             foreach (var item in takeoff.Lumber.AllItems)
             {
-                sb.AppendLine($"{ToSafeCsvText(item.Category)},{ToSafeCsvText(item.Description)},{ToSafeCsvText(item.Size)},{ToSafeCsvText(item.Grade)}," +
+                sb.AppendLine($"{ToSafeCsvText(item.Category.ToString())},{ToSafeCsvText(item.Description)},{ToSafeCsvText(item.Size)},{ToSafeCsvText(item.Grade)}," +
                     $"{item.Length},{item.Quantity},{item.LinearFeet:F1},{item.BoardFeet:F1}," +
                     $"{ToSafeCsvText(item.Usage)},{item.UnitPrice:F2},{item.TotalPrice:F2}");
             }
@@ -129,7 +129,7 @@ namespace PoleBarnGenerator.Generators
             sb.AppendLine("Category,Part Number,Description,Specification,Quantity,Unit Cost,Total Cost,Usage");
             foreach (var item in takeoff.Hardware.AllItems)
             {
-                sb.AppendLine($"{ToSafeCsvText(item.Category)},{ToSafeCsvText(item.PartNumber)},{ToSafeCsvText(item.Description)}," +
+                sb.AppendLine($"{ToSafeCsvText(item.Category.ToString())},{ToSafeCsvText(item.PartNumber)},{ToSafeCsvText(item.Description)}," +
                     $"{ToSafeCsvText(item.Specification)},{item.Quantity},{item.UnitCost:F2},{item.TotalCost:F2},{ToSafeCsvText(item.Usage)}");
             }
 

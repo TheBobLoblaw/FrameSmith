@@ -163,7 +163,7 @@ namespace PoleBarnGenerator.Models.Analysis
 
             // ─── Building drift ───
             double drift = W_wall * 0.6 * Math.Pow(p.EaveHeight, 4) * 12 /
-                           (8 * 1600000 * 500); // preliminary stiffness approximation
+                           (8L * 1600000L * 500L); // preliminary stiffness approximation
             results.MaxDrift = Math.Round(drift, 3);
 
             results.ControllingLoadCombo = latCombo.Name;

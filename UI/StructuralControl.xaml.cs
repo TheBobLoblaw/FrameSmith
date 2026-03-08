@@ -1,7 +1,7 @@
 using System;
 using System.Windows;
 using System.Windows.Controls;
-using Autodesk.AutoCAD.ApplicationServices;
+using AcadApp = Autodesk.AutoCAD.ApplicationServices.Application;
 using Microsoft.Win32;
 using PoleBarnGenerator.Models;
 using PoleBarnGenerator.Models.Analysis;
@@ -50,7 +50,7 @@ namespace PoleBarnGenerator.UI
                     "Analysis Error",
                     MessageBoxButton.OK,
                     MessageBoxImage.Error);
-                Application.DocumentManager.MdiActiveDocument?.Editor?
+                AcadApp.DocumentManager.MdiActiveDocument?.Editor?
                     .WriteMessage($"\nStructural analysis error:\n{ex}");
                 btnExportReport.IsEnabled = false;
             }
@@ -88,7 +88,7 @@ namespace PoleBarnGenerator.UI
                     "Export Error",
                     MessageBoxButton.OK,
                     MessageBoxImage.Error);
-                Application.DocumentManager.MdiActiveDocument?.Editor?
+                AcadApp.DocumentManager.MdiActiveDocument?.Editor?
                     .WriteMessage($"\nStructural export error:\n{ex}");
             }
         }
